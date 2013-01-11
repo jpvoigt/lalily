@@ -1,0 +1,397 @@
+;;;; This file is part of lalily, an extension to lilypond <http://www.lilypond.org/>.
+;;;;
+;;;; Copyright (C) 2011--2012 Jan-Peter Voigt <jp.voigt@gmx.de>
+;;;;
+;;;; lalily is free software: you can redistribute it and/or modify
+;;;; it under the terms of the GNU General Public License as published by
+;;;; the Free Software Foundation, either version 3 of the License, or
+;;;; (at your option) any later version.
+;;;;
+;;;; lalily is distributed in the hope that it will be useful,
+;;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;; GNU General Public License for more details.
+;;;;
+;;;; You should have received a copy of the GNU General Public License
+;;;; along with lalily.  If not, see <http://www.gnu.org/licenses/>.
+
+(define-module (lalily edition))
+
+(use-modules
+ (oop goops)
+ (lily)
+ (lalily definitions)
+ (lalily lascm)
+ (lalily laly)
+ (lalily store)
+ )
+
+; TODO todo/anno->anno-collect
+
+;%%%%%%%%%%%%%
+
+(define-class <propset> ()
+  (once #:init-value #t #:accessor is-once #:setter set-once! #:init-keyword #:once)
+  (symbol #:accessor get-symbol #:setter set-symbol! #:init-keyword #:symbol)
+  (value #:accessor get-value #:setter set-value! #:init-keyword #:value)
+  (previous #:accessor get-previous #:setter set-previous! #:init-value #f)
+  (context #:accessor get-context #:setter set-context! #:init-keyword #:context)
+  )
+(define-method (do-propset context (prop <propset>))
+  (if (get-context prop)
+      (let ((parctx (ly:context-find context (get-context prop))))
+        (if (ly:context? parctx) (set! context parctx))))
+  (set-previous! prop (ly:context-property context (get-symbol prop)))
+  (ly:context-set-property! context (get-symbol prop) (get-value prop))
+  )
+(export do-propset)
+(define-method (reset-prop context (prop <propset>))
+  (if (get-context prop)
+      (let ((parctx (ly:context-find context (get-context prop))))
+        (if (ly:context? parctx) (set! context parctx))))
+  (ly:context-set-property! context (get-symbol prop) (get-previous prop))
+  )
+(export reset-prop)
+
+(define-public (propset? p)(is-a? p <propset>))
+(define-method (propset->string (ps <propset>))
+  (format "~A\\set ~A = ~A" (if (is-once ps) "once " "") (string-append (if (get-context ps) (format "~A." (get-context ps)) "") (format "~A" (get-symbol ps))) (get-value ps)))
+(export propset->string)
+(define-method (display (o <propset>) port) (display (propset->string o) port))
+
+;%%%%%%%%%%%%%
+
+(define-class <override> ()
+  (once #:init-value #t #:accessor is-once #:setter set-once! #:init-keyword #:once)
+  (revert #:init-value #f #:accessor is-revert #:setter set-revert! #:init-keyword #:revert)
+  (grob #:accessor get-grob #:setter set-grob! #:init-keyword #:grob)
+  (prop #:accessor get-prop #:setter set-prop! #:init-keyword #:prop)
+  (value #:accessor get-value #:setter set-value! #:init-keyword #:value)
+  (context #:accessor get-context #:setter set-context! #:init-keyword #:context)
+  )
+(define-method (oop->string (o <override>))
+  (let* ((ctxn (get-context o))
+         (ctxp (if ctxn (format "~A." ctxn) "")))
+    (if (is-revert o)
+        (string-append "\\revert " ctxp (format "~A " (get-grob o)) (format "#'~A" (get-prop o)))
+        (string-append (if (is-once o) "\\once " "") "\\override " ctxp (format "~A " (get-grob o)) (format "#'~A" (get-prop o)) " = " (format "~A" (get-value o)))
+        )))
+(export oop->string)
+(define-method (display (o <override>) port) (display (oop->string o) port))
+(define-public (override? o)(is-a? o <override>))
+
+(define-method (do-override ctx (mod <override>))
+  (if (get-context mod)
+      (let ((parctx (ly:context-find ctx (get-context mod))))
+        (if (ly:context? parctx) (set! ctx parctx))))
+  (ly:context-pushpop-property ctx (get-grob mod) (get-prop mod) (get-value mod)))
+(export do-override)
+(define-method (do-revert ctx (mod <override>))
+  (if (get-context mod)
+      (let ((parctx (ly:context-find ctx (get-context mod))))
+        (if (ly:context? parctx) (set! ctx parctx))))
+  (ly:context-pushpop-property ctx (get-grob mod) (get-prop mod)))
+(export do-revert)
+
+;%%%%%%%%%%%%%
+
+(define-public (editions) #f)
+(define-public (set-editions! ed) #f)
+(define-public (add-edmod edition takt pos path mod) #f)
+(define-public (edition-engraver tag-path) #f)
+(define-public (walk-edition-engravers proc) #f)
+(define-public (display-mods) #f)
+(define-public (display-edition) #f)
+(define lalily:edition-tags 'lalily:edition-tags)
+(let ((mod-tree (tree-create 'mods))
+      (edition-list '())
+      (edition-tree (tree-create 'edition))
+      (context-count (tree-create 'context)))
+  (define (o->sym o) (cond ((symbol? o) o) ((string? o) (string->symbol o)) (else (string->symbol (format "~A" o)))))
+  (set! editions (lambda () (if (list? edition-list) edition-list '())))
+  (set! set-editions! (lambda (eds) (if (list? eds) (set! edition-list eds) (ly:error "list expected: ~A" eds))))
+  (set! add-edmod
+        (lambda (edition takt pos path modm)
+          (let* ((edition (if (string? edition) (string->symbol edition) edition))
+                 (path `(,edition ,takt ,pos ,@path))
+                 (mods (tree-get mod-tree path)))
+            (if (not (list? mods)) (set! mods '()))
+            (cond
+             ((ly:music? modm)
+              (let ((x 0))
+                (define (add-mods modmus ctx)
+                  (for-some-music
+                   (lambda (m)
+                     (cond
+                      ((eq? 'ContextSpeccedMusic (ly:music-property m 'name))
+                       (let* ((ct (ly:music-property m 'context-type))
+                              (elm (ly:music-property m 'element)))
+                         (if (eq? 'Bottom ct)
+                             #f
+                             (begin
+                              (add-mods elm ct)
+                              #t)
+                             )
+                         ))
+                      ((eq? 'OverrideProperty (ly:music-property m 'name))
+                       (let* ((once (ly:music-property m 'once #f))
+                              (grob (ly:music-property m 'symbol))
+                              (prop (ly:music-property m 'grob-property))
+                              (prop (if (symbol? prop)
+                                        prop
+                                        (car (ly:music-property m 'grob-property-path))))
+                              (value (ly:music-property m 'grob-value))
+                              (mod (make <override> #:once once #:grob grob #:prop prop #:value value #:context ctx)))
+                         (set! mods `(,@mods ,mod))
+                         #t
+                         ))
+                      ((eq? 'RevertProperty (ly:music-property m 'name))
+                       (let* ((grob (ly:music-property m 'symbol))
+                              (prop (car (ly:music-property m 'grob-property-path)))
+                              (mod (make <override> #:once #f #:revert #t #:grob grob #:prop prop #:value #f #:context ctx)))
+                         (set! mods `(,@mods ,mod))
+                         #t
+                         ))
+                      ((eq? 'PropertySet (ly:music-property m 'name))
+                       (let* ((once (ly:music-property m 'once #f))
+                              (symbol (ly:music-property m 'symbol))
+                              (value (ly:music-property m 'value))
+                              (mod (make <propset> #:once once #:symbol symbol #:value value #:context ctx)))
+                         (set! mods `(,@mods ,mod))
+                         #t
+                         ))
+                      ((or
+                        (eq? 'TextScriptEvent (ly:music-property m 'name))
+                        (eq? 'LineBreakEvent (ly:music-property m 'name))
+                        (eq? 'PageBreakEvent (ly:music-property m 'name))
+                        (eq? 'PageTurnEvent (ly:music-property m 'name))
+                        )
+                       (set! mods `(,@mods ,m))
+                       #t
+                       )
+                      (else #f)
+                      )
+                     )
+                   modmus))
+                (add-mods modm #f)))
+             ((ly:context-mod? modm)(set! mods `(,@mods ,modm)))
+             )
+            (tree-set! mod-tree path mods)
+            #f
+            )))
+  (set! edition-engraver
+        (lambda (tag-path . props)
+          (let ((eng #f)
+                (cmf (if (eq? #t tag-path) (get-music-folder)))) ; current music folder
+            (set! eng (lambda (context)
+                        (let* ((tag-path tag-path)
+                               (tag '())
+                               (barnum 0)
+                               (measurepos (ly:make-moment 0 1))
+                               (get-path (lambda (edition takt pos) `(,edition ,takt ,pos ,@tag)))
+                               (initialize
+                                (lambda (trans)
+                                  (if (procedure? tag-path) (set! tag-path (tag-path)))
+                                  (if (not (list? tag-path))
+                                      (let ((parent (ly:context-parent context))
+                                            (peng #f))
+                                        (define (search-peng path eng)
+                                          (if (eqv? (object-property eng 'context) parent)
+                                              (set! peng eng)))
+                                        (if (ly:context? parent) (walk-edition-engravers search-peng))
+                                        (if peng (set! tag-path (object-property peng 'tag-path)))
+                                        (if (not (list? tag-path))
+                                            (set! tag-path (if (list? cmf) cmf (get-music-folder))))
+                                        ))
+                                  (let* ((cn (ly:context-name context))
+                                         (path `(,@tag-path ,(o->sym cn)))
+                                         (ccid (tree-get context-count path)))
+                                    (if (not (integer? ccid))(set! ccid 0))
+                                    (set! ccid (+ 1 ccid))
+                                    (tree-set! context-count path ccid)
+                                    (set! path `(,@path ,ccid))
+                                    (set! tag path)
+                                    (tree-set! edition-tree path eng)
+
+                                    (set-object-property! eng 'context context)
+                                    (set-object-property! eng 'tag-path tag-path)
+                                    (set-object-property! eng 'path path)
+
+                                    ; (if (lalily:verbose) (ly:message "looking for editions in ~A" (glue-list path "/")))
+                                    )))
+                               (pci (lambda (engraver grob source-engraver)
+                                      (let ((takt (ly:context-property context 'currentBarNumber))
+                                            (pos (ly:context-property context 'measurePosition)))
+                                        (if (eq? #t (ly:grob-property grob 'non-musical))
+                                            (for-each
+                                             (lambda (edition)
+                                               (let* ((path (get-path edition takt pos))
+                                                      (mods (tree-get mod-tree path)))
+                                                 (if (list? mods)
+                                                     (for-each
+                                                      (lambda (mod)
+                                                        (cond
+                                                         ((and (ly:music? mod) (eq? 'LineBreakEvent (ly:music-property mod 'name)))
+                                                          (set! (ly:grob-property grob 'line-break-permission) 'force))
+                                                         ((and (ly:music? mod) (eq? 'PageBreakEvent (ly:music-property mod 'name)))
+                                                          (set! (ly:grob-property grob 'page-break-permission) 'force))
+                                                         ((and (ly:music? mod) (eq? 'PageTurnEvent (ly:music-property mod 'name)))
+                                                          (set! (ly:grob-property grob 'page-turn-permission) 'force))
+                                                         )) mods)))) (editions)))
+                                        )))
+                               (start-translation-timestep
+                                (lambda (trans . recall) ; recall from process-music
+                                  (let ((takt (ly:context-property context 'currentBarNumber))
+                                        (pos (ly:context-property context 'measurePosition))
+                                        (modc '()))
+                                    (define (modc+ mod)(set! modc `(,@modc ,mod)))
+                                    (set! barnum takt)(set! measurepos pos)
+                                    (for-each (lambda (edition)
+                                                (let* ((path (get-path edition takt pos))
+                                                       (mods (tree-get mod-tree path)))
+                                                  ;(display path)(display mods)(newline)
+                                                  (if (list? mods)
+                                                      (for-each (lambda (mod)
+                                                                  (cond
+                                                                   ((override? mod)
+                                                                    (if (is-revert mod)
+                                                                        (do-revert context mod)
+                                                                        (do-override context mod))
+                                                                    (modc+ mod))
+                                                                   ((propset? mod)
+                                                                    (do-propset context mod)
+                                                                    (modc+ mod))
+                                                                   ((and (ly:music? mod) (eq? 'LineBreakEvent (ly:music-property mod 'name)))
+                                                                    (let ((score (ly:context-find context 'Score)))
+                                                                      (ly:context-pushpop-property score 'line-break-permission 'force)
+                                                                      (ly:broadcast (ly:context-event-source score)
+                                                                        (ly:make-stream-event 'line-break-event
+                                                                          '((break-permission . force))))
+                                                                      (modc+ mod)
+                                                                      ))
+                                                                   ((ly:context-mod? mod)
+                                                                    (ly:context-mod-apply! context mod)
+                                                                    (modc+ mod))
+                                                                   )) mods)
+                                                      )
+                                                  )) (editions))
+                                    ; warning if start-translation-timestep is not called in first place
+                                    (if (and (> (length modc) 0)(> (length recall) 0) (eq? #t (car recall)))
+                                        (begin
+                                         (ly:warning "missing @ ~A ~A ~A" takt pos (glue-list tag "/"))
+                                         (for-each (lambda (mod) (ly:warning "---> ~A" mod)) modc)
+                                         ))
+                                    )))
+                               (stop-translation-timestep
+                                (lambda (trans)
+                                  (let ((takt (ly:context-property context 'currentBarNumber))
+                                        (pos (ly:context-property context 'measurePosition)))
+                                    (for-each (lambda (edition)
+                                                (let* ((path (get-path edition takt pos))
+                                                       (mods (tree-get mod-tree path)))
+                                                  (if (list? mods)
+                                                      (for-each (lambda (mod)
+                                                                  (cond
+                                                                   ((and (override? mod)(is-once mod))
+                                                                    (do-revert context mod))
+                                                                   ((and (propset? mod)(is-once mod))
+                                                                    (reset-prop context mod))
+                                                                   ))
+                                                        mods))
+                                                  )) (editions))
+                                    )))
+
+                               (process-music
+                                (lambda (trans)
+                                  (let ((takt (ly:context-property context 'currentBarNumber))
+                                        (pos (ly:context-property context 'measurePosition)))
+                                    ; recall start-translation-timestep, if it is not called already
+                                    (if (or (not (= takt barnum))(not (equal? measurepos pos)))
+                                        (start-translation-timestep trans #t))
+                                    (for-each (lambda (edition)
+                                                (let* ((path (get-path edition takt pos))
+                                                       (mods (tree-get mod-tree path)))
+                                                  (if (list? mods)
+                                                      (for-each (lambda (mod)
+                                                                  (cond
+                                                                   ((and (ly:music? mod) (eq? 'TextScriptEvent (ly:music-property mod 'name)))
+                                                                    (let ((grob (ly:engraver-make-grob trans 'TextScript '()))
+                                                                          (text (ly:music-property mod 'text))
+                                                                          (direction (ly:music-property mod 'direction #f)))
+                                                                      (ly:grob-set-property! grob 'text text)
+                                                                      (if direction (ly:grob-set-property! grob 'direction direction))
+                                                                      ))
+                                                                   ))
+                                                        mods))
+                                                  )) (editions))
+                                    )))
+                               (finalize
+                                (lambda (trans)
+                                  (if (eq? 'Score (ly:context-name context))
+                                      (let* ((takt (ly:context-property context 'currentBarNumber))
+                                             (pos (ly:context-property context 'measurePosition))
+                                             (parser (ly:assoc-get 'parser props #f #f)))
+                                        (if (lalily:verbose)
+                                            (ly:message "(~A) finalize ~A (~A ~A)" 
+                                              (glue-list (editions) ", ")
+                                              (glue-list tag "/")
+                                              takt pos))
+                                        (if parser
+                                            (let* ((outname (ly:parser-output-name parser))
+                                                   (logfile (format "~A.edition.log" outname)))
+                                              (ly:message "writing '~A' ..." logfile)
+                                              (with-output-to-file logfile
+                                                (lambda() 
+                                                  (display-edition)
+                                                  (display "<--- mods --->")(newline)
+                                                  (display-mods)
+                                                  ))
+                                              ))
+                                        ))))
+                               )
+                          `(
+                            (initialize . ,initialize)
+                            (acknowledgers
+                             (paper-column-interface . ,pci)
+                             )
+                            (start-translation-timestep . ,start-translation-timestep)
+                            (stop-translation-timestep . ,stop-translation-timestep)
+                            (process-music . ,process-music)
+                            (finalize . ,finalize)
+                            ))))
+            eng)))
+  (set! walk-edition-engravers
+        (lambda (proc)
+          (tree-walk edition-tree '() ; walk all
+            (lambda (path key value)
+              (proc path value)
+              ) '(empty . #f) '(sort . #f))
+          ))
+  (set! display-mods
+        (lambda ()
+          (tree-display mod-tree
+            `(vformat . ,(lambda (v) (if (list? v)
+                                         (glue-list (map (lambda (e) (cond
+                                                                      ((ly:music? e) (format "M ~A" (ly:music-property e 'name)))
+                                                                      (else (format "~A" e)))) v) "\n") (format "~A" v)))))))
+  (set! display-edition (lambda () (tree-display edition-tree '(value . #f))))
+  )
+
+;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+(define (frac-or-mom? v) (or (fraction? v)(ly:moment? v)))
+(define (music-or-contextmod? v) (or (ly:music? v)(ly:context-mod? v)))
+(define-public editionMod
+  (define-music-function (parser location edition takt pos path mod)
+    (string-or-symbol? integer? frac-or-mom? list? music-or-contextmod?)
+    "Add modification to edition @ measure moment"
+    (if (fraction? pos)(set! pos (ly:make-moment (- (car pos) 1)(cdr pos))))
+    (add-edmod edition takt pos (create-music-path #f path) mod)
+    (make-music 'SequentialMusic 'void #t))
+  )
+
+(define (list-or-boolean? v) (or (boolean? v)(list? v)))
+(define-public editionEngraver
+  (define-scheme-function (parser location tag)(list-or-boolean?)
+    (edition-engraver tag `(parser . ,parser))))
+
