@@ -36,6 +36,7 @@
                     (tree-set! music-tree path music)))
   (set! get-music (lambda (path location)
                     (let ((p (tree-get music-tree path)))
+                      (format #t "~A : ~A\n" (get-current-template) path)
                       (if (ly:music? p) (ly:music-deep-copy p)
                           (begin
                            (if location (ly:input-message location "unknown music '~A'" (glue-list path "/"))
