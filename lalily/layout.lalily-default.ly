@@ -46,7 +46,6 @@
 
 % default layout specs
 \registerLayout #'(lalily default) \layout {
-  \annofile
   \context {
     \ChoirStaff
     \name "SemiChoirStaff"
@@ -58,8 +57,14 @@
         (ly:span-bar::print grob))
   }
   \context {
+    \StaffGroup
+    \name "ChoirGroup"
+    \override SpanBar #'transparent = ##t
+  }
+  \context {
     \Score
     \accepts SemiChoirStaff
+    \accepts ChoirGroup
     \override LyricExtender #'stencil = #lyric-extender::print-applic
   }
   

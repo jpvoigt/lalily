@@ -255,15 +255,16 @@ example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"
         (empty (ly:assoc-get 'empty opt #f #f))
         (dval (ly:assoc-get 'value opt #t #f))
         (vformat (ly:assoc-get 'vformat opt (lambda (v)(format "~A" v)) #f))
-        (pformat (ly:assoc-get 'pformat opt (lambda (v)(format "~A" v)) #f)))
+        (pformat (ly:assoc-get 'pformat opt (lambda (v)(format "~A" v)) #f))
+        (port (ly:assoc-get 'port opt (current-output-port))))
        (tree-walk-branch tree path
          (lambda (path k val)
-                 (format #t "[~A] ~A" (key tree) (string-join (map pformat path) "/" 'infix))
+                 (format #t "[~A] ~A" (key tree) (string-join (map pformat path) "/" 'infix) port)
                  (if (and dval val) (begin
-                       (display ": ")
-                       (display (vformat val))
+                       (display ": " port)
+                       (display (vformat val) port)
                  ))
-                 (newline)
+                 (newline port)
          ) `(sort . ,dosort) `(sortby . ,sortby) `(empty . ,empty) )
 ))
 

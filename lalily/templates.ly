@@ -37,7 +37,7 @@
 
 \registerTemplate #'(NOTFOUND)
 #(define-music-function (parser location piece options)(list? list?)
-   (ly:input-message location "Not template specified for [~A]!" (glue-list piece "/"))
+   (ly:input-message location "No template specified for [~A]!" (glue-list piece "/"))
    (get-music piece location))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
