@@ -132,7 +132,17 @@
                                                                     (format "~A/~A" (ly:moment-main-numerator mom)
                                                                       (ly:moment-main-denominator mom)))
                                                                   "*"))) )))
-  (set! display-template-ref (lambda () (tree-display template-doc)))
+  (set! display-template-ref (lambda ()
+                               (tree-walk-branch template-doc '()
+                                 (lambda (path k val)
+                                   (format #t "[Template] ~A" (glue-list path "/"))
+                                   (if (tree? val) (begin
+                                                    (newline)
+                                                    (tree-display val)
+                                                    ))
+                                   (newline)
+                                   ) '(sort . #t) `(sortby . ,(lambda (p1 p2) (string-ci<? (format "~A" (car p1)) (format "~A" (car p2))))) '(empty . #f))
+                               ))
   )
 
 

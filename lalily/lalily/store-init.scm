@@ -32,6 +32,7 @@
         (let ((incl (ly:assoc-get 'includes options #t #f))
               (reg (ly:assoc-get 'registry options #t #f))
               (templ (ly:assoc-get 'templates options #t #f))
+              (templ-ref (ly:assoc-get 'template-ref options #t #f))
               (pers (ly:assoc-get 'persons options #f #f))
               (mus (ly:assoc-get 'music options #t #f))
               (def (ly:assoc-get 'defaults options #t #f))
