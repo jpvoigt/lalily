@@ -45,11 +45,12 @@
 (define (not-null? v)(not (null? v)))
 (define (symbol-or-string? v)(or (symbol? v)(string? v)))
 
+(re-export lalily:save-def)
 (define-public parserDefine
   (define-music-function (parser location name val)(symbol-or-string? not-null?)
     (if (string? name) (set! name (string->symbol name)))
     (ly:parser-define! parser name val)
-    (set-registry-val lalily:registry-parser-defs `(,@(get-registry-val lalily:registry-parser-defs '()) (,name . ,val)))
+    (lalily:save-def name val)
     (make-music 'SequentialMusic 'void #t)))
 
 (define-public parserDefineMusic

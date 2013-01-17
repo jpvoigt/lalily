@@ -526,3 +526,63 @@
                          ))
              ((finalize trans) (printmsgs))
              )))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; music functions
+
+; activate edition
+(define-public addEdition
+  (define-music-function (parser location edition)(string-or-symbol?)
+    (if (string? edition) (set! edition (string->symbol edition)))
+    (if (not (memq edition (editions))) (set-editions! `(,@(editions) ,edition)))
+    (make-music 'SequentialMusic 'void #t)
+    ))
+
+; deactivate edition
+(define-public removeEdition
+  (define-music-function (parser location edition)(string-or-symbol?)
+    (if (string? edition) (set! edition (string->symbol edition)))
+    (set-editions! (delete edition (editions)))
+    (make-music 'SequentialMusic 'void #t)
+    ))
+
+; create ISMN string with publisher number and title number
+(define-public (create-ismn publisher title)
+  (let ((ismn-list (string->list "9790"))
+        (check 0))
+    (set! ismn-list (append ismn-list (string->list publisher)))
+    (set! ismn-list (append ismn-list (string->list title)))
+    (let ((p 0)(i 0))
+      (for-each (lambda (c)(let ((n (- (char->integer c)(char->integer #\0))))
+                             (set! i (1+ i))
+                             (if (= 0 (modulo i 2))(set! n (* 3 n)))
+                             (set! p (+ p n))
+                             )) ismn-list)
+      (set! check (modulo (- 10 (modulo p 10)) 10) )
+      )
+    (string-append "M " publisher "-" title "-" (number->string check))
+    ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; music functions
+
+(define-public text
+  (define-music-function (parser location tweaks opts txt)((list? '()) (list? '()) markup?)
+    (let ((m (make-music 'TextScriptEvent 'text txt)))
+      (for-each (lambda (p)
+                  (if (pair? p)
+                      (let ((key (car p))
+                            (val (cdr p)))
+                        (cond ((eq? key 'style)
+                               (ly:music-set-property! m 'text (markup #:style val txt)))
+                          (else (ly:music-set-property! m key val)))))) opts)
+      (if (> (length tweaks) 0) (ly:music-set-property! m 'tweaks tweaks))
+      m)))
+(define-public todo
+  (define-music-function (parser location tweaks opts title txt)((list? '()) (list? '()) markup? markup?)
+    (let ((txta (ly:music-function-extract text))
+          (defopts `((style . TBD)(annotation . ,(make-anno 'TODO title txt))())))
+      (txta parser location tweaks (assoc-set-all! defopts opts) title)
+      )))
+

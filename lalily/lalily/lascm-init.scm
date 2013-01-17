@@ -68,17 +68,4 @@
 (re-export getRegistryVal)
 (re-export setRegistryVal)
 
-(define-public (with-append-file fn func)
-   (let ((fport #f))
-     (dynamic-wind
-      (lambda ()
-        (set! fport (open-file fn "a"))
-        (set-current-output-port fport))
-      (lambda () (func) (force-output))
-      (let ((cp (current-output-port)))
-        (lambda ()
-          (set-current-output-port cp)
-          (if (file-port? fport) (close-port fport))
-          (set! fport #f)
-          ))
-      )))
+(re-export with-append-file)

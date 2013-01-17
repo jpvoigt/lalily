@@ -60,6 +60,21 @@
 (define-public (rcaddr l)(caddr (reverse l)))
 (define-public (rcadddr l)(cadddr (reverse l)))
 
+(define-public (with-append-file fn func)
+   (let ((fport #f))
+     (dynamic-wind
+      (lambda ()
+        (set! fport (open-file fn "a"))
+        (set-current-output-port fport))
+      (lambda () (func) (force-output))
+      (let ((cp (current-output-port)))
+        (lambda ()
+          (set-current-output-port cp)
+          (if (file-port? fport) (close-port fport))
+          (set! fport #f)
+          ))
+      )))
+
 (define-public (normalize-path path)
   "create list, removing '.. elements
     example: (normalize-path '(a b .. c d)) ==> '(a c d)"
