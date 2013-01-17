@@ -24,6 +24,7 @@
  (lalily lascm)
  (lalily laly)
  (lalily store)
+ (lalily markup)
  )
 
 ; TODO todo/anno->anno-collect

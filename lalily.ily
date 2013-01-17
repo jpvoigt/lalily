@@ -143,3 +143,5 @@
 \includeOncePattern "lalily" "^templates(\..*)?\.ly$" % once?
 % look for local templates
 \includeOnceIfExists "lalily-templates.ly" % once?
+% look for editions
+\includeOnceIfExists "lalily-edition.ly" % once?
