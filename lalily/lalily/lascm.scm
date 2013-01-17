@@ -31,7 +31,7 @@
 
 (define-public (format-alist l . ind)
   "create string from (a-)list for pretty printing
-    example: (format-alist '((a . 1)(b . 2)))
+                example: (format-alist '((a . 1)(b . 2)))
 ==>  a=1
      b=2"
 (let ((i (if (> (length ind) 1) (cadr ind) 0))
@@ -61,23 +61,23 @@
 (define-public (rcadddr l)(cadddr (reverse l)))
 
 (define-public (with-append-file fn func)
-   (let ((fport #f))
-     (dynamic-wind
-      (lambda ()
-        (set! fport (open-file fn "a"))
-        (set-current-output-port fport))
-      (lambda () (func) (force-output))
-      (let ((cp (current-output-port)))
-        (lambda ()
-          (set-current-output-port cp)
-          (if (file-port? fport) (close-port fport))
-          (set! fport #f)
-          ))
-      )))
+  (let ((fport #f))
+    (dynamic-wind
+     (lambda ()
+       (set! fport (open-file fn "a"))
+       (set-current-output-port fport))
+     (lambda () (func) (force-output))
+     (let ((cp (current-output-port)))
+       (lambda ()
+         (set-current-output-port cp)
+         (if (file-port? fport) (close-port fport))
+         (set! fport #f)
+         ))
+     )))
 
 (define-public (normalize-path path)
   "create list, removing '.. elements
-    example: (normalize-path '(a b .. c d)) ==> '(a c d)"
+                example: (normalize-path '(a b .. c d)) ==> '(a c d)"
 (let ((ret '()))
   (for-each (lambda (e)
               (set! ret (cond ((eq? e '..)(if (> (length ret) 1) (cdr ret) '()))
@@ -98,7 +98,7 @@
 
 (define-public (normalize-path-list path)
   "create list, removing \"..\" elements
-    example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"c\" \"d\")"
+                example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"c\" \"d\")"
 (let ((ret '()))
   (for-each (lambda (e)
               (set! ret (cond ((equal? e "..")(if (> (length ret) 1) (cdr ret) (cdr (reverse (listcwd)))))
@@ -244,9 +244,16 @@
     (reverse (store vals))
     ))
 
+(define (stdsort p1 p2)
+  (let ((v1 (car p1))
+        (v2 (car p2)))
+    (if (and (number? v1) (number? v2))
+        (< v1 v2)
+        (string-ci<? (format "~A" v1) (format "~A" v2))
+        )))
 (define-method (tree-walk (tree <tree>) (path <list>) (callback <procedure>) . opts)
   (let ((dosort (assoc-get 'sort opts))
-        (sortby (assoc-get 'sortby opts (lambda (p1 p2) (string-ci<? (format "~A" (car p1)) (format "~A" (car p2))))))
+        (sortby (assoc-get 'sortby opts stdsort))
         (doempty (assoc-get 'empty opts)))
     (if (or doempty (value tree))
         (callback path (key tree) (value tree)))
@@ -257,7 +264,7 @@
     ))
 (define-method (tree-walk-branch (tree <tree>) (path <list>) (callback <procedure>) . opts)
   (let ((dosort (assoc-get 'sort opts))
-        (sortby (assoc-get 'sortby opts (lambda (p1 p2) (string-ci<? (format "~A" (car p1)) (format "~A" (car p2))))))
+        (sortby (assoc-get 'sortby opts stdsort))
         (doempty (assoc-get 'empty opts))
         (ctree (tree-get-tree tree path)))
     (if (is-a? ctree <tree>)
@@ -266,7 +273,7 @@
 (define-public (tree-display tree . opt)
   (let ((path (ly:assoc-get 'path opt '() #f))
         (dosort (ly:assoc-get 'sort opt #t #f))
-        (sortby (assoc-get 'sortby opt (lambda (p1 p2) (string-ci<? (format "~A" (car p1)) (format "~A" (car p2))))))
+        (sortby (assoc-get 'sortby opt stdsort))
         (empty (ly:assoc-get 'empty opt #f #f))
         (dval (ly:assoc-get 'value opt #t #f))
         (vformat (ly:assoc-get 'vformat opt (lambda (v)(format "~A" v)) #f))

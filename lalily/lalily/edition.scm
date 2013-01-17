@@ -207,12 +207,21 @@
                                   (let* ((cn (ly:context-name context))
                                          (path `(,@tag-path ,(o->sym cn)))
                                          (ccid (tree-get context-count path)))
+                                    (define (topctx context)
+                                      (let ((par (ly:context-find context 'Score)))
+                                        (if (ly:context? par) (topctx par) context)))
                                     (if (not (integer? ccid))(set! ccid 0))
                                     (set! ccid (+ 1 ccid))
                                     (tree-set! context-count path ccid)
                                     (set! path `(,@path ,ccid))
                                     (set! tag path)
-                                    (tree-set! edition-tree path eng)
+                                    (tree-set! edition-tree path
+                                      (cons eng
+                                        (let* ((c context)
+                                               (takt (ly:context-property c 'currentBarNumber))
+                                               (mpos (ly:context-property c 'measurePosition)))
+                                          (cons takt mpos) )))
+
 
                                     (set-object-property! eng 'context context)
                                     (set-object-property! eng 'tag-path tag-path)
@@ -367,9 +376,11 @@
         (lambda (proc)
           (tree-walk edition-tree '() ; walk all
             (lambda (path key value)
-              (proc path value)
+              (proc path (if (pair? value) (car value) value))
               ) '(empty . #f) '(sort . #f))
           ))
+  (set! display-edition (lambda () (tree-display edition-tree
+                                     `(vformat . ,(lambda (p) (format "~A" (if (pair? p) (cdr p) p))))) ))
   (set! display-mods
         (lambda ()
           (tree-display mod-tree
@@ -377,7 +388,6 @@
                                          (glue-list (map (lambda (e) (cond
                                                                       ((ly:music? e) (format "M ~A" (ly:music-property e 'name)))
                                                                       (else (format "~A" e)))) v) "\n") (format "~A" v)))))))
-  (set! display-edition (lambda () (tree-display edition-tree '(value . #f))))
   )
 
 ;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
