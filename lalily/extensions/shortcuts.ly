@@ -113,6 +113,7 @@
 
 \parserDefineMusic #'spanVisible {
   \once \override StaffGroup.SpanBar #'transparent = ##f
+  \once \override StaffGroup.BarLine #'allow-span-bar = ##t
 }
 
 \parserDefine #'T

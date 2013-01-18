@@ -273,7 +273,8 @@
          #{
            \new StaffGroup \with {
              \consists "Keep_alive_together_engraver"
-             \override SpanBar #'transparent = $(if (ly:assoc-get 'mensur options #f #f) #f #t )
+             \override BarLine #'allow-span-bar = $(if (ly:assoc-get 'mensur options #f #f) #t #f )
+             %\override SpanBar #'transparent = $(if (ly:assoc-get 'mensur options #f #f) #f #t )
              \override BarLine #'transparent = $(if (ly:assoc-get 'mensur options #f #f) #t #f )
            } <<
              \stackTemplate ##f #'(staff) ##t $piece $options #'staff $staffs
@@ -281,7 +282,8 @@
          #}
          #{
            \new StaffGroup \with {
-             \override SpanBar #'transparent = $(if (ly:assoc-get 'mensur options #f #f) #f #t )
+             \override BarLine #'allow-span-bar = $(if (ly:assoc-get 'mensur options #f #f) #t #f )
+             %\override SpanBar #'transparent = $(if (ly:assoc-get 'mensur options #f #f) #f #t )
              \override BarLine #'transparent = $(if (ly:assoc-get 'mensur options #f #f) #t #f )
            } <<
              \stackTemplate ##f #'(staff) ##t $piece $options #'staff $staffs
