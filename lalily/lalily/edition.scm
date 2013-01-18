@@ -27,7 +27,22 @@
  (lalily markup)
  )
 
-; TODO todo/anno->anno-collect
+(define-public (moment->string mom)
+  (if (ly:moment? mom)
+      (let ((num (ly:moment-main-numerator mom))
+            (den (ly:moment-main-denominator mom))
+            (gnum (ly:moment-grace-numerator mom))
+            (gden (ly:moment-grace-denominator mom)))
+        (format "(~A/~A~A)" num den
+          (cond
+           ((> gnum 0)(format "+~A/~A" gnum gden))
+           ((< gnum 0)(format "~A/~A" gnum gden))
+           (else "")
+           ))
+        )
+      "(?:?)"
+      ))
+
 
 ;%%%%%%%%%%%%%
 
@@ -103,6 +118,9 @@
 (define-public (walk-edition-engravers proc) #f)
 (define-public (display-mods) #f)
 (define-public (display-edition) #f)
+
+(define-public (contex-find-edition-engraver context) #f)
+
 (define lalily:edition-tags 'lalily:edition-tags)
 (let ((mod-tree (tree-create 'mods))
       (edition-list '())
@@ -331,7 +349,7 @@
                                                                           (annotation (ly:music-property mod 'annotation #f)))
                                                                       (ly:grob-set-property! grob 'text text)
                                                                       (if direction (ly:grob-set-property! grob 'direction direction))
-                                                                      (add-annotation context annotation (glue-list tag "."))
+                                                                      (add-annotation context annotation (glue-list tag " "))
                                                                       ))
                                                                    ))
                                                         mods))
@@ -379,15 +397,40 @@
               (proc path (if (pair? value) (car value) value))
               ) '(empty . #f) '(sort . #f))
           ))
+
+  (set! contex-find-edition-engraver
+        (lambda (context)
+          (let ((peng #f))
+            (define (search-peng path eng)
+              (if (eqv? (object-property eng 'context) context)
+                  (set! peng eng)))
+            (if (ly:context? context) (walk-edition-engravers search-peng))
+            peng
+            )))
+
   (set! display-edition (lambda () (tree-display edition-tree
-                                     `(vformat . ,(lambda (p) (format "~A" (if (pair? p) (cdr p) p))))) ))
+                                     '(pathsep . " ")
+                                     `(vformat . ,(lambda (p) (format "~A" (if (pair? p) (cdr p) p))))
+                                     )))
   (set! display-mods
         (lambda ()
           (tree-display mod-tree
-            `(vformat . ,(lambda (v) (if (list? v)
-                                         (glue-list (map (lambda (e) (cond
-                                                                      ((ly:music? e) (format "M ~A" (ly:music-property e 'name)))
-                                                                      (else (format "~A" e)))) v) "\n") (format "~A" v)))))))
+            '(pathsep . " ")
+            `(pformat . ,(lambda (v) (cond
+                                      ((ly:moment? v) (moment->string v))
+                                      (else (format "~A" v))
+                                      )))
+            `(vformat . ,(lambda (v)
+                           (if (list? v)
+                               (glue-list (map (lambda (e)
+                                                 (cond
+                                                  ((ly:music? e)
+                                                   (let ((ann (ly:music-property e 'annotation)))
+                                                     (if (annotation? ann)
+                                                         (format "[A] ~A: ~A" (title ann) (annotation ann))
+                                                         (format "[M] ~A" (ly:music-property e 'name)))
+                                                     ))
+                                                  (else (format "~A" e)))) v) "\n") (format "~A" v)))))))
   )
 
 ;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -398,7 +441,7 @@
   (define-music-function (parser location edition takt pos path mod)
     (string-or-symbol? integer? frac-or-mom? list? music-or-contextmod?)
     "Add modification to edition @ measure moment"
-    (if (fraction? pos)(set! pos (ly:make-moment (- (car pos) 1)(cdr pos))))
+    (if (fraction? pos)(set! pos (ly:make-moment (car pos)(cdr pos))))
     (add-edmod edition takt pos (create-music-path #f path) mod)
     (make-music 'SequentialMusic 'void #t))
   )
@@ -439,8 +482,17 @@
 (export set-moment!)
 ; position of annotation as string
 (define-method (anno-pos (a <annotation>))
-  (let ((mom (position a)))
-    (format "~A, ~A/~A" (measure a) (+ 1 (ly:moment-main-numerator mom)) (ly:moment-main-denominator mom))
+  (let* ((mom (position a))
+         (num (ly:moment-main-numerator mom))
+         (den (ly:moment-main-denominator mom))
+         (gnum (ly:moment-grace-numerator mom))
+         (gden (ly:moment-grace-denominator mom)))
+    (format "~A, ~A/~A~A" (measure a) (+ 1 num) den
+      (cond
+       ((> gnum 0)(format "+~A:~A" gnum gden))
+       ((< gnum 0)(format "~A:~A" gnum gden))
+       (else "")
+       ))
     ))
 (export anno-pos)
 ; display annotation
@@ -483,12 +535,36 @@
 (define-public (annotations pc) '())
 (define-public (add-annotation context annotation) #f)
 (define-public (annoCollect context) #f)
+(define-public (display-annotations . pcs) #f)
 
 (let ((msgs '())
-      (instance 1)
-      (file-written #f))
+      (msgc 0)
+      (instance 1))
+  (define (file-written file) (get-registry-val `(lalily runtime todolog file ,file) #f))
+  (define (set-file-written file) (set-registry-val `(lalily runtime todolog file ,file) #t))
   (set! annotations
         (lambda (pc) (sort (if pc (filter (lambda (a) (string=? pc (piece a))) msgs) msgs) annotation<?)))
+  (set! display-annotations
+        (lambda (. pcs)
+          (let ((pct #f))
+            (define (display-anns pc)
+              (for-each (lambda (a)
+                          (if (not (equal? pct (piece a)))
+                              (begin
+                               (set! pct (piece a))
+                               (display pct)(newline)
+                               (display "----------------------")(newline)))
+                          (display a)(display ": ")(display (annotation a))(newline))
+                (annotations pc))
+              )
+            (if (> (length pcs) 0)
+                (for-each
+                 (lambda (pc)
+                   (display-anns pc)
+                   )
+                 pcs)
+                (display-anns #f))
+            )))
   (set! add-annotation
         (lambda (context annotation pc)
           (if (annotation? annotation)
@@ -504,29 +580,25 @@
   (set! annoCollect
         (lambda (context)
           (let* ((outname (ly:parser-output-name (get-registry-val lalily:registry-parser)))
-                 (pc (format "~A~3,'0d"
-                       (if (> (length (get-music-folder)) 0)
-                           (string-append (glue-list (get-music-folder) ".") ".internal.") "") instance)
-                   )
+                 (edeng (contex-find-edition-engraver context))
+                 (edpath (if edeng (object-property edeng 'path) #f))
+                 (pc (if edpath
+                         (glue-list edpath " ")
+                         (format "~A~3,'0d"
+                           (if (> (length (get-music-folder)) 0)
+                               (string-append (glue-list (get-music-folder) " ") " internal ") "") instance)
+                         ))
                  (printmsgs (lambda()
-                              (let ((todofile (format "~A-todo.log" outname pc))
-                                    (annos (annotations pc)))
-                                (if (> (length annos) 0)
-                                    (let ((with-output (if file-written with-append-file (begin (ly:message "writing ~A" todofile) with-output-to-file))))
-                                      (set! file-written #t)
-                                      (with-output todofile
-                                        (lambda ()
-                                          (let ((section #f))
-                                            (format #t "~A\n---\n" (if (string? pc) pc (glue-list (get-music-folder) "/")))
-                                            (for-each (lambda (a)
-                                                        (if (not (eq? section (category a)))
-                                                            (begin (set! section (category a))(display section)(newline)(newline)))
-                                                        (display "Takt ")(display a)(newline)
-                                                        (display (markup->string (annotation a)))(newline)(newline))
-                                              annos)
-                                            ))
-                                        ))
-                                    ))))
+                              (let ((todofile (format "~A.todo.log" outname pc)))
+                                (if (> (length msgs) msgc)
+                                    (begin
+                                     (set! msgc (length msgs))
+                                     (if (not (file-written todofile))
+                                         (ly:message "writing '~A'" todofile))
+                                     (set-file-written todofile)
+                                     (with-output-to-file todofile display-annotations)
+                                     ))
+                                )))
                  )
             (set! instance (1+ instance))
             (make-engraver

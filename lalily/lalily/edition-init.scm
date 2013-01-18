@@ -78,12 +78,12 @@
         (c 0))
     (for-each (lambda (a)
                 (set! c (1+ c))
-                (if (not (eq? pc (piece a)))
+                (if (not (equal? pc (piece a)))
                     (begin
                      (set! pc (piece a))
                      (set! ac #f)
                      (if (markup? pc) (append! mups (list (interpret-markup layout (cons `((anno:piece . ,pc)) props) anntitle))) )))
-                (if (not (eq? ac (category a)))
+                (if (not (equal? ac (category a)))
                     (begin
                      (set! ac (category a))
                      (append! mups (list (interpret-markup layout props #{ \markup \fill-line { $(format "~A" ac) \general-align #Y #CENTER \vspace #2 } #})))

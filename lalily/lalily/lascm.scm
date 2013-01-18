@@ -31,7 +31,7 @@
 
 (define-public (format-alist l . ind)
   "create string from (a-)list for pretty printing
-                example: (format-alist '((a . 1)(b . 2)))
+                        example: (format-alist '((a . 1)(b . 2)))
 ==>  a=1
      b=2"
 (let ((i (if (> (length ind) 1) (cadr ind) 0))
@@ -77,7 +77,7 @@
 
 (define-public (normalize-path path)
   "create list, removing '.. elements
-                example: (normalize-path '(a b .. c d)) ==> '(a c d)"
+                        example: (normalize-path '(a b .. c d)) ==> '(a c d)"
 (let ((ret '()))
   (for-each (lambda (e)
               (set! ret (cond ((eq? e '..)(if (> (length ret) 1) (cdr ret) '()))
@@ -98,7 +98,7 @@
 
 (define-public (normalize-path-list path)
   "create list, removing \"..\" elements
-                example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"c\" \"d\")"
+                        example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"c\" \"d\")"
 (let ((ret '()))
   (for-each (lambda (e)
               (set! ret (cond ((equal? e "..")(if (> (length ret) 1) (cdr ret) (cdr (reverse (listcwd)))))
@@ -247,10 +247,11 @@
 (define (stdsort p1 p2)
   (let ((v1 (car p1))
         (v2 (car p2)))
-    (if (and (number? v1) (number? v2))
-        (< v1 v2)
-        (string-ci<? (format "~A" v1) (format "~A" v2))
-        )))
+    (cond
+     ((and (number? v1) (number? v2)) (< v1 v2))
+     ((and (ly:moment? v1) (ly:moment? v2)) (ly:moment<? v1 v2))
+     (else (string-ci<? (format "~A" v1) (format "~A" v2)))
+     )))
 (define-method (tree-walk (tree <tree>) (path <list>) (callback <procedure>) . opts)
   (let ((dosort (assoc-get 'sort opts))
         (sortby (assoc-get 'sortby opts stdsort))
@@ -278,10 +279,11 @@
         (dval (ly:assoc-get 'value opt #t #f))
         (vformat (ly:assoc-get 'vformat opt (lambda (v)(format "~A" v)) #f))
         (pformat (ly:assoc-get 'pformat opt (lambda (v)(format "~A" v)) #f))
+        (pathsep (ly:assoc-get 'pathsep opt "/" #f))
         (port (ly:assoc-get 'port opt (current-output-port))))
     (tree-walk-branch tree path
       (lambda (path k val)
-        (format #t "[~A] ~A" (key tree) (string-join (map pformat path) "/" 'infix) port)
+        (format #t "[~A] ~A" (key tree) (string-join (map pformat path) pathsep 'infix) port)
         (if (and dval val) (begin
                             (display ": " port)
                             (display (vformat val) port)
