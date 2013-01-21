@@ -427,7 +427,7 @@
                                                   ((ly:music? e)
                                                    (let ((ann (ly:music-property e 'annotation)))
                                                      (if (annotation? ann)
-                                                         (format "[A] ~A: ~A" (title ann) (annotation ann))
+                                                         (format "[A] ~A: ~A" (markup->string (title ann)) (markup->string (annotation ann)))
                                                          (format "[M] ~A" (ly:music-property e 'name)))
                                                      ))
                                                   (else (format "~A" e)))) v) "\n") (format "~A" v)))))))
