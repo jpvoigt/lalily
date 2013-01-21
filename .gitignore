@@ -1,4 +1,6 @@
 *~
 *.log
 *.pdf
+*.mid
+*.midi
 lalily-extensions/

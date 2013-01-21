@@ -23,11 +23,11 @@
 (define-public (lalily:parser)(get-registry-val lalily:registry-parser))
 
 (define-public (lalily:save-def name val)
-  (cond
-       ((symbol? name) (assoc-set! (get-registry-val lalily:registry-parser-defs '()) name val))
-       ((string? name) (assoc-set! (get-registry-val lalily:registry-parser-defs '()) (string->symbol name) val))
-       (else (ly:warning "~A not a symbol!" name))
-       ))
+  (if (string? name) (set! name (string->symbol name)))
+  (if (symbol? name)
+      (set-registry-val lalily:registry-parser-defs
+        (assoc-set! (get-registry-val lalily:registry-parser-defs '()) name val))
+      (ly:warning "~A not a symbol!" name)))
 
 (define-public (extent-size ext diff) (cons (- (car ext) diff) (+ (cdr ext) diff) ))
 (define-public (info-message location format . args)
