@@ -27,4 +27,4 @@
 
 (set-registry-val '(lalily store persons file) "persons.txt")
 
-(set-registry-val '(lalily header copyright) #{ \markup { \with-url #"http://www.xn--schne-noten-tfb.de/" "Notensatz Jan-Peter Voigt www.schöne-noten.de" } #})
+(set-registry-val '(lalily header copyright) #{ \markup { \with-url #"https://github.com/jpvoigt/lalily/" "Lilypond with lalily" } #})
