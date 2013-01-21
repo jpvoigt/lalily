@@ -73,6 +73,9 @@
 #(define-public lalilyIncludeOnce (define-music-function (parser location file)(string?)
                                     (ly:input-message location "lalily include not initialized!")
                                     (make-music 'SequentialMusic 'void #t)))
+#(define-public lalilyIncludeScheme (define-music-function (parser location file)(string?)
+                                      (ly:input-message location "lalily include not initialized!")
+                                      (make-music 'SequentialMusic 'void #t)))
 
 \execMusic #(lambda (parser location)
               (begin
@@ -100,9 +103,18 @@
                                                  (ly:input-message location "WARNING: file '~A' not found" file-path))
                                              (make-music 'SequentialMusic 'void #t)
                                              )))
+                 (set! lalilyIncludeScheme (define-music-function (parser location file)(string?)
+                                             (let ((file-path (string-append path-extra "lalily/" file)))
+                                               (set! file-path (normalize-path-string file-path))
+                                               (if (file-exists? file-path)
+                                                   (load-from-path file-path))
+                                               (make-music 'SequentialMusic 'void #t)
+                                               )))
                  )
                (make-music 'SequentialMusic 'void #t)))
 
+%load custom config
+\lalilyIncludeScheme "../lalily-extensions/config.scm"
 
 \lalilyInclude "lali.ly"
 

@@ -552,9 +552,9 @@
                           (if (not (equal? pct (piece a)))
                               (begin
                                (set! pct (piece a))
-                               (display pct)(newline)
+                               (newline)(display pct)(newline)
                                (display "----------------------")(newline)))
-                          (display a)(display ": ")(display (annotation a))(newline))
+                          (display a)(display ": ")(display (markup->string (annotation a)))(newline))
                 (annotations pc))
               )
             (if (> (length pcs) 0)

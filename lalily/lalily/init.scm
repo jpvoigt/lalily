@@ -35,4 +35,5 @@
 
 (let* ((cfn "lalily/config.scm")(config (%search-load-path cfn)))
   (if (and (string? config)(file-exists? config)) (load-from-path cfn)))
+
 (if (lalily:verbose)(ly:message "lalily V ~A @ ~A" (glue-list lalily:version ".") (strftime "%d.%m.%Y %H:%M:%S" lalily:init)))

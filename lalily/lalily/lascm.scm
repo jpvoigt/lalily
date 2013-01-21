@@ -31,7 +31,7 @@
 
 (define-public (format-alist l . ind)
   "create string from (a-)list for pretty printing
-                        example: (format-alist '((a . 1)(b . 2)))
+                                example: (format-alist '((a . 1)(b . 2)))
 ==>  a=1
      b=2"
 (let ((i (if (> (length ind) 1) (cadr ind) 0))
@@ -77,7 +77,7 @@
 
 (define-public (normalize-path path)
   "create list, removing '.. elements
-                        example: (normalize-path '(a b .. c d)) ==> '(a c d)"
+                                example: (normalize-path '(a b .. c d)) ==> '(a c d)"
 (let ((ret '()))
   (for-each (lambda (e)
               (set! ret (cond ((eq? e '..)(if (> (length ret) 1) (cdr ret) '()))
@@ -98,7 +98,7 @@
 
 (define-public (normalize-path-list path)
   "create list, removing \"..\" elements
-                        example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"c\" \"d\")"
+                                example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"c\" \"d\")"
 (let ((ret '()))
   (for-each (lambda (e)
               (set! ret (cond ((equal? e "..")(if (> (length ret) 1) (cdr ret) (cdr (reverse (listcwd)))))
@@ -330,9 +330,16 @@
                            (let ((ret (tree-get vals (if (list? key) key (list key)))))
                              (if ret ret (if (> (length def) 0)(car def) #f)))))
   (set! set-registry-val (lambda (key val) (tree-set! vals (if (list? key) key (list key)) val)))
-  (set! display-registry (lambda () (tree-display vals `(vformat . ,(lambda (v) (let ((str (format "~A" v)))
-                                                                                  (if (> (string-length str) 79)
-                                                                                      (string-append (substring/read-only str 0 76) " ...") str)) )))))
+  (set! display-registry (lambda () (tree-display vals
+                                      `(vformat .
+                                         ,(lambda (v)
+                                            (let ((str (if (markup? v)
+                                                           (markup->string v)
+                                                           (format "~A" v)
+                                                           )))
+                                              (if (> (string-length str) 79)
+                                                  (string-append
+                                                   (substring/read-only str 0 76) " ...") str)) )))))
   )
 
 (define (not-null? val)(if val #t #f))
