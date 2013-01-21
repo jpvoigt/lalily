@@ -104,7 +104,7 @@
    #})
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% second we enter the music and assign it the formaly defined template.
+% second we enter the music and assign it the formerly defined template.
 % As mentioned above, the template is defined/registered here for tutorial purposes.
 % In production, one would use template files in central places
 

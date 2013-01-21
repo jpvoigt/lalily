@@ -31,6 +31,8 @@
 % Now you can add overrides, sets, breaks and TextScripts to the score, 
 % without modifying and polluting the music source.
 
+% this file additionally creates a 02_editionEngraver.todo.log, containing all annotations
+
 % activate an edition called "demo"
 \addEdition demo
 
@@ -49,7 +51,7 @@
 \editionMod demo 2 0/4 #'(Score 1) \override LyricText #'color = #green
 \editionMod demo 3 2/4 #'(Score 1) \revert LyricText #'color
 
-% accessing parent context
+% accessing parent context so stanza is set in all lyrics inside this StaffGroup
 \editionMod demo 9 0/4 #'(bas Lyrics 1) \set StaffGroup.stanza = "St."
 
 % create PDF ... "demo" edition is active
