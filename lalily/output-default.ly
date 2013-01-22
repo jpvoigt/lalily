@@ -16,6 +16,7 @@
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
 \version "2.16.0"
+%%% this file is included by lalily.ily and won't compile itself
 
 \paper {
   % if default paper is set, insert it in global paper specs

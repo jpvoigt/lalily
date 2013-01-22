@@ -16,7 +16,11 @@
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
 \version "2.16.0"
-\include "lalily.ly"
+
+#(define lalily-relincl-tmp (ly:get-option 'relative-includes))
+#(ly:set-option 'relative-includes #t)
+\include "../lalily.ly"
+#(ly:set-option 'relative-includes lalily-relincl-tmp)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% utilities

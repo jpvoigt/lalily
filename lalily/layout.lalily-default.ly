@@ -17,6 +17,11 @@
 
 \version "2.16.0"
 
+#(define lalily-relincl-tmp (ly:get-option 'relative-includes))
+#(ly:set-option 'relative-includes #t)
+\include "../lalily.ly"
+#(ly:set-option 'relative-includes lalily-relincl-tmp)
+
 % stencil: print lyric extender with applications
 #(define (lyric-extender::print-applic grob)
    (let* ((estil (ly:lyric-extender::print grob)) ; the base-extender-stencil

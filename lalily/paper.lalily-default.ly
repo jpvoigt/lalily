@@ -17,6 +17,11 @@
 
 \version "2.16.0"
 
+#(define lalily-relincl-tmp (ly:get-option 'relative-includes))
+#(ly:set-option 'relative-includes #t)
+\include "../lalily.ly"
+#(ly:set-option 'relative-includes lalily-relincl-tmp)
+
 #(define (format-cat n)
    (cond ((list? n)(glue-list (map (lambda (x) (format-cat x)) n) "."))
      ((integer? n)(format "~2,'0d" n))
