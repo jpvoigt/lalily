@@ -107,7 +107,10 @@
                                              (let ((file-path (string-append path-extra "lalily/" file)))
                                                (set! file-path (normalize-path-string file-path))
                                                (if (file-exists? file-path)
-                                                   (load-from-path file-path))
+                                                   (begin
+                                                    (if (lalily:verbose) (ly:message "loading '~A' ..." file-path))
+                                                    (load-from-path file-path)
+                                                    ))
                                                (make-music 'SequentialMusic 'void #t)
                                                )))
                  )
