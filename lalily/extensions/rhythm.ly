@@ -61,3 +61,26 @@
                                                  ) (ly:music-property pat 'elements)))
        )))
 
+% engraver builder
+\parserDefine timeSigChangeEngraver
+#(define-scheme-function (parser location proc)(procedure?)
+   (lambda (context)
+     (let ((last-fraction #f)) ; remember last time-sig-fraction in this context
+       `(
+         (process-music
+          . ,(lambda (trans)
+               (let (; get current time-sig-fraction
+                     (frac (ly:context-property context 'timeSignatureFraction)))
+                 ; compare the current with the last fraction
+                 (if (and (not (equal? last-fraction frac))
+                          (pair? frac))
+                     ; if they are not equal, do something ...
+                     (begin
+                      ; action for this engraver
+                      (proc context trans)
+                      ; set last-fraction
+                      (set! last-fraction frac)
+                      )))))
+         )
+       )))
+
