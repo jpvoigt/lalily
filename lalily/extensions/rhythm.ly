@@ -72,8 +72,7 @@
                (let (; get current time-sig-fraction
                      (frac (ly:context-property context 'timeSignatureFraction)))
                  ; compare the current with the last fraction
-                 (if (and (not (equal? last-fraction frac))
-                          (pair? frac))
+                 (if (and (pair? frac)(not (equal? last-fraction frac)))
                      ; if they are not equal, do something ...
                      (begin
                       ; action for this engraver

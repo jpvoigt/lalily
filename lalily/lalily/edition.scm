@@ -334,7 +334,7 @@
                                   (let ((takt (ly:context-property context 'currentBarNumber))
                                         (pos (ly:context-property context 'measurePosition)))
                                     ; recall start-translation-timestep, if it is not called already
-                                    (if (or (not (= takt barnum))(not (equal? measurepos pos)))
+                                    (if (or (not (equal? takt barnum))(not (equal? measurepos pos)))
                                         (start-translation-timestep trans #t))
                                     (for-each (lambda (edition)
                                                 (let* ((path (get-path edition takt pos))
