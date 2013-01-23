@@ -472,7 +472,7 @@
                                     )
                                    ))
           ))
-    (define-music-function (parser location grob dy)(string? shy-type?)
+    (define-music-function (parser location dy grob)(shy-type? string?)
       (let ((shape-fun (ly:music-function-extract shape))
             (mod-fun (lambda (m) (cond ((number-pair? m)
                                         (let ((dy (car m))(dz (cdr m)))
@@ -484,12 +484,12 @@
                                    (else (ly:input-warning location "type??? ~A ~A ~A" m grob dy) '((0 . 0)(0 . 0)(0 . 0)(0 . 0)))
                                    )
                        )))
-        (shape-fun parser location grob
+        (shape-fun parser location 
           (if (list? dy)
               (map (lambda (y) (mod-fun y)) dy)
               (mod-fun dy)
               )
-          )))
+          grob)))
     ))
 (define-public stretch
   (let ((nol? (lambda (v)(or (number? v)(and (list v)(every number? v))))))
