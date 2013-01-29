@@ -410,7 +410,11 @@
 
   (set! display-edition (lambda () (tree-display edition-tree
                                      '(pathsep . " ")
-                                     `(vformat . ,(lambda (p) (format "~A" (if (pair? p) (cdr p) p))))
+                                     `(vformat . ,(lambda (p) (let ((m (if (pair? p) (cdr p) p)))
+                                                                (if (and (pair? m)(ly:moment? (cdr m)))
+                                                                    (format "(~A . ~A)" (car m)(moment->string (cdr m)))
+                                                                    (format "~A" m))
+                                                                )))
                                      )))
   (set! display-mods
         (lambda ()
@@ -446,7 +450,7 @@
     (make-music 'SequentialMusic 'void #t))
   )
 
-(define (list-or-boolean? v) (or (boolean? v)(list? v)))
+(define (list-or-boolean? v) (or (boolean? v)(list? v)(procedure? v)))
 (define-public editionEngraver
   (define-scheme-function (parser location tag)(list-or-boolean?)
     (edition-engraver tag `(parser . ,parser))))

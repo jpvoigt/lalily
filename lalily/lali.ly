@@ -108,7 +108,7 @@
                 $(get-music-folder-layout location)
                 \context {
                   \Score
-                  \consists \editionEngraver ##f
+                  \consists \editionEngraver #(get-music-folder)
                   \consists \annoCollect
                 }
                 \context {
@@ -213,7 +213,7 @@
                 $(get-music-folder-layout location)
                 \context {
                   \Score
-                  \consists \editionEngraver ##f
+                  \consists \editionEngraver #(get-music-folder)
                   \consists \annoCollect
                 }
                 \context {
