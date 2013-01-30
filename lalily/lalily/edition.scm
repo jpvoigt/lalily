@@ -365,7 +365,7 @@
                                             (ly:message "(~A) finalize ~A (~A ~A)"
                                               (glue-list (editions) ", ")
                                               (glue-list tag "/")
-                                              takt pos))
+                                              takt (if (ly:moment? pos) (moment->string pos) pos)))
                                         (if parser
                                             (let* ((outname (ly:parser-output-name parser))
                                                    (logfile (format "~A.edition.log" outname)))
