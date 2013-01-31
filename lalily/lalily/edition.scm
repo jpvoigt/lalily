@@ -119,7 +119,7 @@
 (define-public (display-mods) #f)
 (define-public (display-edition) #f)
 
-(define-public (contex-find-edition-engraver context) #f)
+(define-public (context-find-edition-engraver context) #f)
 
 (define lalily:edition-tags 'lalily:edition-tags)
 (let ((mod-tree (tree-create 'mods))
@@ -398,7 +398,7 @@
               ) '(empty . #f) '(sort . #f))
           ))
 
-  (set! contex-find-edition-engraver
+  (set! context-find-edition-engraver
         (lambda (context)
           (let ((peng #f))
             (define (search-peng path eng)
@@ -584,7 +584,7 @@
   (set! annoCollect
         (lambda (context)
           (let* ((outname (ly:parser-output-name (get-registry-val lalily:registry-parser)))
-                 (edeng (contex-find-edition-engraver context))
+                 (edeng (context-find-edition-engraver context))
                  (edpath (if edeng (object-property edeng 'path) #f))
                  (pc (if edpath
                          (glue-list edpath " ")

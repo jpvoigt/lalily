@@ -19,6 +19,30 @@
 
 (use-modules (lily)(lalily lascm)(lalily laly))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; path substitution
+
+(define (reg-path p) `(lalily runtime store path ,p))
+(define-public (register-path name path)
+  (if (and (eq? #\$ (string-ref (format "~A" name) 0)) (list? path))
+      (set-registry-val (reg-path name) path)
+      (ly:warning "path substitutes have to start with '$'! (~A)" name)))
+(define-public (unfold-path path uncyc)
+  (let ((pemp '()))
+    (if (not (list? uncyc)) (set! uncyc (list)))
+    (for-each (lambda (p)
+                (if (and (eq? #\$ (string-ref (format "~A" p) 0)) (not (memq p uncyc)))
+                    (let ((subst (get-registry-val (reg-path p) #f)))
+                      (set! pemp (append pemp (if (list? subst) (unfold-path subst (cons p uncyc)) (list p)))))
+                    (set! pemp (append pemp (list p)))
+                    )) path)
+    pemp))
+(define-public registerPath (define-music-function (parser location name path)(string-or-symbol? list?)
+                              (if (symbol? name) (set! name (symbol->string name)))
+                              (if (not (eq? #\$ (string-ref name 0)))
+                                  (set! name (string-append "$" name)))
+                              (register-path (string->symbol name) path)
+                              (make-music 'SequentialMusic 'void #t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; store music in a tree
@@ -194,13 +218,16 @@
     (if tabs path
         (let ((cpart (get-current-template)))
           (normalize-path (if (list? cpart)(append cpart path) path))))))
+
 (define-public (create-music-path mabs path)
   (let ((path (if (and (not mabs)(list? path)(> (length path) 0)(eq? '/ (car path))) (cdr path) path))
         (mabs (or mabs (and (list? path)(> (length path) 0)(eq? '/ (car path))))))
-    (if mabs path
-        (let ((cpart (get-current-music)))
-          (if (not (list? cpart)) (set! cpart (get-music-folder)))
-          (normalize-path (if (list? cpart)(append cpart path) path))))))
+    (unfold-path
+     (if mabs path
+         (let ((cpart (get-current-music)))
+           (if (not (list? cpart)) (set! cpart (get-music-folder)))
+           (normalize-path (if (list? cpart)(append cpart path) path))
+           )) '() )))
 
 (define-public musicPath (define-scheme-function (parser location path)(list?)(create-music-path #f path)))
 (define-public templatePath (define-scheme-function (parser location path)(list?)(create-template-path #f path)))
