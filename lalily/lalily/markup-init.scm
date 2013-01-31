@@ -75,8 +75,8 @@
 (define-public (diff-composer layout props arg)
         (let ((composername (chain-assoc-get 'header:composername props ""))
               (bookname (chain-assoc-get 'header:bookname props "")))
-             (if (not (string? composername))(set! composername ""))
-             (if (not (string? bookname))(set! bookname ""))
+             (if (not (string? composername))(set! composername (markup->string composername #f layout)))
+             (if (not (string? bookname))(set! bookname (markup->string bookname #f layout)))
              (if (or
                    (string=? composername bookname)
                    (string=? composername "")

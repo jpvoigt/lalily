@@ -102,7 +102,7 @@
                        
                        (else (ly:input-message location "unknown person-element: (~A) ~A" act key)))
        ))
-       (symorpair? (lambda (v) (or (markup? v)(symbol? v)(and (pair? v)(string? (car v))(string? (cdr v)))))))
+       (symorpair? (lambda (v) (or (markup? v)(symbol? v)(and (pair? v)(markup? (car v))(markup? (cdr v)))))))
       (set! setComposer (define-music-function (parser location key)(symorpair?)
           (set-person! parser location (get-music-folder) 'composer key)
           (make-music 'SequentialMusic 'void #t)))
