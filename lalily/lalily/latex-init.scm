@@ -26,6 +26,8 @@
 (define-markup-list-command (xelatex layout props m)(markup-list?)
   (tex-markup-list layout props 
     `("\\usepackage{xunicode}" "\\usepackage[T1]{fontspec}" 
-      ,(format "\\setmainfont{~A}" (chain-assoc-get 'font-family props "DejaVu Serif")))
+      "\\defaultfontfeatures{Mapping=tex-text}"
+      ,(format "\\setmainfont{~A}" (chain-assoc-get 'font-family props "DejaVu Serif"))
+      )
     "xelatex" "-interaction=batchmode" m))
 
