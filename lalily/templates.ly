@@ -389,3 +389,33 @@
          \keepWithTag #'bassi \stackTemplate ##f #'(.. staff lyrics) ##t $piece $(assoc-set! options 'lyric-voice vocs)  #'verse $vv
        >>
      #}))
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Piano
+
+\registerTemplate #'(piano)
+#(define-music-function (parser location piece options)(list? list?)
+   #{
+     \new PianoStaff \with {
+       \override StaffGrouper #'staff-staff-spacing = #'((basic-distance . 6)(minimum-distance . 1)(padding . 1)(stretchability . 4))
+     } <<
+       \new Staff \with {
+         \consists \editionEngraver \musicPath #'(right)
+       } <<
+         \keepWithTag #'piano-right \getMusicDeep #'meta
+         \keepWithTag #'piano-right { \getMusic {} #'(global) \getMusic #'(right) }
+       >>
+       \new Dynamics \with {
+         \consists \editionEngraver $piece
+         \override DynamicText #'padding = #1
+       } { \getMusic {} #'(dynamics) }
+       \new Staff <<
+         \keepWithTag #'piano-left \getMusicDeep #'meta
+         \keepWithTag #'piano-left { \getMusic {} #'(global) \clef $(ly:assoc-get 'piano-left-clef options "bass" #f) \getMusic #'(left) }
+       >>
+       \new Dynamics \with {
+         \consists \editionEngraver $piece
+         \override DynamicText #'padding = #1
+       } \getMusic {} #'(pedal)
+     >>
+   #})
