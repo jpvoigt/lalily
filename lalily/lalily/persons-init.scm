@@ -30,57 +30,78 @@
 (define-public (get-person-name key)
   (let ((p (get-person (get-person-store) key)))
     (if (person? p)(person-name p) #f)))
+(define-public getPersonName
+  (define-scheme-function (parser location key)(string-or-symbol?)
+    (if (string? key) (set! key (string->symbol key)))
+    (let ((p (get-person (get-person-store) key)))
+      (if (person? p)(person-name p)
+          (begin (ly:input-warning location "unknown person '~A'" key)
+            (format "?~A" key))
+          ))))
 (define-public (get-person-life key)
   (let ((p (get-person (get-person-store) key)))
     (if (person? p)(person-life p) #f)))
+(define-public getPersonLife
+  (define-scheme-function (parser location key)(string-or-symbol?)
+    (if (string? key) (set! key (string->symbol key)))
+    (let ((p (get-person (get-person-store) key)))
+      (if (person? p)(person-life p)
+          (begin (ly:input-warning location "unknown person '~A'" key)
+            (format "(*?~A)" key))
+          ))))
+
 
 (re-export get-person-store)
 (re-export set-person-store!)
 (define-public (display-person-store)(display-persons (get-person-store)))
 
-(define-public registerPerson (define-music-function (parser location sym name life)(symbol? string? string?)
-                                (register-person! (get-person-store) sym name life)
-                                (make-music 'SequentialMusic 'void #t)))
+(define-public registerPerson
+  (define-music-function (parser location sym name life)(string-or-symbol? string? string?)
+    (if (string? sym) (set! sym (string->symbol sym)))
+    (register-person! (get-person-store) sym name life)
+    (make-music 'SequentialMusic 'void #t)))
 
 
 (define-public setComposer #f)
 (define-public setPoet #f)
 (define-public setArranger #f)
-(let* ((mups `((composer . ,(markup
-                             #:on-the-fly diff-composer (make-execMarkup-markup (lambda (layout props)
-                                                                                  (let ((composerpre (chain-assoc-get 'header:composerpre props
-                                                                                                       (if (or (chain-assoc-get 'header:arranger props #f) (chain-assoc-get 'header:poet props #f))
-                                                                                                           (get-registry-val '(lalily person composer pre) "Musik:") "")))
-                                                                                        (composername (chain-assoc-get 'header:composername props #f))
-                                                                                        (composerlife (chain-assoc-get 'header:composerlife props ""))
-                                                                                        (composition (chain-assoc-get 'header:composition props #f)))
-                                                                                    (if (not (markup? composerpre)) (set! composerpre ""))
-                                                                                    (if composername
-                                                                                        (if composition
-                                                                                            #{ \markup \line { $composerpre \override #'(baseline-skip . 2) \left-column { $composername \smaller \smaller $composerlife } $composition } #}
-                                                                                            #{ \markup \line { $composerpre $composername \smaller \smaller $composerlife } #})
-                                                                                        ""))))
-                             ))
-               (arranger . ,(markup (make-execMarkup-markup (lambda (layout props)
-                                                              (let ((arrangerpre (chain-assoc-get 'header:arrangerpre props (get-registry-val '(lalily person arranger pre) "Satz:")))
-                                                                    (arrangername (chain-assoc-get 'header:arrangername props #f))
-                                                                    (arrangerlife (chain-assoc-get 'header:arrangerlife props ""))
-                                                                    (arrangement (chain-assoc-get 'header:arrangement props #f)))
-                                                                (if arrangername
-                                                                    (if arrangement #{ \markup \line { $arrangerpre \override #'(baseline-skip . 2) \left-column { $arrangername \smaller \smaller $arrangerlife } $arrangement } #}
-                                                                        #{ \markup \line { $arrangerpre $arrangername \smaller \smaller $arrangerlife } #})
-                                                                    ""))))
+(let* ((mups `((composer . ,(markup #:on-the-fly diff-composer 
+                              (make-execMarkup-markup (lambda (layout props)
+                                                        (let ((composerpre (chain-assoc-get 'header:composerpre props
+                                                                             (if (or (chain-assoc-get 'header:arranger props #f) (chain-assoc-get 'header:poet props #f))
+                                                                                 (get-registry-val '(lalily person composer pre) "Musik:") "")))
+                                                              (composername (chain-assoc-get 'header:composername props #f))
+                                                              (composerlife (chain-assoc-get 'header:composerlife props ""))
+                                                              (composition (chain-assoc-get 'header:composition props #f)))
+                                                          (if (not (markup? composerpre)) (set! composerpre ""))
+                                                          (if composername
+                                                              (if composition
+                                                                  #{ \markup \line { $composerpre \override #'(baseline-skip . 2) \left-column { $composername \smaller \smaller $composerlife } $composition } #}
+                                                                  #{ \markup \line { $composerpre $composername \smaller \smaller $composerlife } #})
+                                                              ""))))
                               ))
-               (poet . ,(markup (make-execMarkup-markup (lambda (layout props)
-                                                          (let ((poetpre (chain-assoc-get 'header:poetpre props (get-registry-val '(lalily person poet pre) "Text:")))
-                                                                (poetname (chain-assoc-get 'header:poetname props #f))
-                                                                (poetlife (chain-assoc-get 'header:poetlife props ""))
-                                                                (poem (chain-assoc-get 'header:poem props #f)))
-                                                            (if poetname
-                                                                (if poem #{ \markup \line { Text: \override #'(baseline-skip . 2) \left-column { $poetname \smaller \smaller $poetlife } $poem } #}
-                                                                    #{ \markup \line { Text: $poetname \smaller \smaller $poetlife } #})
-                                                                ""))))
-                          ))
+               (arranger . ,(markup
+                             (make-execMarkup-markup (lambda (layout props)
+                                                       (let ((arrangerpre (chain-assoc-get 'header:arrangerpre props (get-registry-val '(lalily person arranger pre) "Satz:")))
+                                                             (arrangername (chain-assoc-get 'header:arrangername props #f))
+                                                             (arrangerlife (chain-assoc-get 'header:arrangerlife props ""))
+                                                             (arrangement (chain-assoc-get 'header:arrangement props #f)))
+                                                         (if arrangername
+                                                             (if arrangement #{ \markup \line { $arrangerpre \override #'(baseline-skip . 2) \left-column { $arrangername \smaller \smaller $arrangerlife } $arrangement } #}
+                                                                 #{ \markup \line { $arrangerpre $arrangername \smaller \smaller $arrangerlife } #})
+                                                             ""))))
+                             ))
+               (poet . ,(markup
+                         (make-execMarkup-markup (lambda (layout props)
+                                                   (let ((poetpre (chain-assoc-get 'header:poetpre props (get-registry-val '(lalily person poet pre) "Text:")))
+                                                         (poetname (chain-assoc-get 'header:poetname props #f))
+                                                         (poetlife (chain-assoc-get 'header:poetlife props ""))
+                                                         (poem (chain-assoc-get 'header:poem props #f)))
+                                                     (if poetname
+                                                         (if poem #{ \markup \line { Text: \override #'(baseline-skip . 2) \left-column { $poetname \smaller \smaller $poetlife } $poem } #}
+                                                             #{ \markup \line { Text: $poetname \smaller \smaller $poetlife } #})
+                                                         ""))))
+                         ))
                ))
        (set-person! (lambda (parser location piece act key)
                       (cond ((markup? key)(set-default-header parser location piece act key))

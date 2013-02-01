@@ -39,7 +39,12 @@
   (define (indsp n)(if (> n 0) (string-append istr (indsp (- n 1))) ""))
   (cond
    ((and (pair? l)(markup? (cdr l)))(format "~A~A=~A~&" (indsp (+ i 1)) (car l) (markup->string (cdr l))))
-   ((and (list? l)(not (dotted-list? l)))(let ((ret ""))(for-each (lambda (e)(set! ret (string-append ret (format-alist e istr (+ i 1))))) l) ret))
+   ((and (list? l)(not (dotted-list? l))(any pair? l))
+    (let ((ret ""))
+      (for-each (lambda (e)
+                  (set! ret (string-append ret (format-alist e istr (+ i 1)))))
+        l)
+      ret))
    ((pair? l)(let ((k (car l))(v (cdr l)))(format "~A~A=~A~&" (indsp (+ i 1)) k v)))
    (else (format "~A~A~&" (indsp i) l)))
   ))

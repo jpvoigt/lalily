@@ -289,7 +289,7 @@
              ((list? mup)
               (for-each (lambda (m)(set! result (string-append result (if (or conc (string=? result "")) "" " ") (la:markup->string m conc layout props))))
                         (filter mup? mup)))
-             (else (ly:message "markup->string: '~A'" mup)))
+             (else (set! result (format "?~A?" mup))(ly:message "markup->string: '~A'" mup)))
        result))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
