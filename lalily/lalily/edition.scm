@@ -349,6 +349,7 @@
                                                                           (annotation (ly:music-property mod 'annotation #f)))
                                                                       (ly:grob-set-property! grob 'text text)
                                                                       (if direction (ly:grob-set-property! grob 'direction direction))
+                                                                      ; title/instrumentName
                                                                       (add-annotation context annotation (glue-list tag " "))
                                                                       ))
                                                                    ))
@@ -588,6 +589,7 @@
           (let* ((outname (ly:parser-output-name (get-registry-val lalily:registry-parser)))
                  (edeng (context-find-edition-engraver context))
                  (edpath (if edeng (object-property edeng 'path) #f))
+                 ; title/instrumentName
                  (pc (if edpath
                          (glue-list edpath " ")
                          (format "~A~3,'0d"
