@@ -71,11 +71,14 @@
     \vspace #0.5
   } } #})
 
+
 (define-markup-list-command (annolist layout props)()
-  (let ((mups (list (interpret-markup layout props #{ \markup \fill-line { \huge \bold "Anmerkungen" } #})))
-        (pc #f)
-        (ac #f)
-        (c 0))
+  (let* ((header (ly:assoc-get 'paper:annoTitle props #{ \markup \column { \fill-line { \huge \bold "Annotations" } \vspace#0.3 } #} #f))
+         (mups (list (interpret-markup layout props header)))
+         (path (ly:chain-assoc-get 'anno-filter props #f #f))
+         (pc #f)
+         (ac #f)
+         (c 0))
     (for-each (lambda (a)
                 (set! c (1+ c))
                 (if (not (equal? pc (piece a)))
@@ -93,7 +96,7 @@
                                                                 (anno:position . ,(anno-pos a))
                                                                 (anno:title . ,(title a))
                                                                 (anno:text . ,(annotation a))) props) annentry))))
-      (annotations #f))
+      (annotations path))
     mups
     ))
 

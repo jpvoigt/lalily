@@ -409,7 +409,9 @@
          \consists \editionEngraver $piece
          \override DynamicText #'padding = #1
        } { \getMusic {} #'(dynamics) }
-       \new Staff <<
+       \new Staff \with {
+         \consists \editionEngraver \musicPath #'(left)
+       } <<
          \keepWithTag #'piano-left \getMusicDeep #'meta
          \keepWithTag #'piano-left { \getMusic {} #'(global) \clef $(ly:assoc-get 'piano-left-clef options "bass" #f) \getMusic #'(left) }
        >>

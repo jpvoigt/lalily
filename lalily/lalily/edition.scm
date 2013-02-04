@@ -491,7 +491,7 @@
          (den (ly:moment-main-denominator mom))
          (gnum (ly:moment-grace-numerator mom))
          (gden (ly:moment-grace-denominator mom)))
-    (format "~A, ~A/~A~A" (measure a) (+ 1 num) den
+    (format "~A, ~A/~A~A" (measure a) num den
       (cond
        ((> gnum 0)(format "+~A:~A" gnum gden))
        ((< gnum 0)(format "~A:~A" gnum gden))
@@ -547,7 +547,9 @@
   (define (file-written file) (get-registry-val `(lalily runtime todolog file ,file) #f))
   (define (set-file-written file) (set-registry-val `(lalily runtime todolog file ,file) #t))
   (set! annotations
-        (lambda (pc) (sort (if pc (filter (lambda (a) (string=? pc (piece a))) msgs) msgs) annotation<?)))
+        (lambda (pc) 
+          (ly:message "annotations ~A" pc)
+          (sort (if (string? pc) (filter (lambda (a) (string=? pc (piece a))) msgs) msgs) annotation<?)))
   (set! display-annotations
         (lambda (. pcs)
           (let ((pct #f))

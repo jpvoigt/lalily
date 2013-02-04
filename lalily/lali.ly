@@ -256,6 +256,30 @@
      #f
      ))
 
+\parserDefine lalilyBookparts
+#(define-scheme-function (parser location options)(list?)
+   (let* ((lbpf (ly:music-function-extract lalilyBookpartScore))
+          (keys (ly:assoc-get 'keys options (ly:assoc-get 'keys (get-music-folder-options location)) #f))
+          (mus (ly:assoc-get 'music options
+                 (let ((p (get-music-folder)))
+                   (map
+                    (lambda (k) (create-music-path #f (list k)))
+                    (if (and (list? keys)(> (length keys) 0))
+                        keys
+                        (let* ((keys (get-music-keys p #f))
+                               (kformat (lambda (k) (if (number? k) (format "~5,'0d" k)(format "~A" k))))
+                               (sfun (lambda (k1 k2) (string<? (kformat k1) (kformat k2)))))
+                          (sort keys sfun)) )))
+                 #f))
+          )
+     (for-each (lambda (music)
+                 (let ((ctx (get-music-folder)))
+                   (set-music-folder! music)
+                   (lbpf parser location options)
+                   (set-music-folder! ctx)
+                   )) mus)
+     ))
+
 % test versions of above commands, executed only, if test predicate is met
 % default: name of location equals name of parser output
 \parserDefine lalilyTestScore
@@ -279,6 +303,14 @@
    (if ((get-registry-val '(lalily runtime test-predicate) lalily-test-location?) parser location)
        (begin
         ((ly:music-function-extract lalilyBookpartScore) parser location options)
+        (write-lalily-log-file parser)
+        ))
+   )
+\parserDefine lalilyTestBookparts
+#(define-scheme-function (parser location options)(list?)
+   (if ((get-registry-val '(lalily runtime test-predicate) lalily-test-location?) parser location)
+       (begin
+        ((ly:music-function-extract lalilyBookparts) parser location options)
         (write-lalily-log-file parser)
         ))
    )
