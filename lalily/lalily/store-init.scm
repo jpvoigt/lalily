@@ -48,17 +48,17 @@
           (if reg (begin
                    (display "Registry: ---")(newline)
                    (display-registry)
-                    (newline)
+                   (newline)
                    ))
           (if templ (begin
                      (display "Templates: ---")(newline)
                      (display-templates)
-                    (newline)
+                     (newline)
                      ))
           (if templ-ref (begin
                          (display "Template reference: ---")(newline)
                          (display-template-ref)
-                    (newline)
+                         (newline)
                          ))
           (if pers (begin
                     (display "Personen: ---")(newline)
@@ -68,12 +68,12 @@
           (if mus (begin
                    (display "Musik: ---")(newline)
                    (display-music-pieces)
-                    (newline)
+                   (newline)
                    ))
           (if def (begin
                    (display "Musik Default: ---")(newline)
                    (display-default-music)
-                    (newline)
+                   (newline)
                    ))
           (if quot (begin
                     (display "Musik Quotes: ---")(newline)
@@ -446,13 +446,13 @@
   (define-music-function (parser location path)(list?)
     (let* ((p (create-music-path #f path)))
       (track-quote p location)
-      #{ #}
+      (make-music 'SequentialMusic 'void #t)
       )))
 (define-public aCreateQuote
   (define-music-function (parser location path)(list?)
     (let* ((p (create-music-path #t path)))
       (track-quote p location)
-      #{ #}
+      (make-music 'SequentialMusic 'void #t)
       )))
 
 (define-public aCueMusic
@@ -463,12 +463,41 @@
         \cueDuring $(quote-name p) $dir $mus
       #})))
 (define-public cueMusic
-  (define-music-function (parser location path dir mus)(list? integer? ly:music?)
-    (let* ((p (create-music-path #f path)))
+  (define-music-function (parser location path opts dir mus)(list? (list? '()) integer? ly:music?)
+    (let ((p (create-music-path #f path))
+          (cuename (ly:assoc-get 'cuename opts #f #f))
+          (instrname (ly:assoc-get 'instrname opts #f #f))
+          (clef (ly:assoc-get 'clef opts #f #f))
+          (transp (ly:assoc-get 'transpose opts (ly:make-pitch 0 0 0) #f))
+          (resetVoice (ly:assoc-get 'resetVoice opts #{ \oneVoice #} #f)))
+      (define (strmup? v)
+        (or (and (string? v)(not (string-null? v)))
+            (and (not (string? v))(markup? v))))
+      ;(ly:message "cuename: ~A ~A" cuename (strmup? cuename))
       (track-quote p location)
       #{
-        \cueDuring $(quote-name p) $dir $mus
-      #})))
+        <<
+          \tag #'cued \new CueVoice = cue {
+            $(if (eq? dir UP) #{ \voiceOne #} #{ \voiceTwo #})
+            $(if (strmup? cuename) #{
+                       \once \override InstrumentSwitch #'direction = #(if (eq? dir UP) UP DOWN)
+                       \set instrumentCueName = #(markup #:concat ("(" cuename ")"))
+                 #} #{ \unset instrumentCueName #})
+            $(if (string? clef) #{ \cueClef $clef #})
+            \transpose c' $transp \quoteDuring $(quote-name p) $(skip-of-length mus)
+            $(if (string? clef) #{ \cueClefUnset #})
+            $(if (strmup? instrname) #{
+                       \set instrumentCueName = #(markup #:concat ("(" instrname ")"))
+                 #} #{ \unset instrumentCueName #})
+          }
+          {
+            \tag #'cued $(if (eq? dir UP) #{ \voiceTwo #} #{ \voiceOne #})
+            $mus
+          }
+        >>
+        \tag #'cued $resetVoice
+      #}
+      )))
 (define-public aQuoteMusic
   (define-music-function (parser location path mus)(list? ly:music?)
     (let* ((p (create-music-path #t path)))
