@@ -38,6 +38,8 @@
 (re-export rcaddr)
 (re-export rcadddr)
 
+(re-export base26)
+
 (re-export normalize-path-list)
 (re-export normalize-path-string)
 

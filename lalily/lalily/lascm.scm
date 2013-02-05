@@ -65,6 +65,21 @@
 (define-public (rcaddr l)(caddr (reverse l)))
 (define-public (rcadddr l)(cadddr (reverse l)))
 
+(define-public (base26 i)
+   (let ((A (char->integer #\A)))
+     (define (alplst c)
+       (let ((ret '())
+             (q (quotient c 26))
+             (r (remainder c 26)))
+         (if (> q 0) (set! ret (alplst q)))
+         (set! ret `(,@ret ,(integer->char (+ A (- r 1)))))
+         ret
+         ))
+     (if (< i 1)
+         'a
+         (list->string (alplst i)))
+     ))
+
 (define-public (with-append-file fn func)
   (let ((fport #f))
     (dynamic-wind

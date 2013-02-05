@@ -202,6 +202,7 @@
         (lambda (tag-path . props)
           (let ((eng #f)
                 (cmf (if (eq? #t tag-path) (get-music-folder)))) ; current music folder
+            (define (get-sym c)(string->symbol (base26 c)))
             (set! eng (lambda (context)
                         (let* ((tag-path tag-path)
                                (tag '())
@@ -231,7 +232,7 @@
                                     (if (not (integer? ccid))(set! ccid 0))
                                     (set! ccid (+ 1 ccid))
                                     (tree-set! context-count path ccid)
-                                    (set! path `(,@path ,ccid))
+                                    (set! path `(,@path ,(get-sym ccid)))
                                     (set! tag path)
                                     (tree-set! edition-tree path
                                       (cons eng
