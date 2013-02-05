@@ -549,7 +549,6 @@
   (define (set-file-written file) (set-registry-val `(lalily runtime todolog file ,file) #t))
   (set! annotations
         (lambda (pc) 
-          (ly:message "annotations ~A" pc)
           (sort (if (string? pc) (filter (lambda (a) (string=? pc (piece a))) msgs) msgs) annotation<?)))
   (set! display-annotations
         (lambda (. pcs)
