@@ -26,7 +26,10 @@
 
 (define-public (write-lalily-log-file parser . options)
   (let ((logfile (format "~A~A.log" (ly:parser-output-name parser) (ly:assoc-get 'suffix options "" #f))))
-    (ly:message "writing '~A' ..." logfile)
+    (if (not (equal? logfile
+                     (get-registry-val '(lalily runtime logfile-written))))
+        (ly:message "writing '~A' ..." logfile))
+    (set-registry-val '(lalily runtime logfile-written) logfile)
     (with-output-to-file logfile
       (lambda ()
         (let ((incl (ly:assoc-get 'includes options #t #f))
@@ -480,14 +483,14 @@
           \tag #'cued \new CueVoice = cue {
             $(if (eq? dir UP) #{ \voiceOne #} #{ \voiceTwo #})
             $(if (strmup? cuename) #{
-                       \once \override InstrumentSwitch #'direction = #(if (eq? dir UP) UP DOWN)
-                       \set instrumentCueName = #(markup #:concat ("(" cuename ")"))
+              \once \override InstrumentSwitch #'direction = #(if (eq? dir UP) UP DOWN)
+              \set instrumentCueName = #(markup #:concat ("(" cuename ")"))
                  #} #{ \unset instrumentCueName #})
             $(if (string? clef) #{ \cueClef $clef #})
             \transpose c' $transp \quoteDuring $(quote-name p) $(skip-of-length mus)
             $(if (string? clef) #{ \cueClefUnset #})
             $(if (strmup? instrname) #{
-                       \set instrumentCueName = #(markup #:concat ("(" instrname ")"))
+              \set instrumentCueName = #(markup #:concat ("(" instrname ")"))
                  #} #{ \unset instrumentCueName #})
           }
           {

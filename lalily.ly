@@ -36,10 +36,16 @@ $(ly:parser-define! parser 'ilyStartup
 \ilyStartup
 
 % write log-file, only if this file is compiled directly
-\executeLocal #(lambda ()
-                 (if (not (get-registry-val '(lalily runtime logfile-written) #f))
-                     (begin
-                      (set-registry-val '(lalily runtime logfile-written) #t)
-                      (write-lalily-log-file parser '(persons . #t) '(music . #f) '(defaults . #f) '(quotes . #f))
-                      )))
+\executeLocal
+#(lambda ()
+   (write-lalily-log-file parser
+     '(persons . #t)
+     '(music . #f)
+     '(defaults . #f)
+     '(quotes . #f)
+     '(templates . #t)
+     '(template-ref . #f)
+     '(edition-mods . #f)
+     )
+   )
 
