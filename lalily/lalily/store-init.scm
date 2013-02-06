@@ -489,9 +489,10 @@
             $(if (string? clef) #{ \cueClef $clef #})
             \transpose c' $transp \quoteDuring $(quote-name p) $(skip-of-length mus)
             $(if (string? clef) #{ \cueClefUnset #})
-            $(if (strmup? instrname) #{
-              \set instrumentCueName = #(markup #:concat ("(" instrname ")"))
-                 #} #{ \unset instrumentCueName #})
+            \unset instrumentCueName
+            $(if (strmup? instrname) #{ 
+              \once \override Voice.InstrumentSwitch #'stencil = ##f
+              \set Staff.instrumentCueName = #instrname #})
           }
           {
             \tag #'cued $(if (eq? dir UP) #{ \voiceTwo #} #{ \voiceOne #})
