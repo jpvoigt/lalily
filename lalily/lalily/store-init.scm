@@ -466,42 +466,83 @@
         \cueDuring $(quote-name p) $dir $mus
       #})))
 (define-public cueMusic
-  (define-music-function (parser location path opts dir mus)(list? (list? '()) integer? ly:music?)
-    (let ((p (create-music-path #f path))
-          (cuename (ly:assoc-get 'cuename opts #f #f))
-          (instrname (ly:assoc-get 'instrname opts #f #f))
-          (clef (ly:assoc-get 'clef opts #f #f))
-          (transp (ly:assoc-get 'transpose opts (ly:make-pitch 0 0 0) #f))
-          (resetVoice (ly:assoc-get 'resetVoice opts #{ \oneVoice #} #f)))
-      (define (strmup? v)
-        (or (and (string? v)(not (string-null? v)))
-            (and (not (string? v))(markup? v))))
-      ;(ly:message "cuename: ~A ~A" cuename (strmup? cuename))
-      (track-quote p location)
-      #{
-        <<
-          \tag #'cued \new CueVoice = cue {
-            $(if (eq? dir UP) #{ \voiceOne #} #{ \voiceTwo #})
-            $(if (strmup? cuename) #{
-              \once \override InstrumentSwitch #'direction = #(if (eq? dir UP) UP DOWN)
-              \set instrumentCueName = #(markup #:concat ("(" cuename ")"))
-                 #} #{ \unset instrumentCueName #})
-            $(if (string? clef) #{ \cueClef $clef #})
-            \transpose c' $transp \quoteDuring $(quote-name p) $(skip-of-length mus)
-            $(if (string? clef) #{ \cueClefUnset #})
-            \unset instrumentCueName
-            $(if (strmup? instrname) #{ 
-              \once \override Voice.InstrumentSwitch #'stencil = ##f
-              \set Staff.instrumentCueName = #instrname #})
-          }
-          {
-            \tag #'cued $(if (eq? dir UP) #{ \voiceTwo #} #{ \voiceOne #})
-            $mus
-          }
-        >>
-        \tag #'cued $resetVoice
-      #}
-      )))
+  (let ((staffnr 0)
+        (cuenr 0))
+    (define (get-staff-id)
+      (set! staffnr (+ 1 staffnr))
+      (format "staff~A" staffnr)
+      )
+    (define-music-function (parser location path opts dir mus)(list? (list? '()) integer? ly:music?)
+      (let ((p (create-music-path #f path))
+            (cuename (ly:assoc-get 'cuename opts #f #f))
+            (instrname (ly:assoc-get 'instrname opts #f #f))
+            (clef (ly:assoc-get 'clef opts #f #f))
+            (transp (ly:assoc-get 'transpose opts (ly:make-pitch 0 0 0) #f))
+            (resetVoice (ly:assoc-get 'resetVoice opts #{ \oneVoice #} #f))
+            (staffid #f)
+            (lyrics (ly:assoc-get 'lyrics opts #f #f))
+            (cueid (begin (set! cuenr (+ 1 cuenr)) (format "cue~A" cuenr)))
+            )
+        (define (strmup? v)
+          (or (and (string? v)(not (string-null? v)))
+              (and (not (string? v))(markup? v))))
+        ;(ly:message "cuename: ~A ~A" cuename (strmup? cuename))
+        (track-quote p location)
+        #{
+          <<
+            \tag #'cued \new CueVoice = $cueid \with {
+              % get parent staffs context-id
+              \consists #(lambda (context)
+                           (let ((staff (ly:context-find context 'Staff)))
+                             (if (ly:context? staff)
+                                 (set! staffid (ly:context-id staff))
+                                 )
+                             (list)))
+            } {
+              $(if (eq? dir UP) #{ \voiceOne #} #{ \voiceTwo #})
+              $(if (and (not (ly:music? lyrics))(strmup? cuename)) #{
+                \once \override InstrumentSwitch #'direction = #(if (eq? dir UP) UP DOWN)
+                \once \override InstrumentSwitch #'X-offset = #-5
+                \set instrumentCueName = #(markup #:concat ("(" cuename ")"))
+                   #} #{ \unset instrumentCueName #})
+              $(if (string? clef) #{ \cueClef $clef #})
+              \transpose c' $transp \quoteDuring $(quote-name p) $(skip-of-length mus)
+              $(if (string? clef) #{ \cueClefUnset #})
+              \unset instrumentCueName
+              $(if (strmup? instrname) #{
+                \once \override Voice.InstrumentSwitch #'stencil = ##f
+                \set Staff.instrumentCueName = #instrname #})
+            }
+            {
+              \tag #'cued $(if (eq? dir UP) #{ \voiceTwo #} #{ \voiceOne #})
+              $mus
+            }
+            $(if (ly:music? lyrics) #{
+              \new Lyrics \with {
+                \consists #(lambda (context)
+                             `((initialize .
+                                 (lambda (trans)
+                                   (if (string? staffid)
+                                       (let ((alprop (if (eq? dir UP) 'alignAboveContext 'alignBelowContext)))
+                                         (ly:message "set-prop ~A ~A" alprop staffid)
+                                         (ly:context-set-property! context alprop staffid)
+                                         ))))
+                               ))
+                fontSize = #-2
+                \override LyricText #'font-shape = #'italic
+                \override StanzaNumber #'font-shape = #'italic
+                \override StanzaNumber #'font-series = #'plain
+              } \lyricsto $cueid \lyricmode {
+                $(if (strmup? cuename) #{
+                  \set stanza = \markup { \concat { "(" $cuename ")" } }
+                     #}) $lyrics
+              }
+                 #})
+          >>
+          \tag #'cued $resetVoice
+        #}
+        ))))
+
 (define-public aQuoteMusic
   (define-music-function (parser location path mus)(list? ly:music?)
     (let* ((p (create-music-path #t path)))
