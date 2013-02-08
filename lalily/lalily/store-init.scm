@@ -500,8 +500,9 @@
                              (list)))
             } {
               $(if (eq? dir UP) #{ \voiceOne #} #{ \voiceTwo #})
-              $(if (strmup? cuename) #{
+              $(if (and (not (ly:music? lyrics))(strmup? cuename)) #{
                 \once \override InstrumentSwitch #'direction = #(if (eq? dir UP) UP DOWN)
+                \once \override InstrumentSwitch #'X-offset = #-5
                 \set instrumentCueName = #(markup #:concat ("(" cuename ")"))
                    #} #{ \unset instrumentCueName #})
               $(if (string? clef) #{ \cueClef $clef #})
@@ -529,7 +530,13 @@
                                ))
                 fontSize = #-2
                 \override LyricText #'font-shape = #'italic
-              } \lyricsto $cueid \lyricmode { $lyrics }
+                \override StanzaNumber #'font-shape = #'italic
+                \override StanzaNumber #'font-series = #'plain
+              } \lyricsto $cueid \lyricmode {
+                $(if (strmup? cuename) #{
+                  \set stanza = \markup { \concat { "(" $cuename ")" } }
+                     #}) $lyrics
+              }
                  #})
           >>
           \tag #'cued $resetVoice
