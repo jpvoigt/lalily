@@ -395,8 +395,10 @@
 
 \registerTemplate #'(piano)
 #(define-music-function (parser location piece options)(list? list?)
+   (let ((mods (assoc-get 'context-mods options #f #f)))
    #{
      \new PianoStaff \with {
+       $(if (ly:context-mod? mods) mods)
        \override StaffGrouper #'staff-staff-spacing = #'((basic-distance . 6)(minimum-distance . 1)(padding . 1)(stretchability . 4))
      } <<
        \new Staff \with {
@@ -420,4 +422,4 @@
          \override DynamicText #'padding = #1
        } \getMusic {} #'(pedal)
      >>
-   #})
+   #}))

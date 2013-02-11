@@ -337,50 +337,56 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; modify beams
 
-(define-public patBeam (define-music-function (parser location n dir)(number? number?)
-                         #{
-                           \once \override Beam #'positions = $(cons (- n (* 0.25 dir)) (+ n (* 0.25 dir)))
-                         #}))
-(define-public beamDamp (define-music-function (parser location damp)(number?)
-                          #{
-                            \once \override Beam #'damping = $damp
-                          #}))
-(define-public stemBeamLen (define-music-function (parser location damp len mus)(number? number? ly:music?)
-                             #{
-                               \override Beam #'damping = $damp
-                               \override Stem #'(details beamed-lengths) = $(list len)
-                               $mus
-                               \revert Stem #'details
-                               \revert Beam #'damping
-                               #}))
+(define-public patBeam
+  (define-music-function (parser location n dir)(number? number?)
+    #{
+      \once \override Beam #'positions = $(cons (- n (* 0.25 dir)) (+ n (* 0.25 dir)))
+    #}))
+(define-public beamDamp
+  (define-music-function (parser location damp)(number?)
+    #{
+      \once \override Beam #'damping = $damp
+    #}))
+(define dummy (make-music 'SequentialMusic 'void #t))
+(define-public stemBeamLen
+  (define-music-function (parser location damp len mus)(number? number? ly:music?)
+    #{
+      \override Beam #'damping = $damp
+      \override Stem #'(details beamed-lengths) = $(list len)
+      $mus
+      \revert Stem #'details
+      \revert Beam #'damping
+      \dummy
+    #}))
 
-                             (define (octave-up m octave)
-                             (let* ((old-pitch (ly:music-property m 'pitch))
-                             (new-note (ly:music-deep-copy m))
-                             (new-pitch (ly:make-pitch
-                             (+ octave (ly:pitch-octave old-pitch))
-                             (ly:pitch-notename old-pitch)
-                             (ly:pitch-alteration old-pitch))))
-                             (set! (ly:music-property new-note 'pitch) new-pitch)
-                             new-note))
+(define (octave-up m octave)
+  (let* ((old-pitch (ly:music-property m 'pitch))
+         (new-note (ly:music-deep-copy m))
+         (new-pitch (ly:make-pitch
+                     (+ octave (ly:pitch-octave old-pitch))
+                     (ly:pitch-notename old-pitch)
+                     (ly:pitch-alteration old-pitch))))
+    (set! (ly:music-property new-note 'pitch) new-pitch)
+    new-note))
 
-                             (define (octavize-chord elements t)
-                             (cond ((null? elements) elements)
-                             ((eq? (ly:music-property (car elements) 'name) 'NoteEvent)
-                             (cons (car elements)
-                             (cons (octave-up (car elements) t)
-                             (octavize-chord (cdr elements) t))))
-                             (else (cons (car elements) (octavize-chord (cdr elements ) t)))))
+(define (octavize-chord elements t)
+  (cond ((null? elements) elements)
+    ((eq? (ly:music-property (car elements) 'name) 'NoteEvent)
+     (cons (car elements)
+       (cons (octave-up (car elements) t)
+         (octavize-chord (cdr elements) t))))
+    (else (cons (car elements) (octavize-chord (cdr elements ) t)))))
 
-                             (define (octavize music t)
-                             (cond ((eq? (ly:music-property music 'name) 'EventChord)
-                             (ly:music-set-property! music 'elements (octavize-chord
-                             (map (lambda (e) (if (eq? (ly:music-property music 'name) 'EventChord)
-                             (car (ly:music-property e 'elements)) e)) (ly:music-property music 'elements)) t)))
-                             ((eq? (ly:music-property music 'name) 'NoteEvent)
-                             (set! music (make-music 'EventChord 'elements (list music (octave-up music t) ))))
-                             )
-                             music)
+(define (octavize music t)
+  (cond ((eq? (ly:music-property music 'name) 'EventChord)
+         (ly:music-set-property! music 'elements (octavize-chord
+                                                  (map (lambda (e) (if (eq? (ly:music-property music 'name) 'EventChord)
+                                                                       (car (ly:music-property e 'elements)) e)) (ly:music-property music 'elements)) t)))
+    ((eq? (ly:music-property music 'name) 'NoteEvent)
+     (set! music (make-music 'EventChord 'elements (list music (octave-up music t) ))))
+    )
+  music)
 
-                             (define-public makeOctaves (define-music-function (parser location arg mus) (integer? ly:music?)
-                             (music-map (lambda (x) (octavize x arg)) mus)))
+(define-public makeOctaves
+  (define-music-function (parser location arg mus) (integer? ly:music?)
+    (music-map (lambda (x) (octavize x arg)) mus)))
