@@ -154,7 +154,7 @@
          \getMusicDeep #'meta
          \new Voice = "melodie" { \autoBeamOff \dynamicUp \getMusic #'(noten) }
        >>
-       \new Lyrics {
+       \new Lyrics \with {
          \consists \editionEngraver $piece
        } \lyricsto "melodie" \getLyrics #'(text)
      >>
