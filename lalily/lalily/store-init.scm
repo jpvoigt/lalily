@@ -22,7 +22,9 @@
     (glue-list (get-music-folder) "/")
     (let ((title (get-music-folder-header-field 'title)))
       (if (markup? title) (string-append " \"" (markup->string title) "\"") ""))))
-
+(define-public logMusicFolder
+  (define-void-function (parser location)()
+    (log-music-folder)))
 
 (define-public (write-lalily-log-file parser . options)
   (let ((logfile (format "~A~A.log" (ly:parser-output-name parser) (ly:assoc-get 'suffix options "" #f))))
@@ -206,18 +208,21 @@
       )
     (make-music 'SequentialMusic 'void #t)))
 (define-public getOptions
-  (define-scheme-function (parser location)()(get-default-options (get-music-folder) location)))
+  (define-scheme-function (parser location path)(list?)
+  (get-default-options (create-music-path #f path) location)))
 (define-public setOptions
-  (define-music-function (parser location opts)(list?)
-    (let* ((piece (get-music-folder))
-           (tmpl (get-default-template piece location))
-           )
+  (define-music-function (parser location path opts)(list? list?)
+    (let ((piece (create-music-path #f path))
+          (cmf (get-music-folder))
+          (tmpl (get-default-template piece location))
+          )
       (set-default-template piece tmpl opts)
+      (set-music-folder! cmf)
       )
     (make-music 'SequentialMusic 'void #t)))
 (define-public getOption
-  (define-scheme-function (parser location field default)(string-or-symbol? (scheme? #f))
-    (let* ((piece (get-music-folder))
+  (define-scheme-function (parser location path field default)((list? '()) string-or-symbol? (scheme? #f))
+    (let* ((piece (create-music-path #f path))
            (opts (get-default-options piece location))
            )
       (if (string? field) (set! field (string->symbol field)))
@@ -225,16 +230,20 @@
       )))
 (define-public setOption
   (define-music-function (parser location piece field val)((list? '()) string-or-symbol? scheme?)
-    (if (string? field) (set! field (string->symbol field)))
-    (set-default-option parser location (create-music-path #f piece) field val)
-    (make-music 'SequentialMusic 'void #t)
-    ))
+    (let ((cmf (get-music-folder)))
+      (if (string? field) (set! field (string->symbol field)))
+      (set-default-option parser location (create-music-path #f piece) field val)
+      (set-music-folder! cmf)
+      (make-music 'SequentialMusic 'void #t)
+      )))
 (define-public removeOption
   (define-music-function (parser location piece field)((list? '()) string-or-symbol?)
-    (if (string? field) (set! field (string->symbol field)))
-    (remove-default-option parser location (create-music-path #f piece) field)
-    (make-music 'SequentialMusic 'void #t)
-    ))
+    (let ((cmf (get-music-folder)))
+      (if (string? field) (set! field (string->symbol field)))
+      (remove-default-option parser location (create-music-path #f piece) field)
+      (set-music-folder! cmf)
+      (make-music 'SequentialMusic 'void #t)
+      )))
 
 (define-public aCreateScore
   (define-music-function (parser location music)(list?)

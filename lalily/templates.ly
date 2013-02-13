@@ -308,12 +308,12 @@
           (vv (ly:assoc-get 'verses options (get-music-keys (create-music-path #f '(text)) location) #f)))
      #{
        <<
-         \new Staff \with {
+         \new Staff = $vocs \with {
            \consists \editionEngraver \musicPath $`(noten ,voc)
            instrumentName = $inst
-         } <<
+         } \new Voice = $vocs <<
            { \mergeRestsOn \clef $clef \getMusicDeep #'meta }
-           \new Voice = $vocs { \callTemplate #'(/ global voice) #'() #'() \getMusic $`(noten ,voc) }
+           { \callTemplate #'(/ global voice) #'() #'() \getMusic $`(noten ,voc) }
          >>
          \stackTemplate ##f #'(lyrics) ##f #'() $(assoc-set-all! options `((lyric-voice . ,vocs))) #'verse $vv
        >>
