@@ -209,7 +209,7 @@
     (make-music 'SequentialMusic 'void #t)))
 (define-public getOptions
   (define-scheme-function (parser location path)(list?)
-  (get-default-options (create-music-path #f path) location)))
+    (get-default-options (create-music-path #f path) location)))
 (define-public setOptions
   (define-music-function (parser location path opts)(list? list?)
     (let ((piece (create-music-path #f path))
@@ -307,14 +307,17 @@
     (music-folder-header-set! parser location field value)))
 (define-public setHeader
   (define-music-function (parser location piece field value)((list? '()) string-or-symbol? scheme?)
-    (if (string? field) (set! field (string->symbol field)))
-    (set-default-header parser location (create-music-path #f piece) field value)
-    (make-music 'SequentialMusic 'void #t)))
+    (let ((cmf (get-music-folder)))
+      (if (string? field) (set! field (string->symbol field)))
+      (set-default-header parser location (create-music-path #f piece) field value)
+      (set-music-folder! cmf)
+      (make-music 'SequentialMusic 'void #t))))
 (define-public removeHeader
   (define-music-function (parser location piece field)((list? '()) string-or-symbol?)
-    (if (string? field) (set! field (string->symbol field)))
-    (remove-default-header parser location (create-music-path #f piece) field)
-    (make-music 'SequentialMusic 'void #t)))
+    (let ((cmf (get-music-folder)))
+      (if (string? field) (set! field (string->symbol field)))
+      (remove-default-header parser location (create-music-path #f piece) field)
+      (make-music 'SequentialMusic 'void #t))))
 
 (define-public getHeader
   (define-scheme-function (parser location path field default)((list? '()) string-or-symbol? scheme?)
