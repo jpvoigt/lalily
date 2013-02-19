@@ -401,7 +401,7 @@
        $(if (ly:context-mod? mods) mods)
        \override StaffGrouper #'staff-staff-spacing = #'((basic-distance . 6)(minimum-distance . 1)(padding . 1)(stretchability . 4))
      } <<
-       \new Staff \with {
+       \new Staff = "right" \with {
          \consists \editionEngraver \musicPath #'(right)
        } <<
          \keepWithTag #'piano-right \getMusicDeep #'meta
@@ -411,7 +411,7 @@
          \consists \editionEngraver $piece
          \override DynamicText #'padding = #1
        } { \getMusic {} #'(dynamics) }
-       \new Staff \with {
+       \new Staff = "left" \with {
          \consists \editionEngraver \musicPath #'(left)
        } <<
          \keepWithTag #'piano-left \getMusicDeep #'meta
