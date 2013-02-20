@@ -379,6 +379,7 @@
                                                   (display-mods)
                                                   ))
                                               ))
+                                        (set! context-count (tree-create 'context))
                                         ))))
                                )
                           `(
