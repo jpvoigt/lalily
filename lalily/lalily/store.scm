@@ -336,8 +336,17 @@
                                        (mus (get-music path (car val))))
                                    (if (quotable-music mus)
                                        (begin
-                                        (ly:message "add-quotable ~A" quey)
-                                        (add-quotable parser quey mus)
+                                        (if (lalily:verbose) (ly:message "add-quotable ~A" quey))
+                                        (add-quotable parser quey
+                                          (music-filter
+                                           (lambda (event)
+                                             (let ( (eventname (ly:music-property  event 'name))
+                                                    (ret #t) )
+                                               (for-each (lambda (n) (set! ret (and ret (not (eq? eventname n))))) 
+                                                 '())
+                                               ret
+                                               ))
+                                           mus))
                                         ) ))) ) ))
   (set! display-quotes (lambda () (tree-display quotes `(vformat . ,(lambda (loclst)
                                                                       (glue-list (map (lambda (loc) (let ((lp (ly:input-file-line-char-column loc)))
