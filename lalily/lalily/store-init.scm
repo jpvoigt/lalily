@@ -521,7 +521,7 @@
               \consists \editionEngraver ##f
               % get parent staffs context-id
               \consists #getstaffid
-              \consists "Instrument_switch_engraver"
+              %\consists "Instrument_switch_engraver"
             } {
               $(if (eq? dir UP) #{ \voiceOne #} #{ \voiceTwo #})
               $(if (and (not (ly:music? lyrics))(strmup? cuename)) #{
