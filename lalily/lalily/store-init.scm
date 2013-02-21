@@ -480,36 +480,48 @@
 (define-public cueMusic
   (let ((staffnr 0)
         (cuenr 0))
-    (define (get-staff-id)
-      (set! staffnr (+ 1 staffnr))
-      (format "staff~A" staffnr)
-      )
+    (define (cue-id) (set! cuenr (+ 1 cuenr)) (format "cue~A" cuenr))
+    (define (alignlyrics direction)(if (eq? UP direction) 'alignAboveContext 'alignBelowContext))
     (define-music-function (parser location path opts dir mus)(list? (list? '()) integer? ly:music?)
       (let ((p (create-music-path #f path))
             (cuename (ly:assoc-get 'cuename opts #f #f))
             (instrname (ly:assoc-get 'instrname opts #f #f))
             (clef (ly:assoc-get 'clef opts #f #f))
+            (init (ly:assoc-get 'voice-init opts #f #f))
             (transp (ly:assoc-get 'transpose opts (ly:make-pitch 0 0 0) #f))
             (resetVoice (ly:assoc-get 'resetVoice opts #{ \oneVoice #} #f))
             (staffid #f)
             (lyrics (ly:assoc-get 'lyrics opts #f #f))
-            (cueid (begin (set! cuenr (+ 1 cuenr)) (format "cue~A" cuenr)))
+            (cueid (cue-id))
             )
         (define (strmup? v)
           (or (and (string? v)(not (string-null? v)))
               (and (not (string? v))(markup? v))))
+        ; dummy engraver to get the parental staff-id
+        (define (getstaffid context)
+          (let ((staff (ly:context-find context 'Staff)))
+            (if (ly:context? staff) (set! staffid (ly:context-id staff)))
+            ; this engraver does nothing
+            (list)))
+        ; engraver to set the lyric alignment
+        (define (aligncue context)
+          `((initialize .
+              ,(lambda (trans)
+                 ; if we have a staff-id ...
+                 (if (string? staffid)
+                     ; ... set the alignment property
+                     (ly:context-set-property! context (alignlyrics dir) staffid)
+                     ))
+              )))
         ;(ly:message "cuename: ~A ~A" cuename (strmup? cuename))
         (track-quote p location)
         #{
           <<
             \tag #'cued \new CueVoice = $cueid \with {
+              \consists \editionEngraver ##f
               % get parent staffs context-id
-              \consists #(lambda (context)
-                           (let ((staff (ly:context-find context 'Staff)))
-                             (if (ly:context? staff)
-                                 (set! staffid (ly:context-id staff))
-                                 )
-                             (list)))
+              \consists #getstaffid
+              \consists "Instrument_switch_engraver"
             } {
               $(if (eq? dir UP) #{ \voiceOne #} #{ \voiceTwo #})
               $(if (and (not (ly:music? lyrics))(strmup? cuename)) #{
@@ -518,6 +530,7 @@
                 \set instrumentCueName = #(markup #:concat ("(" cuename ")"))
                    #} #{ \unset instrumentCueName #})
               $(if (string? clef) #{ \cueClef $clef #})
+              $(if (ly:music? init) init)
               \transpose c' $transp \quoteDuring $(quote-name p) $(skip-of-length mus)
               $(if (string? clef) #{ \cueClefUnset #})
               \unset instrumentCueName
@@ -530,16 +543,8 @@
               $mus
             }
             $(if (ly:music? lyrics) #{
-              \new Lyrics \with {
-                \consists #(lambda (context)
-                             `((initialize .
-                                 (lambda (trans)
-                                   (if (string? staffid)
-                                       (let ((alprop (if (eq? dir UP) 'alignAboveContext 'alignBelowContext)))
-                                         (ly:message "set-prop ~A ~A" alprop staffid)
-                                         (ly:context-set-property! context alprop staffid)
-                                         ))))
-                               ))
+              \tag #'cued \new Lyrics \with {
+                \consists #aligncue
                 fontSize = #-2
                 \override LyricText #'font-shape = #'italic
                 \override StanzaNumber #'font-shape = #'italic

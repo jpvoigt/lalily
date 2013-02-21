@@ -166,7 +166,10 @@
                          ))
                       ((eq? 'RevertProperty (ly:music-property m 'name))
                        (let* ((grob (ly:music-property m 'symbol))
-                              (prop (car (ly:music-property m 'grob-property-path)))
+                              (prop (ly:music-property m 'grob-property))
+                              (prop (if (symbol? prop)
+                                        prop
+                                        (car (ly:music-property m 'grob-property-path))))
                               (mod (make <override> #:once #f #:revert #t #:grob grob #:prop prop #:value #f #:context ctx)))
                          (set! mods `(,@mods ,mod))
                          #t

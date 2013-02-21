@@ -69,6 +69,12 @@
 (re-export lalily-markup)
 (re-export lalilyMarkup)
 
+
+(re-export clralist)
+(re-export setalist)
+(re-export addalist)
+(re-export remalist)
+
 ; do something anywhere
 (define-public exec (define-music-function (parser location mus)(scheme?)
                       (make-music 'SequentialMusic 'void #t)))

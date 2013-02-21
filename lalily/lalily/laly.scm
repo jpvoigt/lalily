@@ -153,6 +153,49 @@
   (define-scheme-function (parser location name)(string?)
     (lalily-markup parser location name)))
 
+
+(define-public clralist
+  (define-void-function (parser location alst)
+    (string-or-symbol?)
+    (if (string? alst)(set! alst (string->symbol alst)))
+    (ly:parser-define! parser alst (list))
+    ))
+(define-public setalist
+  (define-void-function (parser location alst opt val)
+    (string-or-symbol? string-or-symbol? scheme?)
+    (if (string? alst)(set! alst (string->symbol alst)))
+    (if (string? opt)(set! opt (string->symbol opt)))
+    (let ((l (if (defined? alst) (primitive-eval alst) '()))
+          (setv #t))
+      (set! l (map (lambda (p)
+                     (if (and (pair? p) (equal? (car p) opt))
+                         (begin
+                          (set! setv #f)
+                          (cons opt val))
+                         p
+                         )) l))
+      (if setv (set! l (append l (list (cons opt val)))))
+      (ly:parser-define! parser alst l)
+      )))
+(define-public addalist
+  (define-void-function (parser location alst opt val)
+    (string-or-symbol? string-or-symbol? scheme?)
+    (if (string? alst)(set! alst (string->symbol alst)))
+    (if (string? opt)(set! opt (string->symbol opt)))
+    (let ((l (if (defined? alst) (primitive-eval alst) '())))
+      (set! l (filter (lambda (p) (and (pair? p)(not (equal? (car p) opt)))) l))
+      (ly:parser-define! parser alst (append l (list (cons opt val))))
+      )))
+(define-public remalist
+  (define-void-function (parser location alst opt)
+    (string-or-symbol? string-or-symbol?)
+    (if (string? alst)(set! alst (string->symbol alst)))
+    (if (string? opt)(set! opt (string->symbol opt)))
+    (let ((l (if (defined? alst) (primitive-eval alst) '())))
+      (ly:parser-define! parser alst
+        (filter (lambda (p) (and (pair? p)(not (equal? (car p) opt)))) l))
+      )))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; styled table of contents
 ;; toc-sections
