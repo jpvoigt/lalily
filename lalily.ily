@@ -118,6 +118,7 @@
 
 %load custom config
 \lalilyIncludeScheme "../lalily-extensions/config.scm"
+\lalilyIncludeScheme "../../lalily-extensions/config.scm"
 
 \lalilyInclude "lali.ly"
 
@@ -138,6 +139,7 @@
 
 \includeOncePattern "lalily/extensions" "^.*\.ly$" % once?
 \includeOncePattern "lalily-extensions" "^.*\.ly$" % once?
+\includeOncePattern "../lalily-extensions" "^.*\.ly$" % once?
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Std layout
