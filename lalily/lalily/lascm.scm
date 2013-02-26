@@ -31,7 +31,7 @@
 
 (define-public (format-alist l . ind)
   "create string from (a-)list for pretty printing
-                                example: (format-alist '((a . 1)(b . 2)))
+                                    example: (format-alist '((a . 1)(b . 2)))
 ==>  a=1
      b=2"
 (let ((i (if (> (length ind) 1) (cadr ind) 0))
@@ -66,19 +66,24 @@
 (define-public (rcadddr l)(cadddr (reverse l)))
 
 (define-public (base26 i)
-   (let ((A (char->integer #\A)))
-     (define (alplst c)
-       (let ((ret '())
-             (q (quotient c 26))
-             (r (remainder c 26)))
-         (if (> q 0) (set! ret (alplst q)))
-         (set! ret `(,@ret ,(integer->char (+ A (- r 1)))))
-         ret
-         ))
-     (if (< i 1)
-         'a
-         (list->string (alplst i)))
-     ))
+  (let ((A (char->integer (if (< i 0) #\a #\A)))
+        (i (if (< i 0) (- -1 i) i)))
+
+    (define (baseX x i)
+      (let ((q (quotient i x))
+            (r (remainder i x)))
+        (if (and (> q 0) (<= q x))
+            (list (- q 1) r)
+            (let ((ret '()))
+              (if (> q 0) (set! ret (baseX x q)))
+              `(,@ret ,r))
+            )))
+
+    (list->string
+     (map
+      (lambda (d) (integer->char (+ A d)))
+      (baseX 26 i)))
+    ))
 
 (define-public (with-append-file fn func)
   (let ((fport #f))
@@ -97,7 +102,7 @@
 
 (define-public (normalize-path path)
   "create list, removing '.. elements
-                                example: (normalize-path '(a b .. c d)) ==> '(a c d)"
+                                    example: (normalize-path '(a b .. c d)) ==> '(a c d)"
 (let ((ret '()))
   (for-each (lambda (e)
               (set! ret (cond ((eq? e '..)(if (> (length ret) 1) (cdr ret) '()))
@@ -118,7 +123,7 @@
 
 (define-public (normalize-path-list path)
   "create list, removing \"..\" elements
-                                example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"c\" \"d\")"
+                                    example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"c\" \"d\")"
 (let ((ret '()))
   (for-each (lambda (e)
               (set! ret (cond ((equal? e "..")(if (> (length ret) 1) (cdr ret) (cdr (reverse (listcwd)))))
