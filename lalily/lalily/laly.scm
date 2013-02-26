@@ -78,7 +78,7 @@
     (if (not (list? reg)) (set! reg '()))
     (if (or (not once) (not (member file-path reg)))
         (begin
-         (if (lalily:verbose) (ly:message "include: '~A'" file))
+         (if (lalily:verbose) (ly:message "include '~A'" file))
          (ly:parser-include-string parser (format "\\include \"~A\"\n" file))
          (if once (set! reg `(,@reg ,file-path)))))
     (set-registry-val '(lalily runtime loaded) reg)))
