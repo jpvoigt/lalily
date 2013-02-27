@@ -31,7 +31,7 @@
 
 (define-public (format-alist l . ind)
   "create string from (a-)list for pretty printing
-                                example: (format-alist '((a . 1)(b . 2)))
+                                    example: (format-alist '((a . 1)(b . 2)))
 ==>  a=1
      b=2"
 (let ((i (if (> (length ind) 1) (cadr ind) 0))
@@ -56,29 +56,28 @@
                (set! lst (assoc-set! lst (car p) (cdr p)))) vls)
    lst))
 
-(define-public (rcdr l)(reverse (cdr (reverse l))))
-(define-public (rcddr l)(reverse (cddr (reverse l))))
-(define-public (rcdddr l)(reverse (cdddr (reverse l))))
-(define-public (rcddddr l)(reverse (cddddr (reverse l))))
-(define-public (rcar l)(car (reverse l)))
-(define-public (rcadr l)(cadr (reverse l)))
-(define-public (rcaddr l)(caddr (reverse l)))
-(define-public (rcadddr l)(cadddr (reverse l)))
-
 (define-public (base26 i)
-   (let ((A (char->integer #\A)))
-     (define (alplst c)
-       (let ((ret '())
-             (q (quotient c 26))
-             (r (remainder c 26)))
-         (if (> q 0) (set! ret (alplst q)))
-         (set! ret `(,@ret ,(integer->char (+ A (- r 1)))))
-         ret
-         ))
-     (if (< i 1)
-         (list->string (cons #\n (alplst (- 1 i))))
-         (list->string (alplst i)))
-     ))
+  "produce a string A, B, ..., Z, AA, AB, ... for numbers
+usable to allow 2.17+ list input like in: \\editionMod notes.sop.Voice.A
+ATTENTION: there will be no ZZ but YZ -> AAA and YZZ -> AAAA"
+  (let ((A (char->integer (if (< i 0) #\a #\A)))
+        (i (if (< i 0) (- -1 i) i)))
+
+    (define (baseX x i)
+      (let ((q (quotient i x))
+            (r (remainder i x)))
+        (if (and (> q 0) (< q x))
+            (list (- q 1) r)
+            (let ((ret '()))
+              (if (> q 0) (set! ret (baseX x q)))
+              `(,@ret ,r))
+            )))
+
+    (list->string
+     (map
+      (lambda (d) (integer->char (+ A d)))
+      (baseX 26 i)))
+    ))
 
 (define-public (with-append-file fn func)
   (let ((fport #f))
@@ -97,7 +96,7 @@
 
 (define-public (normalize-path path)
   "create list, removing '.. elements
-                                example: (normalize-path '(a b .. c d)) ==> '(a c d)"
+                                    example: (normalize-path '(a b .. c d)) ==> '(a c d)"
 (let ((ret '()))
   (for-each (lambda (e)
               (set! ret (cond ((eq? e '..)(if (> (length ret) 1) (cdr ret) '()))
@@ -118,7 +117,7 @@
 
 (define-public (normalize-path-list path)
   "create list, removing \"..\" elements
-                                example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"c\" \"d\")"
+                                    example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"c\" \"d\")"
 (let ((ret '()))
   (for-each (lambda (e)
               (set! ret (cond ((equal? e "..")(if (> (length ret) 1) (cdr ret) (cdr (reverse (listcwd)))))
@@ -130,12 +129,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; classes
 
-(use-modules (oop goops)
-  (lily))
+(use-modules (oop goops)(lily))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; stack
 
+; a stack implementation with methods push, pop and get
 (define-class <stack> ()
   (name #:accessor name #:setter set-name! #:init-value "stack")
   (store #:accessor store #:setter set-store! #:init-value '())
@@ -169,6 +168,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; tree
 
+; a tree implementation
+; every tree-node has a hashtable of children and a value
+; main methods are:
+; tree-set! <tree> path-list val: set a value in the tree
+; tree-get <tree> path-list: get a value from the tree or #f if not present
 (define-class <tree> ()
   (children #:accessor children #:init-thunk make-hash-table)
   (key #:accessor key #:init-keyword #:key #:init-value 'node)
