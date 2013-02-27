@@ -12,7 +12,7 @@ folders and files
 * lalily.log - is created, if lalily.ly is compiled directly (not included). 
   This MAY be done, to check, if alle extensions and templates compile.
 * lalily/ - is the folder, which contains the actual framework
-* lalily-extensions/ - is a folder, which MAY be created.
-  All files in this folder of a name ending with ".ly" are included by lalily.
+* lalily-extensions/ - is a folder, which MAY be created in this project folder and/or next to this project folder.
+  All files in this folder with a name suffix ".ly" are included by lalily.
   If a file config.scm is found, it is loaded.
 * in examples are a few examples using lalily
