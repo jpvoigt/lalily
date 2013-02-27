@@ -76,7 +76,7 @@
          ret
          ))
      (if (< i 1)
-         'a
+         (list->string (cons #\n (alplst (- 1 i))))
          (list->string (alplst i)))
      ))
 
