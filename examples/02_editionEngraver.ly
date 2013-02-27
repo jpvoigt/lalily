@@ -24,6 +24,10 @@
 % after including the file above, the folder is set, 
 % but if you include a bunch of files, it may be set to some other path
 \setMusicFolder #'(music choral altatrinita)
+% set a different paper
+\setPaper \paper {
+  indent = 15\mm
+}
 
 % the editionEngraver is used with the \lalilyTest and \lalily[Score|Bookpart] commands
 % The Score and the Voice context receive it through \layout { ... },
@@ -53,6 +57,10 @@
 
 % accessing parent context so stanza is set in all lyrics inside this StaffGroup
 \editionMod demo 9 0/4 #'(bas Lyrics A) \set StaffGroup.stanza = "St."
+
+% inserting some senseless breaks
+\editionMod demo 10 0/4 #'(Score A) \break
+\editionMod demo 17 0/4 #'(Score A) \pageBreak
 
 % create PDF ... "demo" edition is active
 \lalilyTest
