@@ -28,6 +28,7 @@
     `("\\usepackage{xunicode}" "\\usepackage[T1]{fontspec}" 
       "\\defaultfontfeatures{Mapping=tex-text}"
       ,(format "\\setmainfont{~A}" (chain-assoc-get 'font-family props "DejaVu Serif"))
+      ,@(chain-assoc-get 'packages props '())
       )
     "xelatex" "-interaction=batchmode" m))
 
