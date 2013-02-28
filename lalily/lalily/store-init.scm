@@ -265,8 +265,8 @@
     (let ((ret (get-music-folder)))
       (if ret ret (get-music-folder)))))
 (define-public setMusicFolder
-  (define-music-function (parser location music)(list?)
-    (set-music-folder! music)
+  (define-music-function (parser location path)(list?)
+    (set-music-folder! (create-music-path #t path))
     (make-music 'SequentialMusic 'void #t)))
 
 (define-public changeMusicFolder
