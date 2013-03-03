@@ -272,23 +272,24 @@
                                                  (bas . ((clef . "bass")
                                                          (inst . "B")))
                                                  ) #f))
-         (kat (ly:assoc-get 'keep-alive-together options #t #f)))
+         (kat (ly:assoc-get 'keep-alive-together options #t #f))
+         (mensur (ly:assoc-get 'mensur options #f #f)))
      (if kat
          #{
            \new StaffGroup \with {
              \consists "Keep_alive_together_engraver"
-             \override BarLine #'allow-span-bar = $(if (ly:assoc-get 'mensur options #f #f) #t #f )
+             \override BarLine #'allow-span-bar = $(if mensur #t #f )
              %\override SpanBar #'transparent = $(if (ly:assoc-get 'mensur options #f #f) #f #t )
-             \override BarLine #'transparent = $(if (ly:assoc-get 'mensur options #f #f) #t #f )
+             \override BarLine #'transparent = $(if mensur #t #f )
            } <<
              \stackTemplate ##f #'(staff) ##t $piece $options #'staff $staffs
            >>
          #}
          #{
            \new StaffGroup \with {
-             \override BarLine #'allow-span-bar = $(if (ly:assoc-get 'mensur options #f #f) #t #f )
+             \override BarLine #'allow-span-bar = $(if mensur #t #f )
              %\override SpanBar #'transparent = $(if (ly:assoc-get 'mensur options #f #f) #f #t )
-             \override BarLine #'transparent = $(if (ly:assoc-get 'mensur options #f #f) #t #f )
+             \override BarLine #'transparent = $(if mensur #t #f )
            } <<
              \stackTemplate ##f #'(staff) ##t $piece $options #'staff $staffs
            >>
