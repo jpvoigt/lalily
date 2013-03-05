@@ -629,6 +629,8 @@
 ; activate edition
 (define-public addEdition
   (define-music-function (parser location edition)(string-or-symbol?)
+    "Add edition to edition-list.
+Every edition from the global edition-list will be listened for by the edition-engraver."
     (if (string? edition) (set! edition (string->symbol edition)))
     (if (not (memq edition (editions))) (set-editions! `(,@(editions) ,edition)))
     (make-music 'SequentialMusic 'void #t)
@@ -637,9 +639,25 @@
 ; deactivate edition
 (define-public removeEdition
   (define-music-function (parser location edition)(string-or-symbol?)
+    "Remove edition from edition-list.
+Every edition from the global edition-list will be listened for by the edition-engraver."
     (if (string? edition) (set! edition (string->symbol edition)))
     (set-editions! (delete edition (editions)))
     (make-music 'SequentialMusic 'void #t)
+    ))
+
+; set editions
+(define-public setEditions
+  (define-void-function (parser location editions)(list?)
+    "Set edition-list to editions.
+Every edition from the global edition-list will be listened for by the edition-engraver.
+This will override the previously set list."
+    (set-editions! (map (lambda (edition)
+                          (cond
+                           ((symbol? edition) edition)
+                           ((string? edition) (string->symbol edition))
+                           (else (string->symbol (format "~A" edition)))
+                           )) editions))
     ))
 
 ; create ISMN string with publisher number and title number
