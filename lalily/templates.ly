@@ -235,7 +235,8 @@
               (staffopts (if (pair? staff) (cdr staff) '()))
               (clef (ly:assoc-get 'clef staffopts "G" #f))
               (inst (ly:assoc-get 'inst staffopts #f #f))
-              (sinst (ly:assoc-get 'sinst staffopts #f #f)))
+              (sinst (ly:assoc-get 'sinst staffopts #f #f))
+              (mods (ly:assoc-get 'mods staffopts #f #f)))
          (if (not (string? vocname))(set! vocname (format "~A" vocname)))
          (set! vocpname (string-append prefix vocname))
          (set! vocsym (string->symbol vocname))
@@ -243,6 +244,7 @@
          #{
            <<
              \new Staff = $vocpname \with {
+               $(if (ly:context-mod? mods) mods #{ \with {} #})
                \consists \editionEngraver \musicPath $vocpath
                instrumentName = $inst
                shortInstrumentName = $sinst
