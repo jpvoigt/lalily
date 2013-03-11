@@ -275,28 +275,19 @@
                                                          (inst . "B")))
                                                  ) #f))
          (kat (ly:assoc-get 'keep-alive-together options #t #f))
-         (mensur (ly:assoc-get 'mensur options #f #f)))
-     (if kat
-         #{
-           \new StaffGroup \with {
-             \consists "Keep_alive_together_engraver"
-             \override BarLine #'allow-span-bar = $(if mensur #t #f )
-             %\override SpanBar #'transparent = $(if (ly:assoc-get 'mensur options #f #f) #f #t )
-             \override BarLine #'transparent = $(if mensur #t #f )
-           } <<
-             \stackTemplate ##f #'(staff) ##t $piece $options #'staff $staffs
-           >>
-         #}
-         #{
-           \new StaffGroup \with {
-             \override BarLine #'allow-span-bar = $(if mensur #t #f )
-             %\override SpanBar #'transparent = $(if (ly:assoc-get 'mensur options #f #f) #f #t )
-             \override BarLine #'transparent = $(if mensur #t #f )
-           } <<
-             \stackTemplate ##f #'(staff) ##t $piece $options #'staff $staffs
-           >>
-         #}
-         ) ))
+         (mensur (ly:assoc-get 'mensur options #f #f))
+         (mods (ly:assoc-get 'mods options #f #f)))
+     #{
+       \new StaffGroup \with {
+         $(if kat #{ \with { \consists "Keep_alive_together_engraver" } #})
+         $(if (ly:context-mod? mods) mods)
+         \override BarLine #'allow-span-bar = $(if mensur #t #f )
+         %\override SpanBar #'transparent = $(if (ly:assoc-get 'mensur options #f #f) #f #t )
+         \override BarLine #'transparent = $(if mensur #t #f )
+       } <<
+         \stackTemplate ##f #'(staff) ##t $piece $options #'staff $staffs
+       >>
+     #} ))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Choral lied group
@@ -399,30 +390,30 @@
 \registerTemplate #'(piano)
 #(define-music-function (parser location piece options)(list? list?)
    (let ((mods (assoc-get 'context-mods options #f #f)))
-   #{
-     \new PianoStaff \with {
-       $(if (ly:context-mod? mods) mods)
-       \override StaffGrouper #'staff-staff-spacing = #'((basic-distance . 6)(minimum-distance . 1)(padding . 1)(stretchability . 4))
-     } <<
-       \new Staff = "right" \with {
-         \consists \editionEngraver \musicPath #'(right)
+     #{
+       \new PianoStaff \with {
+         $(if (ly:context-mod? mods) mods)
+         \override StaffGrouper #'staff-staff-spacing = #'((basic-distance . 6)(minimum-distance . 1)(padding . 1)(stretchability . 4))
        } <<
-         \keepWithTag #'piano-right \getMusicDeep #'meta
-         \keepWithTag #'piano-right { \getMusic {} #'(global) \getMusic #'(right) }
+         \new Staff = "right" \with {
+           \consists \editionEngraver \musicPath #'(right)
+         } <<
+           \keepWithTag #'piano-right \getMusicDeep #'meta
+           \keepWithTag #'piano-right { \getMusic {} #'(global) \getMusic #'(right) }
+         >>
+         \new Dynamics \with {
+           \consists \editionEngraver $piece
+           \override DynamicText #'padding = #1
+         } { \getMusic {} #'(dynamics) }
+         \new Staff = "left" \with {
+           \consists \editionEngraver \musicPath #'(left)
+         } <<
+           \keepWithTag #'piano-left \getMusicDeep #'meta
+           \keepWithTag #'piano-left { \getMusic {} #'(global) \clef $(ly:assoc-get 'piano-left-clef options "bass" #f) \getMusic #'(left) }
+         >>
+         \new Dynamics \with {
+           \consists \editionEngraver $piece
+           \override DynamicText #'padding = #1
+         } \getMusic {} #'(pedal)
        >>
-       \new Dynamics \with {
-         \consists \editionEngraver $piece
-         \override DynamicText #'padding = #1
-       } { \getMusic {} #'(dynamics) }
-       \new Staff = "left" \with {
-         \consists \editionEngraver \musicPath #'(left)
-       } <<
-         \keepWithTag #'piano-left \getMusicDeep #'meta
-         \keepWithTag #'piano-left { \getMusic {} #'(global) \clef $(ly:assoc-get 'piano-left-clef options "bass" #f) \getMusic #'(left) }
-       >>
-       \new Dynamics \with {
-         \consists \editionEngraver $piece
-         \override DynamicText #'padding = #1
-       } \getMusic {} #'(pedal)
-     >>
-   #}))
+     #}))
