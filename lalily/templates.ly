@@ -152,7 +152,7 @@
          \getMusicDeep #'meta
          { \autoBeamOff \dynamicUp \getMusic #'(noten) }
        >>
-       \new Lyrics {
+       \new Lyrics \with {
          \consists \editionEngraver $piece
        } \lyricsto "melodie" \getLyrics #'(text)
      >>
@@ -233,7 +233,8 @@
               (staffopts (if (pair? staff) (cdr staff) '()))
               (clef (ly:assoc-get 'clef staffopts "G" #f))
               (inst (ly:assoc-get 'inst staffopts #f #f))
-              (sinst (ly:assoc-get 'sinst staffopts #f #f)))
+              (sinst (ly:assoc-get 'sinst staffopts #f #f))
+              (mods (ly:assoc-get 'mods staffopts #f #f)))
          (if (not (string? vocname))(set! vocname (format "~A" vocname)))
          (set! vocpname (string-append prefix vocname))
          (set! vocsym (string->symbol vocname))
@@ -241,6 +242,7 @@
          #{
            <<
              \new Staff = $vocpname \with {
+               $(if (ly:context-mod? mods) mods #{ \with {} #})
                \consists \editionEngraver \musicPath $vocpath
                instrumentName = $inst
                shortInstrumentName = $sinst
@@ -269,28 +271,20 @@
                                                  (bas . ((clef . "bass")
                                                          (inst . "B")))
                                                  ) #f))
-         (kat (ly:assoc-get 'keep-alive-together options #t #f)))
-     (if kat
-         #{
-           \new StaffGroup \with {
-             \consists "Keep_alive_together_engraver"
-             \override BarLine #'allow-span-bar = $(if (ly:assoc-get 'mensur options #f #f) #t #f )
-             %\override SpanBar #'transparent = $(if (ly:assoc-get 'mensur options #f #f) #f #t )
-             \override BarLine #'transparent = $(if (ly:assoc-get 'mensur options #f #f) #t #f )
-           } <<
-             \stackTemplate ##f #'(staff) ##t $piece $options #'staff $staffs
-           >>
-         #}
-         #{
-           \new StaffGroup \with {
-             \override BarLine #'allow-span-bar = $(if (ly:assoc-get 'mensur options #f #f) #t #f )
-             %\override SpanBar #'transparent = $(if (ly:assoc-get 'mensur options #f #f) #f #t )
-             \override BarLine #'transparent = $(if (ly:assoc-get 'mensur options #f #f) #t #f )
-           } <<
-             \stackTemplate ##f #'(staff) ##t $piece $options #'staff $staffs
-           >>
-         #}
-         ) ))
+         (kat (ly:assoc-get 'keep-alive-together options #t #f))
+         (mensur (ly:assoc-get 'mensur options #f #f))
+         (mods (ly:assoc-get 'mods options #f #f)))
+     #{
+       \new StaffGroup \with {
+         $(if kat #{ \with { \consists "Keep_alive_together_engraver" } #})
+         $(if (ly:context-mod? mods) mods)
+         \override BarLine #'allow-span-bar = $(if mensur #t #f )
+         %\override SpanBar #'transparent = $(if (ly:assoc-get 'mensur options #f #f) #f #t )
+         \override BarLine #'transparent = $(if mensur #t #f )
+       } <<
+         \stackTemplate ##f #'(staff) ##t $piece $options #'staff $staffs
+       >>
+     #} ))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Choral lied group
@@ -305,7 +299,7 @@
           (vv (ly:assoc-get 'verses options (get-music-keys (create-music-path #f '(text)) location) #f)))
      #{
        <<
-         \new Staff \with {
+         \new Staff = $vocs \with {
            \consists \editionEngraver \musicPath $`(noten ,voc)
            instrumentName = $inst
          } \new Voice = $vocs <<
@@ -392,29 +386,31 @@
 
 \registerTemplate #'(piano)
 #(define-music-function (parser location piece options)(list? list?)
-   #{
-     \new PianoStaff \with {
-       \override StaffGrouper #'staff-staff-spacing = #'((basic-distance . 6)(minimum-distance . 1)(padding . 1)(stretchability . 4))
-     } <<
-       \new Staff \with {
-         \consists \editionEngraver \musicPath #'(right)
-       } \new Voice <<
-         { \getMusic {} #'(global) \getMusic #'(right) }
-         \keepWithTag #'piano-right \getMusicDeep #'meta
+   (let ((mods (assoc-get 'context-mods options #f #f)))
+     #{
+       \new PianoStaff \with {
+         $(if (ly:context-mod? mods) mods)
+         \override StaffGrouper #'staff-staff-spacing = #'((basic-distance . 6)(minimum-distance . 1)(padding . 1)(stretchability . 4))
+       } <<
+         \new Staff = "right" \with {
+           \consists \editionEngraver \musicPath #'(right)
+         } <<
+           \keepWithTag #'piano-right \getMusicDeep #'meta
+           \keepWithTag #'piano-right { \getMusic {} #'(global) \getMusic #'(right) }
+         >>
+         \new Dynamics \with {
+           \consists \editionEngraver $piece
+           \override DynamicText #'padding = #1
+         } { \getMusic {} #'(dynamics) }
+         \new Staff = "left" \with {
+           \consists \editionEngraver \musicPath #'(left)
+         } <<
+           \keepWithTag #'piano-left \getMusicDeep #'meta
+           \keepWithTag #'piano-left { \getMusic {} #'(global) \clef $(ly:assoc-get 'piano-left-clef options "bass" #f) \getMusic #'(left) }
+         >>
+         \new Dynamics \with {
+           \consists \editionEngraver $piece
+           \override DynamicText #'padding = #1
+         } \getMusic {} #'(pedal)
        >>
-       \new Dynamics \with {
-         \consists \editionEngraver $piece
-         \override DynamicText #'padding = #1
-       } { \getMusic {} #'(dynamics) }
-       \new Staff \with {
-         \consists \editionEngraver \musicPath #'(left)
-       } \new Voice <<
-         \keepWithTag #'piano-left { \getMusic {} #'(global) \clef $(ly:assoc-get 'piano-left-clef options "bass" #f) \getMusic #'(left) }
-         \keepWithTag #'piano-left \getMusicDeep #'meta
-       >>
-       \new Dynamics \with {
-         \consists \editionEngraver $piece
-         \override DynamicText #'padding = #1
-       } \getMusic {} #'(pedal)
-     >>
-   #})
+     #}))

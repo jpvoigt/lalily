@@ -22,7 +22,9 @@
     (glue-list (get-music-folder) "/")
     (let ((title (get-music-folder-header-field 'title)))
       (if (markup? title) (string-append " \"" (markup->string title) "\"") ""))))
-
+(define-public logMusicFolder
+  (define-void-function (parser location)()
+    (log-music-folder)))
 
 (define-public (write-lalily-log-file parser . options)
   (let ((logfile (format "~A~A.log" (ly:parser-output-name parser) (ly:assoc-get 'suffix options "" #f))))
@@ -206,18 +208,21 @@
       )
     (make-music 'SequentialMusic 'void #t)))
 (define-public getOptions
-  (define-scheme-function (parser location)()(get-default-options (get-music-folder) location)))
+  (define-scheme-function (parser location path)(list?)
+    (get-default-options (create-music-path #f path) location)))
 (define-public setOptions
-  (define-music-function (parser location opts)(list?)
-    (let* ((piece (get-music-folder))
+  (define-music-function (parser location path opts)(list? list?)
+    (let* ((piece (create-music-path #f path))
+           (cmf (get-music-folder))
            (tmpl (get-default-template piece location))
            )
       (set-default-template piece tmpl opts)
+      (set-music-folder! cmf)
       )
     (make-music 'SequentialMusic 'void #t)))
 (define-public getOption
-  (define-scheme-function (parser location field default)(string-or-symbol? (scheme? #f))
-    (let* ((piece (get-music-folder))
+  (define-scheme-function (parser location path field default)((list? '()) string-or-symbol? (scheme? #f))
+    (let* ((piece (create-music-path #f path))
            (opts (get-default-options piece location))
            )
       (if (string? field) (set! field (string->symbol field)))
@@ -225,16 +230,20 @@
       )))
 (define-public setOption
   (define-music-function (parser location piece field val)((list? '()) string-or-symbol? scheme?)
-    (if (string? field) (set! field (string->symbol field)))
-    (set-default-option parser location (create-music-path #f piece) field val)
-    (make-music 'SequentialMusic 'void #t)
-    ))
+    (let ((cmf (get-music-folder)))
+      (if (string? field) (set! field (string->symbol field)))
+      (set-default-option parser location (create-music-path #f piece) field val)
+      (set-music-folder! cmf)
+      (make-music 'SequentialMusic 'void #t)
+      )))
 (define-public removeOption
   (define-music-function (parser location piece field)((list? '()) string-or-symbol?)
-    (if (string? field) (set! field (string->symbol field)))
-    (remove-default-option parser location (create-music-path #f piece) field)
-    (make-music 'SequentialMusic 'void #t)
-    ))
+    (let ((cmf (get-music-folder)))
+      (if (string? field) (set! field (string->symbol field)))
+      (remove-default-option parser location (create-music-path #f piece) field)
+      (set-music-folder! cmf)
+      (make-music 'SequentialMusic 'void #t)
+      )))
 
 (define-public aCreateScore
   (define-music-function (parser location music)(list?)
@@ -256,8 +265,8 @@
     (let ((ret (get-music-folder)))
       (if ret ret (get-music-folder)))))
 (define-public setMusicFolder
-  (define-music-function (parser location music)(list?)
-    (set-music-folder! music)
+  (define-music-function (parser location path)(list?)
+    (set-music-folder! (create-music-path #t path))
     (make-music 'SequentialMusic 'void #t)))
 
 (define-public changeMusicFolder
@@ -298,14 +307,17 @@
     (music-folder-header-set! parser location field value)))
 (define-public setHeader
   (define-music-function (parser location piece field value)((list? '()) string-or-symbol? scheme?)
-    (if (string? field) (set! field (string->symbol field)))
-    (set-default-header parser location (create-music-path #f piece) field value)
-    (make-music 'SequentialMusic 'void #t)))
+    (let ((cmf (get-music-folder)))
+      (if (string? field) (set! field (string->symbol field)))
+      (set-default-header parser location (create-music-path #f piece) field value)
+      (set-music-folder! cmf)
+      (make-music 'SequentialMusic 'void #t))))
 (define-public removeHeader
   (define-music-function (parser location piece field)((list? '()) string-or-symbol?)
-    (if (string? field) (set! field (string->symbol field)))
-    (remove-default-header parser location (create-music-path #f piece) field)
-    (make-music 'SequentialMusic 'void #t)))
+    (let ((cmf (get-music-folder)))
+      (if (string? field) (set! field (string->symbol field)))
+      (remove-default-header parser location (create-music-path #f piece) field)
+      (make-music 'SequentialMusic 'void #t))))
 
 (define-public getHeader
   (define-scheme-function (parser location path field default)((list? '()) string-or-symbol? scheme?)
@@ -468,36 +480,48 @@
 (define-public cueMusic
   (let ((staffnr 0)
         (cuenr 0))
-    (define (get-staff-id)
-      (set! staffnr (+ 1 staffnr))
-      (format "staff~A" staffnr)
-      )
+    (define (cue-id) (set! cuenr (+ 1 cuenr)) (format "cue~A" cuenr))
+    (define (alignlyrics direction)(if (eq? UP direction) 'alignAboveContext 'alignBelowContext))
     (define-music-function (parser location path opts dir mus)(list? (list? '()) integer? ly:music?)
       (let ((p (create-music-path #f path))
             (cuename (ly:assoc-get 'cuename opts #f #f))
             (instrname (ly:assoc-get 'instrname opts #f #f))
             (clef (ly:assoc-get 'clef opts #f #f))
+            (init (ly:assoc-get 'voice-init opts #f #f))
             (transp (ly:assoc-get 'transpose opts (ly:make-pitch 0 0 0) #f))
             (resetVoice (ly:assoc-get 'resetVoice opts #{ \oneVoice #} #f))
             (staffid #f)
             (lyrics (ly:assoc-get 'lyrics opts #f #f))
-            (cueid (begin (set! cuenr (+ 1 cuenr)) (format "cue~A" cuenr)))
+            (cueid (cue-id))
             )
         (define (strmup? v)
           (or (and (string? v)(not (string-null? v)))
               (and (not (string? v))(markup? v))))
+        ; dummy engraver to get the parental staff-id
+        (define (getstaffid context)
+          (let ((staff (ly:context-find context 'Staff)))
+            (if (ly:context? staff) (set! staffid (ly:context-id staff)))
+            ; this engraver does nothing
+            (list)))
+        ; engraver to set the lyric alignment
+        (define (aligncue context)
+          `((initialize .
+              ,(lambda (trans)
+                 ; if we have a staff-id ...
+                 (if (string? staffid)
+                     ; ... set the alignment property
+                     (ly:context-set-property! context (alignlyrics dir) staffid)
+                     ))
+              )))
         ;(ly:message "cuename: ~A ~A" cuename (strmup? cuename))
         (track-quote p location)
         #{
           <<
             \tag #'cued \new CueVoice = $cueid \with {
+              \consists \editionEngraver ##f
               % get parent staffs context-id
-              \consists #(lambda (context)
-                           (let ((staff (ly:context-find context 'Staff)))
-                             (if (ly:context? staff)
-                                 (set! staffid (ly:context-id staff))
-                                 )
-                             (list)))
+              \consists #getstaffid
+              %\consists "Instrument_switch_engraver"
             } {
               $(if (eq? dir UP) #{ \voiceOne #} #{ \voiceTwo #})
               $(if (and (not (ly:music? lyrics))(strmup? cuename)) #{
@@ -506,6 +530,7 @@
                 \set instrumentCueName = #(markup #:concat ("(" cuename ")"))
                    #} #{ \unset instrumentCueName #})
               $(if (string? clef) #{ \cueClef $clef #})
+              $(if (ly:music? init) init)
               \transpose c' $transp \quoteDuring $(quote-name p) $(skip-of-length mus)
               $(if (string? clef) #{ \cueClefUnset #})
               \unset instrumentCueName
@@ -518,16 +543,8 @@
               $mus
             }
             $(if (ly:music? lyrics) #{
-              \new Lyrics \with {
-                \consists #(lambda (context)
-                             `((initialize .
-                                 (lambda (trans)
-                                   (if (string? staffid)
-                                       (let ((alprop (if (eq? dir UP) 'alignAboveContext 'alignBelowContext)))
-                                         (ly:message "set-prop ~A ~A" alprop staffid)
-                                         (ly:context-set-property! context alprop staffid)
-                                         ))))
-                               ))
+              \tag #'cued \new Lyrics \with {
+                \consists #aligncue
                 fontSize = #-2
                 \override LyricText #'font-shape = #'italic
                 \override StanzaNumber #'font-shape = #'italic

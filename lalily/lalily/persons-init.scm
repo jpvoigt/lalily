@@ -137,3 +137,20 @@
                       (set-person! parser location (get-music-folder) 'arranger key)
                       (make-music 'SequentialMusic 'void #t)))
   )
+
+(define-markup-command (personName layout props key)(string-or-symbol?)
+   (if (string? key) (set! key (string->symbol key)))
+   (let ((p (get-person (get-person-store) key)))
+     (interpret-markup layout props
+       (if (person? p)(person-name p)
+           (begin (ly:input-warning location "unknown person '~A'" key)
+             (format "?~A" key))
+           ))))
+(define-markup-command (personLife layout props key)(string-or-symbol?)
+   (if (string? key) (set! key (string->symbol key)))
+   (let ((p (get-person (get-person-store) key)))
+     (interpret-markup layout props
+       (if (person? p)(person-life p)
+           (begin (ly:input-warning location "unknown person '~A'" key)
+             (format "?~A" key))
+           ))))

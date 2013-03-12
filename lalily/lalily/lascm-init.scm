@@ -29,15 +29,6 @@
 (define-public assocSetAll (define-scheme-function (parser location l v)(list? list?)
     (assoc-set-all! l v)))
 
-(re-export rcdr)
-(re-export rcddr)
-(re-export rcdddr)
-(re-export rcddddr)
-(re-export rcar)
-(re-export rcadr)
-(re-export rcaddr)
-(re-export rcadddr)
-
 (re-export base26)
 
 (re-export normalize-path-list)

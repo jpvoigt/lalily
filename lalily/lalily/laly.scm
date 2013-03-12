@@ -78,7 +78,7 @@
     (if (not (list? reg)) (set! reg '()))
     (if (or (not once) (not (member file-path reg)))
         (begin
-         (if (lalily:verbose) (ly:message "include: '~A'" file))
+         (if (lalily:verbose) (ly:message "include '~A'" file))
          (ly:parser-include-string parser (format "\\include \"~A\"\n" file))
          (if once (set! reg `(,@reg ,file-path)))))
     (set-registry-val '(lalily runtime loaded) reg)))
@@ -152,6 +152,49 @@
 (define-public lalilyMarkup
   (define-scheme-function (parser location name)(string?)
     (lalily-markup parser location name)))
+
+
+(define-public clralist
+  (define-void-function (parser location alst)
+    (string-or-symbol?)
+    (if (string? alst)(set! alst (string->symbol alst)))
+    (ly:parser-define! parser alst (list))
+    ))
+(define-public setalist
+  (define-void-function (parser location alst opt val)
+    (string-or-symbol? string-or-symbol? scheme?)
+    (if (string? alst)(set! alst (string->symbol alst)))
+    (if (string? opt)(set! opt (string->symbol opt)))
+    (let ((l (if (defined? alst) (primitive-eval alst) '()))
+          (setv #t))
+      (set! l (map (lambda (p)
+                     (if (and (pair? p) (equal? (car p) opt))
+                         (begin
+                          (set! setv #f)
+                          (cons opt val))
+                         p
+                         )) l))
+      (if setv (set! l (append l (list (cons opt val)))))
+      (ly:parser-define! parser alst l)
+      )))
+(define-public addalist
+  (define-void-function (parser location alst opt val)
+    (string-or-symbol? string-or-symbol? scheme?)
+    (if (string? alst)(set! alst (string->symbol alst)))
+    (if (string? opt)(set! opt (string->symbol opt)))
+    (let ((l (if (defined? alst) (primitive-eval alst) '())))
+      (set! l (filter (lambda (p) (and (pair? p)(not (equal? (car p) opt)))) l))
+      (ly:parser-define! parser alst (append l (list (cons opt val))))
+      )))
+(define-public remalist
+  (define-void-function (parser location alst opt)
+    (string-or-symbol? string-or-symbol?)
+    (if (string? alst)(set! alst (string->symbol alst)))
+    (if (string? opt)(set! opt (string->symbol opt)))
+    (let ((l (if (defined? alst) (primitive-eval alst) '())))
+      (ly:parser-define! parser alst
+        (filter (lambda (p) (and (pair? p)(not (equal? (car p) opt)))) l))
+      )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; styled table of contents
@@ -337,50 +380,64 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; modify beams
 
-(define-public patBeam (define-music-function (parser location n dir)(number? number?)
-                         #{
-                           \once \override Beam #'positions = $(cons (- n (* 0.25 dir)) (+ n (* 0.25 dir)))
-                         #}))
-(define-public beamDamp (define-music-function (parser location damp)(number?)
-                          #{
-                            \once \override Beam #'damping = $damp
-                          #}))
-(define-public stemBeamLen (define-music-function (parser location damp len mus)(number? number? ly:music?)
-                             #{
-                               \override Beam #'damping = $damp
-                               \override Stem #'(details beamed-lengths) = $(list len)
-                               $mus
-                               \revert Stem #'details
-                               \revert Beam #'damping
-                               #}))
+(define-public patBeam
+  (define-music-function (parser location n dir)(number? number?)
+    #{
+      \once \override Beam #'positions = $(cons (- n (* 0.25 dir)) (+ n (* 0.25 dir)))
+    #}))
+(define-public beamDamp
+  (define-music-function (parser location damp)(number?)
+    #{
+      \once \override Beam #'damping = $damp
+    #}))
+(define dummy (make-music 'SequentialMusic 'void #t))
+(define-public stemBeamLen
+  (define-music-function (parser location damp len mus)(number? number? ly:music?)
+    #{
+      \override Beam #'damping = $damp
+      \override Stem #'(details beamed-lengths) = $(list len)
+      $mus
+      \revert Stem #'details
+      \revert Beam #'damping
+      \dummy
+    #}))
 
-                             (define (octave-up m octave)
-                             (let* ((old-pitch (ly:music-property m 'pitch))
-                             (new-note (ly:music-deep-copy m))
-                             (new-pitch (ly:make-pitch
-                             (+ octave (ly:pitch-octave old-pitch))
-                             (ly:pitch-notename old-pitch)
-                             (ly:pitch-alteration old-pitch))))
-                             (set! (ly:music-property new-note 'pitch) new-pitch)
-                             new-note))
+(define (octave-up m octave)
+   (let* ((old-pitch (ly:music-property m 'pitch))
+          (new-note (ly:music-deep-copy m))
+          (new-pitch (ly:make-pitch
+                      (+ octave (ly:pitch-octave old-pitch))
+                      (ly:pitch-notename old-pitch)
+                      (ly:pitch-alteration old-pitch))))
+     (set! (ly:music-property new-note 'pitch) new-pitch)
+     new-note))
 
-                             (define (octavize-chord elements t)
-                             (cond ((null? elements) elements)
-                             ((eq? (ly:music-property (car elements) 'name) 'NoteEvent)
-                             (cons (car elements)
-                             (cons (octave-up (car elements) t)
-                             (octavize-chord (cdr elements) t))))
-                             (else (cons (car elements) (octavize-chord (cdr elements ) t)))))
+(define (octavize-chord elements t)
+   (cond ((null? elements) elements)
+     ((eq? (ly:music-property (car elements) 'name) 'NoteEvent)
+      (cons (car elements)
+        (cons (octave-up (car elements) t)
+          (octavize-chord (cdr elements) t))))
+     (else (cons (car elements) (octavize-chord (cdr elements ) t)))))
 
-                             (define (octavize music t)
-                             (cond ((eq? (ly:music-property music 'name) 'EventChord)
-                             (ly:music-set-property! music 'elements (octavize-chord
-                             (map (lambda (e) (if (eq? (ly:music-property music 'name) 'EventChord)
-                             (car (ly:music-property e 'elements)) e)) (ly:music-property music 'elements)) t)))
-                             ((eq? (ly:music-property music 'name) 'NoteEvent)
-                             (set! music (make-music 'EventChord 'elements (list music (octave-up music t) ))))
-                             )
-                             music)
+(define (octavize music t)
+   (cond
+    ((eq? (ly:music-property music 'name) 'EventChord)
+     (ly:music-set-property! music 'elements
+       (octavize-chord
+        (map (lambda (e) (if (eq? (ly:music-property music 'name) 'EventChord)
+                             (let ((elms (ly:music-property e 'elements)))
+                               (if (and (list? elms)(> (length elms) 0)) (car elms) e))
+                             e))
+          (ly:music-property music 'elements)) t)))
+    ((eq? (ly:music-property music 'name) 'NoteEvent)
+     (let ((artics (ly:music-property music 'articulations)))
+       (ly:music-set-property! music 'articulations '())
+       (set! music (make-music 'EventChord 'elements `(,music ,(octave-up music t) ,@artics) ))
+       ))
+    )
+   music)
 
-                             (define-public makeOctaves (define-music-function (parser location arg mus) (integer? ly:music?)
-                             (music-map (lambda (x) (octavize x arg)) mus)))
+(define-public makeOctaves
+   (define-music-function (parser location arg mus) (integer? ly:music?)
+     (music-map (lambda (x) (octavize x arg)) mus)))
