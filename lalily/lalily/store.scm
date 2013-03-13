@@ -50,6 +50,7 @@
 (define-public (put-music path music) #f)
 (define-public (get-music path location) #f)
 (define-public (has-music path dur location) #f)
+(define-public (load-music path . location) #f)
 (define-public (get-music-deep path skey defm location) #f)
 (define-public (collect-music path pred) #f)
 (define-public (get-music-keys path location) #f)
@@ -104,6 +105,24 @@
                            (mus (tree-get music-tree path))
                            (mdur (if (ly:music? mus) (ly:music-length mus)(ly:make-moment 0 0))))
                       (ly:moment<? bdur mdur))))
+
+  (set! load-music (lambda (path . location)
+                     (let ((m (tree-get music-tree path))
+                           (cbs (get-registry-val lalily:get-music-callbacks '())))
+                       (define (search cbs)
+                         (cond
+                          ((ly:music? m) #t)
+                          ((> (length cbs) 0)
+                           (let ((cb (car cbs)))
+                             (if (procedure? cb) (cb path))
+                             (set! m (tree-get music-tree path))
+                             (cond
+                              ((ly:music m) #t)
+                              ((> (length cbs) 1) (search path (cdr cbs)))
+                              (else #f))))
+                          (else #f)))
+                       (search cbs)
+                       )))
 
   (set! get-music-deep (lambda (path skey defm location)
                          (let ((p (tree-get-from-path music-tree path skey #f)))
@@ -342,7 +361,7 @@
                                            (lambda (event)
                                              (let ( (eventname (ly:music-property  event 'name))
                                                     (ret #t) )
-                                               (for-each (lambda (n) (set! ret (and ret (not (eq? eventname n))))) 
+                                               (for-each (lambda (n) (set! ret (and ret (not (eq? eventname n)))))
                                                  '())
                                                ret
                                                ))
