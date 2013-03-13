@@ -17,7 +17,7 @@
 
 (define-module (lalily store))
 
-(use-modules (lily)(lalily lascm)(lalily laly))
+(use-modules (lily)(lalily definitions)(lalily lascm)(lalily laly))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; path substitution
@@ -86,6 +86,7 @@
   (set! put-music (lambda (path music)
                     (tree-set! music-tree path music)))
   (set! get-music (lambda (path location)
+                    (load-music path location)
                     (let ((p (tree-get music-tree path)))
                       (add-template-ref path 'need)
                       (if (ly:music? p) (ly:music-deep-copy p)
@@ -97,6 +98,7 @@
                       )))
 
   (set! has-music (lambda (path dur location)
+                    (load-music path location)
                     (let* ((bdur (cond
                                   ((ly:moment? dur) dur)
                                   ((ly:music? dur) (ly:music-length dur))
@@ -117,9 +119,10 @@
                              (if (procedure? cb) (cb path))
                              (set! m (tree-get music-tree path))
                              (cond
-                              ((ly:music m) #t)
+                              ((ly:music? m) #t)
                               ((> (length cbs) 1) (search path (cdr cbs)))
-                              (else #f))))
+                              (else #f)
+                              )))
                           (else #f)))
                        (search cbs)
                        )))

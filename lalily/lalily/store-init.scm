@@ -96,9 +96,16 @@
 (re-export put-music)
 (re-export get-music)
 (re-export has-music)
+(re-export load-music)
 (re-export get-music-deep)
 (re-export collect-music)
 (re-export display-music-pieces)
+
+(define-public registerMusicCallback
+  (define-void-function (parer location proc)(procedure?)
+    (let ((cbs (get-registry-val lalily:get-music-callbacks '())))
+      (set-registry-val lalily:get-music-callbacks (cons proc cbs))
+    )))
 
 (define-public aGetMusic
   (define-music-function (parser location path)(list?)
