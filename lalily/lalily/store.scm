@@ -84,6 +84,7 @@
                   ))
             )))
   (set! put-music (lambda (path music)
+                    (ly:message "putMusic ~A" (glue-list path "."))
                     (tree-set! music-tree path music)))
   (set! get-music (lambda (path location)
                     (load-music path location)
