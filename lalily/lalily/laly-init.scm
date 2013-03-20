@@ -297,36 +297,17 @@
 ;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (define-public taktMeta
-  (define-music-function (parser location frac count)(fraction? integer?)
+  (define-music-function (parser location frac beat-structure count)(fraction? (list? '()) integer?)
     (let ((nom (car frac))
           (den (cdr frac)))
       (make-music
        'SequentialMusic
        'elements
        (list
-        (make-music
-         'ContextSpeccedMusic
-         'context-type
-         'Timing
-         'element
-         (make-music
-          'SequentialMusic
-          'elements
-          (list
-
-           (make-music
-            'PropertySet
-            'value
-            (cons nom den)
-            'symbol
-            'timeSignatureFraction)
-           (make-music
-            'PropertySet
-            'value
-            (ly:make-moment nom den 0 1)
-            'symbol
-            'measureLength))
-          ))
+        (make-music 'TimeSignatureMusic
+          'beat-structure beat-structure
+          'denominator den
+          'numerator nom)
         (make-music
          'SkipEvent
          'duration
