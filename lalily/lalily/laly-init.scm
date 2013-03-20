@@ -297,40 +297,21 @@
 ;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (define-public taktMeta
-  (define-music-function (parser location frac count)(fraction? integer?)
+  (define-music-function (parser location frac beat-structure count)(fraction? (list? '()) integer?)
     (let ((nom (car frac))
           (den (cdr frac)))
       (make-music
        'SequentialMusic
        'elements
        (list
-        (make-music
-         'ContextSpeccedMusic
-         'context-type
-         'Timing
-         'element
-         (make-music
-          'SequentialMusic
-          'elements
-          (list
-
-           (make-music
-            'PropertySet
-            'value
-            (cons nom den)
-            'symbol
-            'timeSignatureFraction)
-           (make-music
-            'PropertySet
-            'value
-            (ly:make-moment nom den 0 1)
-            'symbol
-            'measureLength))
-          ))
+        (make-music 'TimeSignatureMusic
+          'beat-structure beat-structure
+          'denominator den
+          'numerator nom)
         (make-music
          'SkipEvent
          'duration
-         (ly:make-duration (inexact->exact (/ (log den)(log 2))) 0 (* nom count) 1)))))))
+         (ly:make-duration (ly:intlog2 den) 0 (* nom count) 1)))))))
 
 (define-public taktSkip
   (define-music-function (parser location frac count)(fraction? integer?)
@@ -339,7 +320,16 @@
       (make-music
        'SkipEvent
        'duration
-       (ly:make-duration (inexact->exact (/ (log den)(log 2))) 0 (* nom count) 1)))))
+       (ly:make-duration (ly:intlog2 den) 0 (* nom count) 1)))))
+
+(define-public taktRest
+  (define-music-function (parser location frac count)(fraction? integer?)
+    (let ((nom (car frac))
+          (den (cdr frac)))
+      (make-music
+       'MultiMeasureRestMusic
+       'duration
+       (ly:make-duration (ly:intlog2 den) 0 (* nom count) 1)))))
 
 (define-public inPartial
   (define-music-function
@@ -469,63 +459,3 @@
 (re-export stemBeamLen)
 (re-export makeOctaves)
 
-(define-public shy
-  (let ((shy-type? (lambda (v) (or (number? v)
-                                   (number-pair? v)
-                                   (and
-                                    (list? v)
-                                    (every (lambda (x) (or (number? x)(number-pair? x))) v)
-                                    )
-                                   ))
-          ))
-    (define-music-function (parser location grob dy)(string? shy-type?)
-      (let ((shape-fun (ly:music-function-extract shape))
-            (mod-fun (lambda (m) (cond ((number-pair? m)
-                                        (let ((dy (car m))(dz (cdr m)))
-                                          `((0 . ,dy)(0 . ,(+ dy dz))(0 . ,(+ dy dz))(0 . ,dy))
-                                          ))
-                                   ((number? m)
-                                    `((0 . 0)(0 . ,m)(0 . ,m)(0 . 0))
-                                    )
-                                   (else (ly:input-warning location "type??? ~A ~A ~A" m grob dy) '((0 . 0)(0 . 0)(0 . 0)(0 . 0)))
-                                   )
-                       )))
-        (shape-fun parser location grob
-          (if (list? dy)
-              (map (lambda (y) (mod-fun y)) dy)
-              (mod-fun dy)
-              )
-          )))
-    ))
-(define-public stretch
-  (let ((nol? (lambda (v)(or (number? v)(and (list v)(every number? v))))))
-    (define-music-function (parser location grob xf)(string? nol?)
-      #{ \shape $grob #(if (list? xf)
-                           (map (lambda (x)
-                                  (if (> xf 0)
-                                      `((0 . 0)(,x . 0)(,(* 2 x) . 0)(,(* 3 x) . 0))
-                                      `((,(* 3 x) . 0)(,(* 2 x) . 0)(,(* 1 x) . 0)(0 . 0))
-                                      )
-                                  ) xf)
-                           (if (> xf 0)
-                               `((0 . 0)(,xf . 0)(,(* 2 xf) . 0)(,(* 3 xf) . 0))
-                               `((,(* 3 xf) . 0)(,(* 2 xf) . 0)(,(* 1 xf) . 0)(0 . 0))
-                               )
-                           )
-      #})))
-
-(define-public stretchPunch
-  (let ((nol? (lambda (v)(or (number? v)(and (list? v)(every number? v)))))
-        (nop? (lambda (v)(or (number? v)(and (list? v)(every (lambda (y) (or (number? y)(number-pair? y))) v))))))
-    (define-music-function (parser location grob xf yf)(string? nol? nop?)
-      (if (not (list? xf)) (set! xf (list xf)))
-      (if (not (list? yf)) (set! yf (list yf)))
-      #{ \shape $grob $(map (lambda (x y)
-                              (let* ((oy (if (pair? y) (car y) 0))
-                                     (iy (+ oy (if (pair? y) (cdr y) y))))
-                                (if (> x 0)
-                                    `((0 . ,oy)(,x . ,iy)(,(* 2 x) . ,iy)(,(* 3 x) . ,oy))
-                                    `((,(* 3 x) . ,oy)(,(* 2 x) . ,iy)(,(* 1 x) . ,iy)(0 . ,oy))
-                                    )
-                                )) xf yf)
-      #})))

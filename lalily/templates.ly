@@ -41,7 +41,7 @@
 
 \registerTemplate #'(NOTFOUND)
 #(define-music-function (parser location piece options)(list? list?)
-   (ly:input-message location "No template specified for [~A]!" (glue-list piece "/"))
+   (ly:input-message location "No template specified for [~A]!" (glue-list piece "."))
    (get-music piece location))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -128,11 +128,9 @@
        \new ChordNames \getMusic { } #'(chords)
        \new Staff \with {
          \consists \editionEngraver $piece
-       } <<
+       } \new Voice = "melody" <<
          \getMusicDeep #'meta
-         \new Voice = "melody" {
-           \callTemplate #'(/ global voice) #'() #'() \getMusic #'(melody)
-         }
+         { \callTemplate #'(/ global voice) #'() #'() \getMusic #'(melody) }
        >>
        \stackTemplate ##f #'(lyrics) ##f #'(lyrics) $(assoc-set! options 'voice "melody")
        #'lyric $(let ((st 0))
@@ -150,9 +148,9 @@
      <<
        \new Staff \with {
          \consists \editionEngraver $piece
-       } <<
+       } \new Voice = "melodie" <<
          \getMusicDeep #'meta
-         \new Voice = "melodie" { \autoBeamOff \dynamicUp \getMusic #'(noten) }
+         { \autoBeamOff \dynamicUp \getMusic #'(noten) }
        >>
        \new Lyrics \with {
          \consists \editionEngraver $piece
@@ -170,9 +168,9 @@
        <<
          \new Staff \with {
            \consists \editionEngraver $piece
-         } <<
+         } \new Voice = "melodie" <<
            { \getMusic { \numericTimeSignature } #'(global) \getMusicDeep #'meta }
-           \new Voice = "melodie" { \callTemplate #'(/ global voice) #'() #'() \getMusic #'(melodie) }
+           { \callTemplate #'(/ global voice) #'() #'() \getMusic #'(melodie) }
          >>
          $(make-music 'SimultaneousMusic
             'elements (if (list? repeats)
@@ -248,9 +246,8 @@
                \consists \editionEngraver \musicPath $vocpath
                instrumentName = $inst
                shortInstrumentName = $sinst
-             } <<
+             } \new Voice = $vocpname <<
                { \mergeRestsOn \clef $clef \getMusicDeep #'meta }
-               \new Voice = $vocpname
                { \callTemplate #'(/ global voice) #'() #'() \getMusic $vocpath }
              >>
              \stackTemplate ##f #'(lyrics) ##t $piece $options
@@ -358,17 +355,17 @@
          \new Staff = "SA" \with {
            \consists \editionEngraver \musicPath #'(noten SA)
          } <<
-           { \mergeRestsOn \clef "G" \getMusicDeep #'meta }
            \new Voice = "sop" { \callTemplate #'(/ global voice) #'() #'() \voiceOne \getMusic #'(noten sop) }
            \new Voice = "alt" { \callTemplate #'(/ global voice) #'() #'() \voiceTwo \getMusic #'(noten alt) }
+           { \mergeRestsOn \clef "G" \getMusicDeep #'meta }
          >>
          \stackTemplate ##f #'(.. staff lyrics) ##f #'() $(assoc-set! options 'lyric-voice vocs) #'verse $vv
          \new Staff = "TB" \with {
            \consists \editionEngraver \musicPath #'(noten TB)
          } <<
-           { \mergeRestsOn \clef "bass" \getMusicDeep #'meta }
            \new Voice = "ten" { \callTemplate #'(/ global voice) #'() #'() \voiceOne \getMusic #'(noten ten) }
            \new Voice = "bas" { \callTemplate #'(/ global voice) #'() #'() \voiceTwo \getMusic #'(noten bas) }
+           { \mergeRestsOn \clef "bass" \getMusicDeep #'meta }
          >>
        >>
      #}))
