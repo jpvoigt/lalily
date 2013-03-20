@@ -311,7 +311,7 @@
         (make-music
          'SkipEvent
          'duration
-         (ly:make-duration (inexact->exact (/ (log den)(log 2))) 0 (* nom count) 1)))))))
+         (ly:make-duration (ly:intlog2 den) 0 (* nom count) 1)))))))
 
 (define-public taktSkip
   (define-music-function (parser location frac count)(fraction? integer?)
@@ -320,7 +320,16 @@
       (make-music
        'SkipEvent
        'duration
-       (ly:make-duration (inexact->exact (/ (log den)(log 2))) 0 (* nom count) 1)))))
+       (ly:make-duration (ly:intlog2 den) 0 (* nom count) 1)))))
+
+(define-public taktRest
+  (define-music-function (parser location frac count)(fraction? integer?)
+    (let ((nom (car frac))
+          (den (cdr frac)))
+      (make-music
+       'MultiMeasureRestMusic
+       'duration
+       (ly:make-duration (ly:intlog2 den) 0 (* nom count) 1)))))
 
 (define-public inPartial
   (define-music-function
