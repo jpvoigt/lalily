@@ -220,6 +220,18 @@
       (set-music-folder! cmf)
       )
     (make-music 'SequentialMusic 'void #t)))
+(define-public addOptions
+  (define-music-function (parser location path opts)(list? list?)
+    (let* ((piece (create-music-path #f path))
+           (dopts (get-default-options piece location))
+           (cmf (get-music-folder))
+           (tmpl (get-default-template piece location))
+           )
+      (set-default-template piece tmpl (assoc-set-all! dopts opts))
+      (set-music-folder! cmf)
+      )
+    (make-music 'SequentialMusic 'void #t)))
+
 (define-public getOption
   (define-scheme-function (parser location path field default)((list? '()) string-or-symbol? (scheme? #f))
     (let* ((piece (create-music-path #f path))
