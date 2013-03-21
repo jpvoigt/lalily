@@ -74,6 +74,10 @@
 (re-export setalist)
 (re-export addalist)
 (re-export remalist)
+(re-export clratree)
+(re-export setatree)
+(re-export addatree)
+(re-export rematree)
 
 ; do something anywhere
 (define-public exec (define-music-function (parser location mus)(scheme?)
