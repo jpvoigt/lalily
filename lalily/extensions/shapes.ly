@@ -82,3 +82,10 @@
                 )
             )) xf yf)
    )
+
+\parserDefine stretch
+#(define-music-function (parser location grob xf)(string? nol?)
+   #{ \shape $grob \stretchX #xf #})
+\parserDefine stretchPunch
+#(define-music-function (parser location grob xf yf)(string? nol? nop?)
+   #{ \shape $grob \stretchXY #xf #yf #})
