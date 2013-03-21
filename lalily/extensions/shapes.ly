@@ -54,7 +54,7 @@
 
 #(define (nol? v) (or (number? v)(and (list v)(every number? v))))
 \parserDefine stretchX
-#(define-scheme-function (parser location grob xf)(string? nol?)
+#(define-scheme-function (parser location xf)(nol?)
    (if (list? xf)
        (map (lambda (x)
               (if (> xf 0)
@@ -70,7 +70,7 @@
 
 #(define (nop? v) (or (number? v)(and (list? v)(every (lambda (y) (or (number? y)(number-pair? y))) v))))
 \parserDefine stretchXY
-#(define-scheme-function (parser location grob xf yf)(string? nol? nop?)
+#(define-scheme-function (parser location xf yf)(nol? nop?)
    (if (not (list? xf)) (set! xf (list xf)))
    (if (not (list? yf)) (set! yf (list yf)))
    (map (lambda (x y)
@@ -83,9 +83,12 @@
             )) xf yf)
    )
 
+% for backward-compatibility
 \parserDefine stretch
 #(define-music-function (parser location grob xf)(string? nol?)
+   (ly:input-message location "deprecated stretch")
    #{ \shape $grob \stretchX #xf #})
 \parserDefine stretchPunch
 #(define-music-function (parser location grob xf yf)(string? nol? nop?)
+   (ly:input-message location "deprecated stretchPunch")
    #{ \shape $grob \stretchXY #xf #yf #})
