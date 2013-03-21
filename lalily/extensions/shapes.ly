@@ -49,8 +49,8 @@
          )
      ))
 \parserDefine shy
-#(define-music-function (parser location dy grob)(shy-type? symbol-list-or-music?)
-   #{ \shape \shY #dy $grob #})
+#(define-music-function (parser location grob dy)(string? shy-type?)
+   #{ \shape $grob \shY #dy #})
 
 #(define (nol? v) (or (number? v)(and (list v)(every number? v))))
 \parserDefine stretchX
