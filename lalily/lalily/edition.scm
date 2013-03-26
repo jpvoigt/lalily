@@ -77,6 +77,15 @@
 
 ;%%%%%%%%%%%%%
 
+(define-class <apply-context> ()
+  (proc #:accessor procedure #:setter set-procedure! #:init-keyword #:proc)
+  )
+(define-method (do-apply ctx (a <apply-context>))
+  ((procedure a) ctx))
+(export do-apply)
+(define-public (apply-context? a)(is-a? a <apply-context>))
+  
+
 (define-class <override> ()
   (once #:init-value #t #:accessor is-once #:setter set-once! #:init-keyword #:once)
   (revert #:init-value #f #:accessor is-revert #:setter set-revert! #:init-keyword #:revert)
@@ -182,6 +191,11 @@
                          (set! mods `(,@mods ,mod))
                          #t
                          ))
+                      ((eq? 'ApplyContext (ly:music-property m 'name))
+                       (let* ((proc (ly:music-property m 'procedure))
+                              (mod (make <apply-context> #:proc proc)))
+                       (set! mods `(,@mods ,mod))
+                       ))
                       ((or
                         (eq? 'TextScriptEvent (ly:music-property m 'name))
                         (eq? 'LineBreakEvent (ly:music-property m 'name))
@@ -293,6 +307,8 @@
                                                                    ((propset? mod)
                                                                     (do-propset context mod)
                                                                     (modc+ mod))
+                                                                   ((apply-context? mod)
+                                                                    (do-apply context mod))
                                                                    ((and (ly:music? mod) (eq? 'LineBreakEvent (ly:music-property mod 'name)))
                                                                     (let ((score (ly:context-find context 'Score)))
                                                                       (ly:context-pushpop-property score 'line-break-permission 'force)
