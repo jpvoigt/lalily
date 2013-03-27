@@ -101,10 +101,15 @@
 (re-export collect-music)
 (re-export display-music-pieces)
 
-(define-public registerMusicCallback
+(define-public registerMusicLoadCallback
   (define-void-function (parer location proc)(procedure?)
-    (let ((cbs (get-registry-val lalily:get-music-callbacks '())))
-      (set-registry-val lalily:get-music-callbacks (cons proc cbs))
+    (let ((cbs (get-registry-val lalily:get-music-load-callbacks '())))
+      (set-registry-val lalily:get-music-load-callbacks (cons proc cbs))
+    )))
+(define-public registerMusicStoreCallback
+  (define-void-function (parer location proc)(procedure?)
+    (let ((cbs (get-registry-val lalily:get-music-store-callbacks '())))
+      (set-registry-val lalily:get-music-store-callbacks (cons proc cbs))
     )))
 
 (define-public aGetMusic

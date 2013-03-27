@@ -51,6 +51,7 @@
 (define-public (get-music path location) #f)
 (define-public (has-music path dur location) #f)
 (define-public (load-music path . location) #f)
+(define-public (store-music path . location) #f)
 (define-public (get-music-deep path skey defm location) #f)
 (define-public (collect-music path pred) #f)
 (define-public (get-music-keys path location) #f)
@@ -84,7 +85,8 @@
                   ))
             )))
   (set! put-music (lambda (path music)
-                    (ly:message "putMusic ~A" (glue-list path "."))
+                    (let ((m (store-music path music)))
+                      (if (ly:music? m) (set! music m)))
                     (tree-set! music-tree path music)))
   (set! get-music (lambda (path location)
                     (load-music path location)
@@ -111,7 +113,7 @@
 
   (set! load-music (lambda (path . location)
                      (let ((m (tree-get music-tree path))
-                           (cbs (get-registry-val lalily:get-music-callbacks '())))
+                           (cbs (get-registry-val lalily:get-music-load-callbacks '())))
                        (define (search cbs)
                          (cond
                           ((ly:music? m) #t)
@@ -127,6 +129,13 @@
                           (else #f)))
                        (search cbs)
                        )))
+  (set! store-music (lambda (path music)
+                      (let ((cbs (get-registry-val lalily:get-music-store-callbacks '())))
+                        (for-each (lambda (cb) (let ((m (cb path music)))
+                                                 (if (ly:music? m) (set! music m))
+                                                 )) cbs)
+                        music
+                        )))
 
   (set! get-music-deep (lambda (path skey defm location)
                          (let ((p (tree-get-from-path music-tree path skey #f)))
