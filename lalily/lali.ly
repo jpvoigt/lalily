@@ -43,7 +43,7 @@
 % command to create one score based on the music of the current music folder with PDF and MIDI only if the containing file is compiled directly
 \parserDefine lalilyTest
 #(define-scheme-function (parser location)()
-   (if ((get-registry-val '(lalily runtime test-predicate) lalily-test-location?) parser location)
+   (if ((get-registry-val lalily:test-predicate lalily-test-location?) parser location)
        (let ((score #{
          \score {
            \createScore #'()
@@ -62,8 +62,8 @@
              (post-markup (ly:assoc-get 'post-markup (get-default-options (get-music-folder) location) #f #f))
              (headers (assoc-get 'header (get-music-folder-options location) '()))
              (copyright (get-registry-val '(lalily header copyright) #f))
-             (dolayout (not (eq? (get-registry-val '(lalily runtime test) #t) 'NoLayout)))
-             (domidi (not (eq? (get-registry-val '(lalily runtime test) #t) 'NoMidi)))
+             (dolayout (not (eq? (get-registry-val lalily:test-predicate #t) 'NoLayout)))
+             (domidi (not (eq? (get-registry-val lalily:test-predicate #t) 'NoMidi)))
              )
          (if dolayout
              (begin
@@ -284,7 +284,7 @@
 % default: name of location equals name of parser output
 \parserDefine lalilyTestScore
 #(define-scheme-function (parser location options)(list?)
-   (if ((get-registry-val '(lalily runtime test-predicate) lalily-test-location?) parser location)
+   (if ((get-registry-val lalily:test-predicate lalily-test-location?) parser location)
        (begin
         ((ly:music-function-extract lalilyScore) parser location options)
         (write-lalily-log-file parser)
@@ -292,7 +292,7 @@
    )
 \parserDefine lalilyTestBookpart
 #(define-scheme-function (parser location options)(list?)
-   (if ((get-registry-val '(lalily runtime test-predicate) lalily-test-location?) parser location)
+   (if ((get-registry-val lalily:test-predicate lalily-test-location?) parser location)
        (begin
         ((ly:music-function-extract lalilyBookpart) parser location options)
         (write-lalily-log-file parser)
@@ -300,7 +300,7 @@
    )
 \parserDefine lalilyTestBookpartScore
 #(define-scheme-function (parser location options)(list?)
-   (if ((get-registry-val '(lalily runtime test-predicate) lalily-test-location?) parser location)
+   (if ((get-registry-val lalily:test-predicate lalily-test-location?) parser location)
        (begin
         ((ly:music-function-extract lalilyBookpartScore) parser location options)
         (write-lalily-log-file parser)
@@ -308,7 +308,7 @@
    )
 \parserDefine lalilyTestBookparts
 #(define-scheme-function (parser location options)(list?)
-   (if ((get-registry-val '(lalily runtime test-predicate) lalily-test-location?) parser location)
+   (if ((get-registry-val lalily:test-predicate lalily-test-location?) parser location)
        (begin
         ((ly:music-function-extract lalilyBookparts) parser location options)
         (write-lalily-log-file parser)
