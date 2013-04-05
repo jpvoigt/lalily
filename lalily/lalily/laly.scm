@@ -196,6 +196,26 @@
         (filter (lambda (p) (and (pair? p)(not (equal? (car p) opt)))) l))
       )))
 
+(define-public (get-a-tree parser location name path)
+   (if (string? name) (set! name (string->symbol name)))
+   (let ((opts (ly:parser-lookup parser name)))
+     (define (getval ol op)
+       (let ((sym (car op)))
+         (cond
+          ((> (length op) 1)
+           (let ((al (assoc-get sym ol #f)))
+             (if (list? al)
+                 (getval al (cdr op))
+                 #f)))
+          ((= (length op) 1)
+           (assoc-get (car op) ol #f))
+          (else #f))))
+     (if (list? opts)
+         (getval opts path)
+         (begin
+          (ly:input-warning location "~A is not list (~A)" name opts)
+          #f)
+         )))
 (define (add-a-tree parser location name sympath val assoc-set-append)
   (if (string? name) (set! name (string->symbol name)))
   (let ((opts (ly:parser-lookup parser name)))
@@ -239,6 +259,9 @@
     ))
 
 (define-public clratree clralist)
+(define-public getatree
+   (define-scheme-function (parser location name sympath)(string-or-symbol? list?)
+     (get-a-tree parser location name sympath)))
 (define-public addatree
   (define-void-function (parser location name sympath val)(string-or-symbol? list? scheme?)
     (add-a-tree parser location name sympath val
