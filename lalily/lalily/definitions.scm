@@ -26,6 +26,7 @@
 (define-public lalily:registry-parser-defs '(lalily runtime parser defs))
 
 (define-public lalily:test-predicate '(lalily runtime test-predicate))
+(define-public lalily:create '(lalily runtime create))
 
 (define-public lalily:get-music-load-callbacks '(lalily runtime store load callbacks))
 (define-public lalily:get-music-store-callbacks '(lalily runtime store store callbacks))

@@ -40,60 +40,65 @@
       )
     ))
 
+% command to create one score based on the current "music folder"
+\parserDefine lalilyCreate
+#(define-void-function (parser location)()
+   (let ((score #{
+     \score {
+       \createScore #'()
+       \header { }
+     }
+           #})
+         (bookpart #{
+           \bookpart {
+             \paper {
+               $(get-music-folder-paper location)
+             }
+             \header { }
+           }
+           #})
+         (pre-markup (ly:assoc-get 'pre-markup (get-default-options (get-music-folder) location) #f #f))
+         (post-markup (ly:assoc-get 'post-markup (get-default-options (get-music-folder) location) #f #f))
+         (headers (assoc-get 'header (get-music-folder-options location) '()))
+         (copyright (get-registry-val '(lalily header copyright) #f))
+         (dolayout (not (eq? (get-registry-val lalily:create #t) 'NoLayout)))
+         (domidi (not (eq? (get-registry-val lalily:create #t) 'NoMidi)))
+         )
+     (if dolayout
+         (begin
+          (ly:score-add-output-def! score #{
+            \layout {
+              $(get-music-folder-layout location)
+              \context {
+                \Score
+                \consists \editionEngraver ##f
+                \consists \annoCollect
+              }
+              \context {
+                \Voice
+                \consists \editionEngraver ##f
+              }
+            }
+            #})
+          ))
+     (if domidi (ly:score-add-output-def! score (get-music-folder-midi location)))
+     (if (and copyright (not (assoc-get 'copyright headers)))
+         (set! headers (assoc-set! headers 'copyright copyright)))
+     (set-book-headers! bookpart headers)
+     (log-music-folder)
+     (ly:parser-define! parser '$current-bookpart bookpart)
+     (add-sco-mup parser pre-markup score post-markup)
+     (collect-bookpart-for-book parser bookpart)
+     (write-lalily-log-file parser)
+     ))
+
+
 % command to create one score based on the music of the current music folder with PDF and MIDI only if the containing file is compiled directly
 \parserDefine lalilyTest
-#(define-scheme-function (parser location)()
+#(define-void-function (parser location)()
    (if ((get-registry-val lalily:test-predicate lalily-test-location?) parser location)
-       (let ((score #{
-         \score {
-           \createScore #'()
-           \header { }
-         }
-               #})
-             (bookpart #{
-               \bookpart {
-                 \paper {
-                   $(get-music-folder-paper location)
-                 }
-                 \header { }
-               }
-               #})
-             (pre-markup (ly:assoc-get 'pre-markup (get-default-options (get-music-folder) location) #f #f))
-             (post-markup (ly:assoc-get 'post-markup (get-default-options (get-music-folder) location) #f #f))
-             (headers (assoc-get 'header (get-music-folder-options location) '()))
-             (copyright (get-registry-val '(lalily header copyright) #f))
-             (dolayout (not (eq? (get-registry-val lalily:test-predicate #t) 'NoLayout)))
-             (domidi (not (eq? (get-registry-val lalily:test-predicate #t) 'NoMidi)))
-             )
-         (if dolayout
-             (begin
-              (ly:score-add-output-def! score #{
-                \layout {
-                  $(get-music-folder-layout location)
-                  \context {
-                    \Score
-                    \consists \editionEngraver ##f
-                    \consists \annoCollect
-                  }
-                  \context {
-                    \Voice
-                    \consists \editionEngraver ##f
-                  }
-                }
-                #})
-              ))
-         (if domidi (ly:score-add-output-def! score (get-music-folder-midi location)))
-         (if (and copyright (not (assoc-get 'copyright headers)))
-             (set! headers (assoc-set! headers 'copyright copyright)))
-         (set-book-headers! bookpart headers)
-         (log-music-folder)
-         (ly:parser-define! parser '$current-bookpart bookpart)
-         (add-sco-mup parser pre-markup score post-markup)
-         (collect-bookpart-for-book parser bookpart)
-         (write-lalily-log-file parser)
-         )
-       )
-   )
+       ((ly:music-function-extract lalilyCreate) parser location)
+       ))
 
 % create one score based on current music folder
 \parserDefine lalilyScore
