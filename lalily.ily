@@ -144,17 +144,23 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Std layout
 
-#(define do-layout (and (not (defined? 'lalily-no-output-def))
-                        (not (ly:get-option 'lalily-no-output-def))))
+#(define (do-layout parser)
+   (and
+    (not (eq? #t (ly:parser-lookup parser 'lalilyNoOutputDef)))
+    (not (defined? 'lalily-no-output-def))
+    (not (ly:get-option 'lalily-no-output-def))
+    ))
 
 % if allowed, set global paper and layout with default
-\includeRelIf "lalily/output-default.ly" #(lambda (parser location)
-                                            (let ((ret do-layout))
-                                              (if (and (not ret) (lalily:verbose))(ly:message "no lalily output-defs!"))
-                                              ret))
+\includeRelIf "lalily/output-default.ly"
+#(lambda (parser location)
+   (let ((ret (do-layout parser)))
+     (if (and (not ret) (lalily:verbose))
+         (ly:message "no lalily output-defs!"))
+     ret))
 
 #(let ((gss (get-registry-val '(lalily paper global-staff-size))))
-   (if (and do-layout (number? gss)) (set-global-staff-size gss)))
+   (if (and (do-layout parser) (number? gss)) (set-global-staff-size gss)))
 
 % look for lalily templates
 \includeOncePattern "lalily" "^templates(\..*)?\.ly$" % once?
