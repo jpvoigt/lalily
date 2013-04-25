@@ -86,9 +86,9 @@
 % for backward-compatibility
 \parserDefine stretch
 #(define-music-function (parser location grob xf)(string? nol?)
-   (ly:input-message location "deprecated stretch")
+   (if (lalily:verbose) (ly:input-message location "deprecated stretch"))
    #{ \shape $grob \stretchX #xf #})
 \parserDefine stretchPunch
 #(define-music-function (parser location grob xf yf)(string? nol? nop?)
-   (ly:input-message location "deprecated stretchPunch")
+   (if (lalily:verbose) (ly:input-message location "deprecated stretchPunch"))
    #{ \shape $grob \stretchXY #xf #yf #})
