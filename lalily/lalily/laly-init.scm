@@ -131,12 +131,15 @@
 (re-export lalily-test-location?)
 (define-public bookpartIf
   (define-void-function (parser location proc bookpart)((procedure? lalily-test-location?) ly:book?)
-    (if (proc parser location)
-        (begin
-         ;(set-book-headers! bookpart (assoc-get 'header (get-music-folder-options location) '()))
-         (collect-bookpart-for-book parser bookpart)
-         ))
-    ))
+    (let ((book (ly:parser-lookup parser '$current-book)))
+      (if (proc parser location)
+          (begin
+           ;(set-book-headers! bookpart (assoc-get 'header (get-music-folder-options location) '()))
+           (if book
+               (ly:book-add-bookpart! book bookpart)
+               (collect-bookpart-for-book parser bookpart)
+               )))
+      )))
 
 (define-public (set-book-headers! book header)
   (let ((bookhead (ly:book-header book)))
