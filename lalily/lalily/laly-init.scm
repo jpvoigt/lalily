@@ -129,17 +129,19 @@
       (make-music 'SequentialMusic 'void #t))))
 
 (re-export lalily-test-location?)
+(define-public bookpartAdd
+  (define-void-function (parser location bookpart)(ly:book?)
+    (let ((book (ly:parser-lookup parser '$current-book)))
+      ;(set-book-headers! bookpart (assoc-get 'header (get-music-folder-options location) '()))
+      (if book
+          (ly:book-add-bookpart! book bookpart)
+          (collect-bookpart-for-book parser bookpart)
+          ))))
 (define-public bookpartIf
   (define-void-function (parser location proc bookpart)((procedure? lalily-test-location?) ly:book?)
-    (let ((book (ly:parser-lookup parser '$current-book)))
-      (if (proc parser location)
-          (begin
-           ;(set-book-headers! bookpart (assoc-get 'header (get-music-folder-options location) '()))
-           (if book
-               (ly:book-add-bookpart! book bookpart)
-               (collect-bookpart-for-book parser bookpart)
-               )))
-      )))
+    (if (proc parser location)
+        ((ly:music-function-extract bookpartAdd) parser location bookpart)
+        )))
 
 (define-public (set-book-headers! book header)
   (let ((bookhead (ly:book-header book)))
