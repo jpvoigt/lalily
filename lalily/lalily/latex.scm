@@ -92,7 +92,7 @@
                ; height of our box in mm
                (height (chain-assoc-get 'tex-height props (- (content-height layout props) (chain-assoc-get 'bottom-gap props (if perc 0 3)))))
                ; the text to fill into template.tex
-               (text (markup->tex m #f #f props))
+               (text (if (and (string? m) (file-exists? m)) (ly:gulp-file m) (markup->tex m #f #f props)))
                ; basename of working files
                (basename (strftime (format "~A-%Y%m%d%H%M%S" cmd) (localtime (current-time))))
                ; result of each command

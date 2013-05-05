@@ -17,13 +17,15 @@
 
 (use-modules (lalily latex))
 
+; warn file not found?
+;(define (string-or-markup-list? v) (or (string? v) (markup-list? v)))
 ; pdflatex markup-list command
-(define-markup-list-command (pdflatex layout props m)(markup-list?)
+(define-markup-list-command (pdflatex layout props m)(markup?)
   (tex-markup-list layout props 
     `("\\usepackage[utf8]{inputenc}") "pdflatex" "-interaction=batchmode" m))
 
 ; xelatex markup-list command
-(define-markup-list-command (xelatex layout props m)(markup-list?)
+(define-markup-list-command (xelatex layout props m)(markup?)
   (tex-markup-list layout props 
     `("\\usepackage{xunicode}" "\\usepackage[T1]{fontspec}" 
       "\\defaultfontfeatures{Mapping=tex-text}"
