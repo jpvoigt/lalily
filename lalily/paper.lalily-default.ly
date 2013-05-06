@@ -198,7 +198,7 @@ markupCopyrightBack = \markup \column {
           \on-the-fly #has-catname \concat { \hspace #2 \bold \fontsize #-3 { \sans \concat { \fromproperty #'header:catname "-" \cat-number } } }
           \on-the-fly #has-copyright \concat { \hspace #2 \fontsize #-3 { \char #169 " " \year " " \fromproperty #'header:copyright } }
           
-          \on-the-fly #not-one-page \bold { \fromproperty #'page:page-number-string }
+          \on-the-fly #not-one-page \bold { \hspace #1 \fromproperty #'page:page-number-string }
         }
       }
     }
@@ -210,7 +210,7 @@ markupCopyrightBack = \markup \column {
       \override #'(baseline-skip . 1)
       \column {
         \sloppyline {
-          \on-the-fly #not-one-page \bold { \fromproperty #'page:page-number-string }
+          \on-the-fly #not-one-page \bold { \fromproperty #'page:page-number-string \hspace #1 }
           
           \on-the-fly #has-copyright \concat { \fontsize #-3 { \char #169 " " \year " " \fromproperty #'header:copyright } \hspace #2 }
           \on-the-fly #has-catname \concat { \bold \fontsize #-3 { \sans \concat { \fromproperty #'header:catname "-" \cat-number } } \hspace #2 }
