@@ -124,7 +124,7 @@
               ; write <basename>.tex
               (with-output-to-file (format "~A.tex" basename) (lambda ()
                         (format #t "\\documentclass~A{scrartcl}
-\\usepackage[paperwidth=~Amm,paperheight=~Amm,margin=0mm]{geometry}
+\\usepackage[paperwidth=~Amm,paperheight=~Amm,margin=~Amm]{geometry}
 \\usepackage[~A]{babel}
 ~A
 \\begin{document}
@@ -132,6 +132,7 @@
 \\end{document}
 " 
                                    scropts width height
+                                   (chain-assoc-get 'tex-margin props 1)
                                    (chain-assoc-get 'babel props "ngerman") 
                                    (glue-list pkgs "\n")
                                    text)))
