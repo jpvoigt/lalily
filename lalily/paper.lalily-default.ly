@@ -167,7 +167,7 @@ markupCopyrightBack = \markup \column {
                                                           (mtoc (chain-assoc-get 'toc:current props))
                                                           (stoc (if (markup? mtoc) (string-trim-both (markup->string mtoc)) ""))
                                                           (mlist (list)))
-                                                     (if (> (string-length ssection) 0) (set! mlist (list msection)))
+                                                     (if (> (string-length ssection) 0) (set! mlist (list (markup #:italic msection))))
                                                      (if (> (string-length stitle) 0) (set! mlist `(,@mlist ,@(if (> (length mlist) 0) (list ", ")(list)) ,mtitle)))
                                                      (if (and (> (string-length stoc) 0) (not (string=? stitle stoc))) 
                                                          (set! mlist `(,@mlist ,@(if (> (length mlist) 0) (list ", ")(list)) ,mtoc)))
