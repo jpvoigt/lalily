@@ -29,7 +29,7 @@
 ; xelatex markup-list command
 (define-markup-list-command (xelatex layout props m)(markup-list?)
   (tex-markup-list layout props 
-    `("\\usepackage{xunicode}" "\\usepackage[T1]{fontspec}" 
+    `("\\usepackage[T1]{fontenc}" "\\usepackage{fontspec}"
       "\\defaultfontfeatures{Mapping=tex-text}"
       ,(format "\\setmainfont{~A}" (chain-assoc-get 'font-family props "DejaVu Serif"))
       ,@(chain-assoc-get 'packages props '())
@@ -38,7 +38,7 @@
 ; xelatex markup-list include command
 (define-markup-list-command (xelatexInclude layout props m)(string?)
   (tex-markup-list layout props 
-    `("\\usepackage{xunicode}" "\\usepackage[T1]{fontspec}" 
+    `("\\usepackage[T1]{fontenc}" "\\usepackage{fontspec}"
       "\\defaultfontfeatures{Mapping=tex-text}"
       ,(format "\\setmainfont{~A}" (chain-assoc-get 'font-family props "DejaVu Serif"))
       ,@(chain-assoc-get 'packages props '())

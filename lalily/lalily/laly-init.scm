@@ -23,6 +23,20 @@
 (define-public (ly:music-function-exec fun parser location . args)
   (apply (ly:music-function-extract fun) parser location args))
 
+(define-public applyParser
+  (define-void-function (parser location proc)(procedure?)
+    (proc parser location)))
+
+
+(re-export location-extract-path)
+(define-public (file-path location rel)
+  (let ((dir (location-extract-path location)))
+    (normalize-path-string (string-append dir rel))))
+(define-public filePath
+  (define-scheme-function (parser location rel)(string?)
+    (file-path location rel)))
+
+
 (re-export extent-size)
 (re-export info-message)
 (define-public displayMessage
@@ -43,26 +57,25 @@
     ))
 
 (define (not-null? v)(not (null? v)))
-(define (symbol-or-string? v)(or (symbol? v)(string? v)))
 
 (re-export lalily:save-def)
 (define-public parserDefine
-  (define-music-function (parser location name val)(symbol-or-string? not-null?)
+  (define-music-function (parser location name val)(string-or-symbol? not-null?)
     (if (string? name) (set! name (string->symbol name)))
     (ly:parser-define! parser name val)
     (lalily:save-def name val)
     (make-music 'SequentialMusic 'void #t)))
 
 (define-public parserDefineMusic
-  (define-music-function (parser location name mus)(symbol-or-string? ly:music?)
+  (define-music-function (parser location name mus)(string-or-symbol? ly:music?)
     ((ly:music-function-extract parserDefine) parser location name mus)
     (make-music 'SequentialMusic 'void #t)))
 (define-public parserDefineMarkup
-  (define-music-function (parser location name mus)(symbol-or-string? markup?)
+  (define-music-function (parser location name mus)(string-or-symbol? markup?)
     ((ly:music-function-extract parserDefine) parser location name mus)
     (make-music 'SequentialMusic 'void #t)))
 (define-public parserDefineScheme
-  (define-music-function (parser location name mus)(symbol-or-string? scheme?)
+  (define-music-function (parser location name mus)(string-or-symbol? scheme?)
     ((ly:music-function-extract parserDefine) parser location name mus)
     (make-music 'SequentialMusic 'void #t)))
 
