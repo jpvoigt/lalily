@@ -181,6 +181,13 @@
          (line-width (or prop-line-width (ly:output-def-lookup layout 'line-width))))
         (eps-file->stencil X line-width file)))
 
+(define-markup-command (combine-list layout props list)(markup-list?)
+   (let ((ml (interpret-markup-list layout props list))
+         (stil empty-stencil))
+     (for-each (lambda (s) (set! stil (ly:stencil-add stil s))) ml)
+     stil
+   ))
+
 (define-public (paper-height layout props)
   (let ((mm (ly:output-def-lookup layout 'mm))
         (height (ly:output-def-lookup layout 'paper-height))
