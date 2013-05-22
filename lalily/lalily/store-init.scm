@@ -569,6 +569,7 @@
             $(if (ly:music? lyrics) #{
               \tag #'cued \new Lyrics \with {
                 \consists #aligncue
+                \consists \editionEngraver ##f
                 fontSize = #-2
                 \override LyricText #'font-shape = #'italic
                 \override StanzaNumber #'font-shape = #'italic
