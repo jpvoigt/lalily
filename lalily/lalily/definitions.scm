@@ -31,3 +31,4 @@
 (define-public lalily:get-music-load-callbacks '(lalily runtime store load callbacks))
 (define-public lalily:get-music-store-callbacks '(lalily runtime store store callbacks))
 
+(define-public lalily:latex:default-font '(lalily latex font default))
