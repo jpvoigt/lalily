@@ -122,12 +122,22 @@
 
 \lalilyInclude "lali.ly"
 
-% look for local config
-\includeOnceIfExists "lalily-config.ly" %once?
-% look for lalily paper/layout
+% look for lalily paper/layout/midi
 \includeOncePattern "lalily" "^paper(\..*)?\.ly$" % once?
 \includeOncePattern "lalily" "^layout(\..*)?\.ly$" % once?
+\includeOncePattern "lalily" "^midi(\..*)?\.ly$" % once?
+% look for extensions
+\includeOncePattern "lalily/extensions" "^.*\.ly$" % once?
+\includeOncePattern "lalily-extensions" "^.*\.ly$" % once?
+\includeOncePattern "../lalily-extensions" "^.*\.ly$" % once?
 
+% look for local paper/layout/midi
+\includeOnceIfExists "lalily-paper.ly" % once?
+\includeOnceIfExists "lalily-layout.ly" % once?
+\includeOnceIfExists "lalily-midi.ly" % once?
+
+% look for local config
+\includeOnceIfExists "lalily-config.ly" %once?
 #(if (and (defined? 'lalilyConfig)(list? lalilyConfig))
      (for-each (lambda (p)
                  (if (and (pair? p)(list? (car p)))
@@ -137,9 +147,13 @@
                       ))
                  ) lalilyConfig))
 
-\includeOncePattern "lalily/extensions" "^.*\.ly$" % once?
-\includeOncePattern "lalily-extensions" "^.*\.ly$" % once?
-\includeOncePattern "../lalily-extensions" "^.*\.ly$" % once?
+% look for lalily templates
+\includeOncePattern "lalily" "^templates(\..*)?\.ly$" % once?
+% look for local templates
+\includeOnceIfExists "lalily-templates.ly" % once?
+
+% look for editions
+\includeOnceIfExists "lalily-edition.ly" % once?
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Std layout
@@ -162,9 +176,3 @@
 #(let ((gss (get-registry-val '(lalily paper global-staff-size))))
    (if (and (do-layout parser) (number? gss)) (set-global-staff-size gss)))
 
-% look for lalily templates
-\includeOncePattern "lalily" "^templates(\..*)?\.ly$" % once?
-% look for local templates
-\includeOnceIfExists "lalily-templates.ly" % once?
-% look for editions
-\includeOnceIfExists "lalily-edition.ly" % once?
