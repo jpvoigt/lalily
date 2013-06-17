@@ -201,6 +201,11 @@
                         (eq? 'LineBreakEvent (ly:music-property m 'name))
                         (eq? 'PageBreakEvent (ly:music-property m 'name))
                         (eq? 'PageTurnEvent (ly:music-property m 'name))
+                        
+                        (eq? 'OttavaMusic (ly:music-property m 'name))
+                        (eq? 'PartCombineForceEvent (ly:music-property m 'name))
+                        (eq? 'ExtenderEvent (ly:music-property m 'name))
+                        (eq? 'HyphenEvent (ly:music-property m 'name))
                         )
                        (set! mods `(,@mods ,m))
                        #t
@@ -265,7 +270,8 @@
 
                                     ; (if (lalily:verbose) (ly:message "looking for editions in ~A" (glue-list path "/")))
                                     )))
-                               (pci (lambda (engraver grob source-engraver)
+                               ; paper column interface
+                               (paper-column-interface (lambda (engraver grob source-engraver)
                                       (let ((takt (ly:context-property context 'currentBarNumber))
                                             (pos (ly:context-property context 'measurePosition)))
                                         (if (eq? #t (ly:grob-property grob 'non-musical))
@@ -278,11 +284,11 @@
                                                       (lambda (mod)
                                                         (cond
                                                          ((and (ly:music? mod) (eq? 'LineBreakEvent (ly:music-property mod 'name)))
-                                                          (set! (ly:grob-property grob 'line-break-permission) 'force))
+                                                          (set! (ly:grob-property grob 'line-break-permission) (ly:music-property mod 'break-permission)))
                                                          ((and (ly:music? mod) (eq? 'PageBreakEvent (ly:music-property mod 'name)))
-                                                          (set! (ly:grob-property grob 'page-break-permission) 'force))
+                                                          (set! (ly:grob-property grob 'page-break-permission) (ly:music-property mod 'break-permission)))
                                                          ((and (ly:music? mod) (eq? 'PageTurnEvent (ly:music-property mod 'name)))
-                                                          (set! (ly:grob-property grob 'page-turn-permission) 'force))
+                                                          (set! (ly:grob-property grob 'page-turn-permission) (ly:music-property mod 'break-permission)))
                                                          )) mods)))) (editions)))
                                         )))
                                (start-translation-timestep
@@ -309,14 +315,6 @@
                                                                     (modc+ mod))
                                                                    ((apply-context? mod)
                                                                     (do-apply context mod))
-                                                                   ((and (ly:music? mod) (eq? 'LineBreakEvent (ly:music-property mod 'name)))
-                                                                    (let ((score (ly:context-find context 'Score)))
-                                                                      (ly:context-pushpop-property score 'line-break-permission 'force)
-                                                                      (ly:broadcast (ly:context-event-source score)
-                                                                        (ly:make-stream-event 'line-break-event
-                                                                          '((break-permission . force))))
-                                                                      (modc+ mod)
-                                                                      ))
                                                                    ((ly:context-mod? mod)
                                                                     (ly:context-mod-apply! context mod)
                                                                     (modc+ mod))
@@ -404,7 +402,7 @@
                           `(
                             (initialize . ,initialize)
                             (acknowledgers
-                             (paper-column-interface . ,pci)
+                             (paper-column-interface . ,paper-column-interface)
                              )
                             (start-translation-timestep . ,start-translation-timestep)
                             (stop-translation-timestep . ,stop-translation-timestep)
