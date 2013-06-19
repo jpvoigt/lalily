@@ -118,11 +118,16 @@
         (ly:parser-include-string parser (format "\\include \"~A\"\n" file)))
     (make-music 'SequentialMusic 'void #t)))
 
-(define-public includeRelIf
-  (define-music-function (parser location file proc)(string? procedure?)
+(define-public includeRelative
+  (define-void-function (parser location file)(string?)
     (let ((filename (string-append (location-extract-path location) file)))
-      (if (proc parser location) (ly:parser-include-string parser (format "\\include \"~A\"\n" filename)))
-      (make-music 'SequentialMusic 'void #t))))
+      (ly:parser-include-string parser (format "\\include \"~A\"\n" filename))
+      )))
+(define-public includeRelIf
+  (define-void-function (parser location file proc)(string? procedure?)
+      (if (proc parser location) 
+          (ly:music-function-exec includeRelative parser location file))
+      ))
 
 (re-export includePattern)
 (re-export includeOncePattern)
