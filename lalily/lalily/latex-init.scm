@@ -49,11 +49,22 @@
     ))
 ; xelatex markup-list include command
 (define-markup-list-command (xelatexInclude layout props m)(string?)
-  (tex-markup-list layout props
-    `("\\usepackage[T1]{fontenc}" "\\usepackage{fontspec}"
-       "\\defaultfontfeatures{Mapping=tex-text}"
-       ,(format "\\setmainfont{~A}" (chain-assoc-get 'font-family props "Times New Roman"))
-       ,@(chain-assoc-get 'packages props '())
-       )
-    "xelatex" "-interaction=batchmode" m))
+  (let ((font-name (chain-assoc-get 'font-name props #f)))
+    (if (not (string? font-name))
+        (begin
+         (set! font-name (chain-assoc-get 'font-family props #f))
+         (if (string? font-name)
+             (ly:warning "using deprecated property 'font-family for '~A'" font-name)
+             (begin
+              (set! font-name (get-registry-val lalily:latex:default-font "DejaVu Serif"))
+              (ly:warning "no font-name defined! trying '~A' ..." font-name)
+              ))
+         ))
+    (tex-markup-list layout props
+      `("\\usepackage[T1]{fontenc}" "\\usepackage{fontspec}"
+         "\\defaultfontfeatures{Mapping=tex-text}"
+         ,(format "\\setmainfont{~A}" font-name)
+         ,@(chain-assoc-get 'packages props '())
+         )
+      "xelatex" "-interaction=batchmode" m)))
 
