@@ -19,9 +19,8 @@
 
 (set-registry-val lalily:registry-verbose #t)
 
-(set-registry-val '(lalily paper global-staff-size) 16)
-(set-registry-val '(lalily paper default) '(lalily default))
-
+(set-registry-val lalily:paper:global-staff-size 16)
+(set-registry-val lalily:paper:default '(lalily default))
 (set-registry-val '(lalily layout default) '(lalily default))
 (set-registry-val '(lalily midi default) '(lalily default))
 

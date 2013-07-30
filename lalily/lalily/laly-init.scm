@@ -15,7 +15,7 @@
 ;;;; You should have received a copy of the GNU General Public License
 ;;;; along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-(use-modules (lalily laly)(lalily lascm)(lalily markup))
+(use-modules (lalily laly)(lalily lascm)(lalily markup)(lalily store))
 
 (re-export lalily:verbose)
 (re-export lalily:parser)
@@ -186,6 +186,7 @@
 
 (define-public setGlobalStaffSize
   (define-void-function (parser location size)(number?)
+    (set-registry-val lalily:paper:global-staff-size size)
     (set-global-staff-size size)))
 
 (define-public midiTempo
