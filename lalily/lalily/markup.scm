@@ -264,14 +264,16 @@
 (define-markup-command (year layout props)()
   (let ((mup (get-markup-producer year-markup)))
     (interpret-markup layout props (mup layout props (list)))))
-(register-markup-producer year-markup (lambda (layout props args)
-                                        (markup (strftime "%Y" (localtime (current-time))))))
+(register-markup-producer year-markup
+  (lambda (layout props args)
+    (markup (strftime "%Y" (localtime (current-time))))
+    ))
 
 (define-markup-command (copyright layout props)()
   (let ((mup (get-markup-producer copyright-markup)))
     (interpret-markup layout props (mup layout props (list)))))
-(register-markup-producer copyright-markup (lambda (layout props args)
-                                             (markup #:char 169 #:year #:fromproperty 'header:copyright )))
+(register-markup-producer copyright-markup
+  (lambda (layout props args) (markup #:char 169 (if (not (chain-assoc-get 'header:copyright-no-year props #f))(markup #:year) "") #:fromproperty 'header:copyright )))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -338,30 +340,38 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; a markup-serializer
 
-(define-public (object->serialize o)
-  (cond
-   ((symbol? o) (format "#'~A" o))
-   ((boolean? o) (format "#~A" o))
-   ((number? o) (format "#~A" o))
-   ((string? o) (format "\"~A\"" o))
-   ((markup? o) (markup->lily o))
-   ((markup-list? o)
-    (apply string-append "{" (append (map (lambda (s) (string-append " " (object->serialize s))) o) '(" }"))))
-   ((list? o)
-    (apply string-append "#(list" (append (map (lambda (s) (string-append " " (object->serialize s))) o) '(")"))))
-   ((pair? o)
-    (format "#(cons ~A ~A)" (car o)(cdr o)))
-   ))
 (define-public (markup->lily mup)
-  (cond
-   ((string? mup) (object->serialize mup))
-   ((and (pair? mup) (markup-function? (car mup))
-         (let ((mn (symbol->string (procedure-name (car mup)))))
-           (format "\\~A ~A" (substring mn 0 (- (string-length mn) 7))
-             (apply string-append
-               (map (lambda (a) (string-append " " (object->serialize a))) (cdr mup))))
-           )))
-   ))
+  (let ((str (string? mup)))
+    (define (object->serialize o)
+      (cond
+       ((symbol? o) (format "#'~A" o))
+       ((boolean? o) (format "#~A" o))
+       ((number? o) (format "#~A" o))
+       ((string? o) (format "#\"~A\"" o))
+       ((markup? o) (markup-to-lily o))
+       ((markup-list? o)
+        (apply string-append "{" (append (map (lambda (s) (string-append " " (markup-to-lily s))) o) '(" }"))))
+       ((list? o)
+        (apply string-append "#(list" (append (map (lambda (s) (string-append " " (object->serialize s))) o) '(")"))))
+       ((pair? o)
+        (format "#(cons ~A ~A)" (car o)(cdr o)))
+       ))
+    (define (markup-to-lily mup)
+      (cond
+       ((string? mup) (format "\"~A\"" mup))
+       ((and (pair? mup) (markup-function? (car mup))
+             (let* ((ms (procedure-name (car mup)))
+                    (mn (symbol->string ms)))
+               (if (eq? 'simple-markup ms)
+                   (format "\"~A\"" (cadr mup))
+                   (format "\\~A ~A" (substring mn 0 (- (string-length mn) 7))
+                     (apply string-append
+                       (map (lambda (a) (string-append " " (object->serialize a))) (cdr mup))))
+                   ))))
+       ))
+    (if str (string-append "\"" mup "\"")
+        (string-append "\\markup " (markup-to-lily mup)))
+    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; barcodes
