@@ -346,7 +346,9 @@
 %%% SATB 2 Systeme
 \registerTemplate #'(choral lied satb2)
 #(define-music-function (parser location piece options)(list? list?)
-   (let ((vocs (assoc-get 'lyric-voice options "sop"))
+   (let ((sa-clef (assoc-get 'sa-clef options "G"))
+         (tb-clef (assoc-get 'tb-clef options "bass"))
+         (vocs (assoc-get 'lyric-voice options "sop"))
          (vv (assoc-get 'verses options (get-music-keys (create-music-path #f '(text)) location))))
      #{
        \new StaffGroup \with {
@@ -357,7 +359,7 @@
          } <<
            \new Voice = "sop" { \callTemplate #'(/ global voice) #'() #'() \voiceOne \getMusic #'(noten sop) }
            \new Voice = "alt" { \callTemplate #'(/ global voice) #'() #'() \voiceTwo \getMusic #'(noten alt) }
-           { \mergeRestsOn \clef "G" \getMusicDeep #'meta }
+           { \mergeRestsOn \clef #sa-clef \getMusicDeep #'meta }
          >>
          \stackTemplate ##f #'(.. staff lyrics) ##f #'() $(assoc-set! options 'lyric-voice vocs) #'verse $vv
          \new Staff = "TB" \with {
@@ -365,7 +367,7 @@
          } <<
            \new Voice = "ten" { \callTemplate #'(/ global voice) #'() #'() \voiceOne \getMusic #'(noten ten) }
            \new Voice = "bas" { \callTemplate #'(/ global voice) #'() #'() \voiceTwo \getMusic #'(noten bas) }
-           { \mergeRestsOn \clef "bass" \getMusicDeep #'meta }
+           { \mergeRestsOn \clef #tb-clef \getMusicDeep #'meta }
          >>
        >>
      #}))
