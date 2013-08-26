@@ -42,40 +42,59 @@
    (if (jpv:print-version layout)
        (interpret-markup layout props (markup #:tiny #:sans versionString))
        empty-stencil))
-markupCopyright = \markup \column {
-  \fill-line {
-    \jpv-cond-override #(lambda (layout props)(if (jpv:print-version layout) 0 2.5)) #'baseline-skip 
-    \left-column {
-      \line { \copyright \on-the-fly #has-rightinfo { ", " \fromproperty #'header:rightinfo } }
-      { \teeny \sans \line { 
-        "Vervielfältigungen jeglicher Art sind gesetzlich verboten / Any unauthorized reproduction is prohibited by law"
-      } }
-      \versionMarkup
-    }
-    \jpv-cond-override #(lambda (layout props)(if (jpv:print-version layout) 0 2.5)) #'baseline-skip 
-    \typewriter \right-column {
-      \on-the-fly #has-catname \concat { \fromproperty #'header:catname "-" \cat-number }
-      \teeny \on-the-fly #has-ismn \concat { "ISMN " \fromproperty #'header:ismn }
-    }
-  }  
-}
-markupCopyrightBack = \markup \column {
-  \fill-line {
-    \jpv-cond-override #(lambda (layout props)(if (jpv:print-version layout) 0 2.5)) #'baseline-skip 
-    \typewriter \left-column {
-      \on-the-fly #has-catname \concat { \fromproperty #'header:catname "-" \cat-number }
-      \teeny \on-the-fly #has-ismn \concat { "ISMN " \fromproperty #'header:ismn }
-    }
-    \jpv-cond-override #(lambda (layout props)(if (jpv:print-version layout) 0 2.5)) #'baseline-skip 
-    \right-column {
-      \line { \on-the-fly #has-rightinfo { \fromproperty #'header:rightinfo ", " } \copyright }
-      { \teeny \sans \line { 
-        "Vervielfältigungen jeglicher Art sind gesetzlich verboten / Any unauthorized reproduction is prohibited by law"
-      } }
-      \versionMarkup
-    }
-  }
-}
+
+markupCopyright = \markup
+\execMarkup #(lambda (layout props)
+               (chain-assoc-get 'header:markupCopyright props
+                 (ly:output-def-lookup layout 'markupCopyright
+                   #{
+                     \markup {
+                       \column {
+                         \fill-line {
+                           \jpv-cond-override #(lambda (layout props)(if (jpv:print-version layout) 0 2.5)) #'baseline-skip
+                           \left-column {
+                             \line { \copyright \on-the-fly #has-rightinfo { ", " \fromproperty #'header:rightinfo } }
+                             {
+                               \teeny \sans \line {
+                                 "Vervielfältigungen jeglicher Art sind gesetzlich verboten / Any unauthorized reproduction is prohibited by law"
+                             } }
+                             \versionMarkup
+                           }
+                           \jpv-cond-override #(lambda (layout props)(if (jpv:print-version layout) 0 2.5)) #'baseline-skip
+                           \typewriter \right-column {
+                             \on-the-fly #has-catname \concat { \fromproperty #'header:catname "-" \cat-number }
+                             \teeny \on-the-fly #has-ismn \concat { "ISMN " \fromproperty #'header:ismn }
+                           }
+                         }
+                       }
+                     }
+                   #})))
+markupCopyrightBack = \markup
+\execMarkup #(lambda (layout props)
+               (chain-assoc-get 'header:markupCopyright props
+                 (ly:output-def-lookup layout 'markupCopyright
+                   #{
+                     \markup {
+                       \column {
+                         \fill-line {
+                           \jpv-cond-override #(lambda (layout props)(if (jpv:print-version layout) 0 2.5)) #'baseline-skip
+                           \typewriter \left-column {
+                             \on-the-fly #has-catname \concat { \fromproperty #'header:catname "-" \cat-number }
+                             \teeny \on-the-fly #has-ismn \concat { "ISMN " \fromproperty #'header:ismn }
+                           }
+                           \jpv-cond-override #(lambda (layout props)(if (jpv:print-version layout) 0 2.5)) #'baseline-skip
+                           \right-column {
+                             \line { \on-the-fly #has-rightinfo { \fromproperty #'header:rightinfo ", " } \copyright }
+                             {
+                               \teeny \sans \line {
+                                 "Vervielfältigungen jeglicher Art sind gesetzlich verboten / Any unauthorized reproduction is prohibited by law"
+                             } }
+                             \versionMarkup
+                           }
+                         }
+                       }
+                     }
+                   #})))
 
 \registerPaper #'(lalily default) \paper {
   two-sided = ##t
@@ -83,9 +102,9 @@ markupCopyrightBack = \markup \column {
   outer-margin = 20\mm
   top-margin = 12\mm
   bottom-margin = 12\mm
-  
+
   indent = 3
-  
+
   markup-system-spacing = #'((basic-distance . 12)
                              (minimum-distance . 6)
                              (padding . 1)
@@ -118,14 +137,14 @@ markupCopyrightBack = \markup \column {
                           (minimum-distance . 0)
                           (padding . 0)
                           (stretchability . 10))
-  
-  
+
+
   ragged-last-bottom = ##f
   ragged-bottom = ##f
-  
+
   ragged-last = ##f
   ragged-right = ##f
-  
+
   bookTitleMarkup = \markup {
     \override #'(baseline-skip . 3.5)
     \column {
@@ -156,7 +175,7 @@ markupCopyrightBack = \markup \column {
       }
     }
   }
-  
+
   oddHeaderMarkup = \markup \fill-line { \null \box-ne \fromproperty #'header:instrument }
   evenHeaderMarkup = \markup \null
   titleFooterMarkup = \markup \bold \execMarkup #(lambda (layout props)
@@ -169,27 +188,27 @@ markupCopyrightBack = \markup \column {
                                                           (mlist (list)))
                                                      (if (> (string-length ssection) 0) (set! mlist (list (markup #:italic msection))))
                                                      (if (> (string-length stitle) 0) (set! mlist `(,@mlist ,@(if (> (length mlist) 0) (list ", ")(list)) ,mtitle)))
-                                                     (if (and (> (string-length stoc) 0) (not (string=? stitle stoc))) 
+                                                     (if (and (> (string-length stoc) 0) (not (string=? stitle stoc)))
                                                          (set! mlist `(,@mlist ,@(if (> (length mlist) 0) (list ", ")(list)) ,mtoc)))
                                                      (make-line-markup mlist)
                                                      ))
-  
-  oddFooterMarkup = \markup \delayed \column { 
+
+  oddFooterMarkup = \markup \delayed \column {
     \on-the-fly #page-copyright \markupCopyright
-    
+
     \on-the-fly #run-page+last-footer {
       \override #'(baseline-skip . 2.5)
       \column {
         \sloppyline {
           \fontsize #-3 {
             \concat {
-              \concat { 
+              \concat {
                 \on-the-fly #has-bookname
                 \italic \concat { \fromproperty #'header:bookname ", " }
                 \on-the-fly #has-booktitle
                 \italic \concat { \fromproperty #'header:booktitle ", " }
               }
-              \on-the-fly #diff-composer \concat { \fromproperties #'(header:composername header:composer) ", " } 
+              \on-the-fly #diff-composer \concat { \fromproperties #'(header:composername header:composer) ", " }
               \execMarkup #(lambda (layout props)(ly:output-def-lookup layout 'titleFooterMarkup
                                                    (markup #:bold #:fromproperties '(header:title toc:current)) ))
               \on-the-fly #has-piece \concat { ", " \fromproperty #'header:piece }
@@ -197,31 +216,31 @@ markupCopyrightBack = \markup \column {
           }
           \on-the-fly #has-catname \concat { \hspace #2 \bold \fontsize #-3 { \sans \concat { \fromproperty #'header:catname "-" \cat-number } } }
           \on-the-fly #has-copyright \concat { \hspace #2 \fontsize #-3 { \char #169 " " \year " " \fromproperty #'header:copyright } }
-          
+
           \on-the-fly #not-one-page \bold { \hspace #1 \fromproperty #'page:page-number-string }
         }
       }
     }
   }
-  evenFooterMarkup = \markup \delayed \column { 
+  evenFooterMarkup = \markup \delayed \column {
     \on-the-fly #page-copyright \markupCopyright
-    
+
     \on-the-fly #run-page+last-footer {
       \override #'(baseline-skip . 1)
       \column {
         \sloppyline {
           \on-the-fly #not-one-page \bold { \fromproperty #'page:page-number-string \hspace #1 }
-          
+
           \on-the-fly #has-copyright \concat { \fontsize #-3 { \char #169 " " \year " " \fromproperty #'header:copyright } \hspace #2 }
           \on-the-fly #has-catname \concat { \bold \fontsize #-3 { \sans \concat { \fromproperty #'header:catname "-" \cat-number } } \hspace #2 }
-          
+
           \fontsize #-3 {
             \concat {
-              \on-the-fly #diff-composer \concat { \fromproperties #'(header:composername header:composer) ", " } 
+              \on-the-fly #diff-composer \concat { \fromproperties #'(header:composername header:composer) ", " }
               \execMarkup #(lambda (layout props)(ly:output-def-lookup layout 'titleFooterMarkup
                                                    (markup #:bold #:fromproperties '(header:title toc:current)) ))
               \on-the-fly #has-piece \concat { ", " \fromproperty #'header:piece }
-              \concat { 
+              \concat {
                 \on-the-fly #has-bookname
                 \italic \concat { ", " \fromproperty #'header:bookname }
                 \on-the-fly #has-booktitle
@@ -233,7 +252,7 @@ markupCopyrightBack = \markup \column {
       }
     }
   }
-  
+
   tocTitleMarkup = \markup \huge \column {
     %\override #`(line-width . ,tocWidth)
     \fill-line { \huge \bold "Inhalt" }
