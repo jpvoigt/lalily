@@ -24,6 +24,31 @@
 
 \parserDefine emptyPage
 #(define-scheme-function (parser location)()
-  #{
-    \bookpart { \paper { $(get-paper '(lalily empty-head-foot)) } \markup \null }
-#})
+   #{
+     \bookpart { \paper { $(get-paper '(lalily empty-head-foot)) } \markup \null }
+   #})
+
+\parserDefine createCopyrightMarkup
+#(define-scheme-function (parser location options)(list?)
+   #{
+     \markup {
+       \column {
+         \fill-line {
+           \jpv-cond-override #(lambda (layout props)(if (jpv:print-version layout) 0 2.5)) #'baseline-skip
+           \left-column {
+             \line { \copyright \on-the-fly #has-rightinfo { ", " \fromproperty #'header:rightinfo } }
+             {
+               \teeny \sans \line {
+                 "Vervielfältigungen jeglicher Art sind gesetzlich verboten / Any unauthorized reproduction is prohibited by law"
+             } }
+             \versionMarkup
+           }
+           \jpv-cond-override #(lambda (layout props)(if (jpv:print-version layout) 0 2.5)) #'baseline-skip
+           \typewriter \right-column {
+             \on-the-fly #has-catname \concat { \fromproperty #'header:catname "-" \cat-number }
+             \teeny \on-the-fly #has-ismn \concat { "ISMN " \fromproperty #'header:ismn }
+           }
+         }
+       }
+     }
+   #})
