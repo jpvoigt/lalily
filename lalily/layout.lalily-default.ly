@@ -76,8 +76,9 @@
   \context {
     \Score
     \override MetronomeMark #'padding = #3
-    \override BarNumber #'stencil = #(make-stencil-rboxer 0.1 0.1 ly:text-interface::print)    
-    \override BarNumber #'font-size = #-1
+    \override BarNumber #'stencil = #(make-stencil-rboxer 0.1 0.4 ly:text-interface::print)    
+    \override BarNumber #'font-size = #0
+    \override BarNumber #'padding = #2
     
     \override StaffGrouper #'default-staff-staff-spacing = #'((basic-distance . 12)
      (minimum-distance . 1)
