@@ -83,6 +83,8 @@
 
 (define-public (tex-markup-list layout props pkgs cmd opts m)
         (let* ((mm (ly:output-def-lookup layout 'mm))
+               (padstart (chain-assoc-get 'padstart props 2))
+               (padlength (* mm (chain-assoc-get 'padlength props 0)))
                (scropts (chain-assoc-get 'scrartcl props ""))
                (size (chain-assoc-get 'line-width props (ly:output-def-lookup layout 'line-width 10)))
                ; width of our box in mm
@@ -147,7 +149,11 @@
                              ; convert page to EPS
                              (set! result (system (format "pdftops -eps -f ~A -l ~A \"~A.pdf\" \"~A\"" pag pag basename pagname)))
                              ; include EPS
-                             (set! text-stencil (eps-file->stencil X size (format "~A-~A.eps" basename pag)))
+                             (set! text-stencil (eps-file->stencil X size pagname))
+                             (if (and (>= pag padstart)(> padlength 0))
+                                 (set! text-stencil (ly:stencil-combine-at-edge 
+                                                     (ly:make-stencil '() (cons 0 size) (cons 0 padlength))
+                                                     Y -1 text-stencil 0)))
                              (set! epslist (append epslist (list text-stencil)))
               )))
               ; remove working files
