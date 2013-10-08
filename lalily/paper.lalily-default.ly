@@ -128,7 +128,7 @@ markupCopyrightBack = \markup
   last-bottom-spacing = #'((basic-distance . 12)
                            (minimum-distance . 6)
                            (padding . 2)
-                           (stretchability . 15))
+                           (stretchability . 5))
   top-system-spacing = #'((basic-distance . 3)
                           (minimum-distance . 3)
                           (padding . 0)
