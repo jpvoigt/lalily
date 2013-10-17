@@ -252,6 +252,8 @@
                                       (let ((par (ly:context-find context 'Score)))
                                         (if (ly:context? par) (topctx par) context)))
                                     (if (not (integer? ccid))(set! ccid 0))
+                                    (tree-set! context-count path (+ ccid 1))
+                                    (ly:message "~A ~A" ccid path)
                                     (set! path `(,@path ,(get-sym ccid)))
                                     (set! tag path)
                                     (tree-set! edition-tree path
@@ -260,9 +262,6 @@
                                                (takt (ly:context-property c 'currentBarNumber))
                                                (mpos (ly:context-property c 'measurePosition)))
                                           (cons takt mpos) )))
-
-                                    (set! ccid (+ 1 ccid))
-                                    (tree-set! context-count path ccid)
 
                                     (set-object-property! eng 'context context)
                                     (set-object-property! eng 'tag-path tag-path)
