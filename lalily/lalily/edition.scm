@@ -253,7 +253,7 @@
                                         (if (ly:context? par) (topctx par) context)))
                                     (if (not (integer? ccid))(set! ccid 0))
                                     (tree-set! context-count path (+ ccid 1))
-                                    (ly:message "~A ~A" ccid path)
+                                    ; (ly:message "~A ~A" ccid path)
                                     (set! path `(,@path ,(get-sym ccid)))
                                     (set! tag path)
                                     (tree-set! edition-tree path
