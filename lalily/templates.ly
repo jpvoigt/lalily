@@ -223,7 +223,7 @@
        (if (not (list? piece))(set! piece (list piece)))
        (let* ((staff (ly:assoc-get 'staff options '() #f))
               (prefix (ly:assoc-get 'prefix options "" #f))
-              (vocname (if (pair? staff) (car staff) (format "voice-~A" ($inc))))
+              (vocname (if (pair? staff) (car staff) (format "voice-~A" (inc))))
               (vocsym #f)
               (vocpname #f)
               (vocpath `(noten ,(cond ((symbol? vocname) vocname)

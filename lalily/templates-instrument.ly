@@ -138,3 +138,8 @@
    (call-template (create-template-path #f '(..)) parser location piece
      (assoc-set-all! options '((name . "violin")))))
 
+\registerTemplate #'(lalily instrument viola)
+#(define-music-function (parser location piece options)(list? list?)
+   (call-template (create-template-path #f '(..)) parser location piece
+     (assoc-set-all! options '((name . "viola")))))
+
