@@ -148,7 +148,7 @@
                  ) lalilyConfig))
 
 % look for lalily templates
-\includeOncePattern "lalily" "^templates(\..*)?\.ly$" % once?
+\includeOncePattern "lalily" "^templates\.?.*\.ly$" % once?
 % look for local templates
 \includeOnceIfExists "lalily-templates.ly" % once?
 
