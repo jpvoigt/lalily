@@ -12,11 +12,13 @@
          (input-concert-pitch (ly:assoc-get 'input-concert-pitch options #t #f))
          (output-concert-pitch (ly:assoc-get 'output-concert-pitch options #t #f))
          (staff-mods (ly:assoc-get 'staff-mods options #f #f))
-         (voice-mods (ly:assoc-get 'voice-mods options #f #f)))
+         (voice-mods (ly:assoc-get 'voice-mods options #f #f))
+         (midi-instrument (assoc-get 'midi-instrument options #f #f)))
      #{
        \new Staff = $name \with {
          $(if (ly:context-mod? staff-mods) staff-mods)
          \consists \editionEngraver $piece
+         midiInstrument = #midi-instrument
        } \new Voice \with {
          $(if (ly:context-mod? voice-mods) voice-mods)
        } {
@@ -82,11 +84,19 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% woodwind
 
+\registerTemplate #'(lalily instrument oboe)
+#(define-music-function (parser location piece options)(list? list?)
+   (call-template (create-template-path #f '(..)) parser location piece
+     (assoc-set-all! options `((name . "english-horn")
+                               (midi-instrument . "oboe")
+                               ))))
+
 \registerTemplate #'(lalily instrument english-horn)
 #(define-music-function (parser location piece options)(list? list?)
    (call-template (create-template-path #f '(..)) parser location piece
      (assoc-set-all! options `((name . "english-horn")
                                (transposition . ,(ly:make-pitch -1 3 0))
+                               (midi-instrument . "english horn")
                                ))))
 
 \registerTemplate #'(lalily instrument sax sop)
@@ -94,12 +104,14 @@
    (call-template (create-template-path #f '(.. ..)) parser location piece
      (assoc-set-all! options `((name . "saxsop")
                                (transposition . ,(ly:make-pitch -1 6 -1/2)) ; b
+                               (midi-instrument . "soprano sax")
                                ))))
 \registerTemplate #'(lalily instrument sax alt)
 #(define-music-function (parser location piece options)(list? list?)
    (call-template (create-template-path #f '(.. ..)) parser location piece
      (assoc-set-all! options `((name . "saxalt")
                                (transposition . ,(ly:make-pitch -1 2 -1/2)) ; ees
+                               (midi-instrument . "alto sax")
                                ))))
 
 \registerTemplate #'(lalily instrument sax ten)
@@ -107,12 +119,14 @@
    (call-template (create-template-path #f '(.. ..)) parser location piece
      (assoc-set-all! options `((name . "saxten")
                                (transposition . ,(ly:make-pitch -2 6 -1/2)) ; b
+                               (midi-instrument . "tenor sax")
                                ))))
 \registerTemplate #'(lalily instrument sax bar)
 #(define-music-function (parser location piece options)(list? list?)
    (call-template (create-template-path #f '(.. ..)) parser location piece
      (assoc-set-all! options `((name . "saxbar")
                                (transposition . ,(ly:make-pitch -2 2 -1/2)) ; ees
+                               (midi-instrument . "baritone sax")
                                ))))
 
 
@@ -124,11 +138,14 @@
    (call-template (create-template-path #f '(..)) parser location piece
      (assoc-set-all! options `((name . "trumpet")
                                (transposition . ,(ly:make-pitch -1 6 -1/2))
+                               (midi-instrument . "trumpet")
                                ))))
 \registerTemplate #'(lalily instrument trombone)
 #(define-music-function (parser location piece options)(list? list?)
    (call-template (create-template-path #f '(..)) parser location piece
-     (assoc-set-all! options '((name . "trombone")))))
+     (assoc-set-all! options '((name . "trombone")
+                               (midi-instrument . "trombone")
+                               ))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% string
@@ -136,10 +153,14 @@
 \registerTemplate #'(lalily instrument violin)
 #(define-music-function (parser location piece options)(list? list?)
    (call-template (create-template-path #f '(..)) parser location piece
-     (assoc-set-all! options '((name . "violin")))))
+     (assoc-set-all! options '((name . "violin")
+                               (midi-instrument . "violin")
+                               ))))
 
 \registerTemplate #'(lalily instrument viola)
 #(define-music-function (parser location piece options)(list? list?)
    (call-template (create-template-path #f '(..)) parser location piece
-     (assoc-set-all! options '((name . "viola")))))
+     (assoc-set-all! options '((name . "viola")
+                               (midi-instrument . "viola")
+                               ))))
 
