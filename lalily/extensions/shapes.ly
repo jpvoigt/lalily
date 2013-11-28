@@ -1,3 +1,4 @@
+\version "2.17.29"
 %%%% This file is part of lalily, an extension to lilypond <http://www.lilypond.org/>.
 %%%%
 %%%% Copyright (C) 2011--2013 Jan-Peter Voigt <jp.voigt@gmx.de>
@@ -50,7 +51,7 @@
      ))
 \parserDefine shy
 #(define-music-function (parser location grob dy)(string? shy-type?)
-   #{ \shape $grob \shY #dy #})
+   #{ \shape \shY #dy $grob #})
 
 #(define (nol? v) (or (number? v)(and (list v)(every number? v))))
 \parserDefine stretchX
@@ -87,8 +88,17 @@
 \parserDefine stretch
 #(define-music-function (parser location grob xf)(string? nol?)
    (if (lalily:verbose) (ly:input-message location "deprecated stretch"))
-   #{ \shape $grob \stretchX #xf #})
+   #{ \shape \stretchX #xf $grob #})
 \parserDefine stretchPunch
 #(define-music-function (parser location grob xf yf)(string? nol? nop?)
    (if (lalily:verbose) (ly:input-message location "deprecated stretchPunch"))
-   #{ \shape $grob \stretchXY #xf #yf #})
+   #{ \shape \stretchXY #xf #yf $grob #})
+
+
+%{
+/usr/bin/python: /home/jpv/lily2.17/lilypond/usr/lib/libz.so.1: no
+version information available (required by /usr/bin/python) convert-ly
+(GNU LilyPond) 2.17.96  convert-ly: »« wird verarbeitet... Anwenden
+der Umwandlung: 2.17.0, 2.17.4, 2.17.5, 2.17.6, 2.17.11, 2.17.14,
+2.17.15, 2.17.18, 2.17.19, 2.17.20, 2.17.25, 2.17.27, 2.17.29
+%}

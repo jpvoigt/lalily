@@ -468,18 +468,8 @@
 (define-public slurMelisma #{ \set melismaBusyProperties = #'(melismaBusy slurMelismaBusy tieMelismaBusy) #})
 (define-public stopMelisma #{ \set melismaBusyProperties = #'() #})
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; re-exports
-(re-export shapeSlur)
-(re-export shapePhSlur)
-(re-export shapeTie)
-(re-export ySlur)
-(re-export yPhSlur)
-(re-export yTie)
-(re-export yySlur)
-(re-export yyPhSlur)
-(re-export yyTie)
 (re-export pTie)
 (re-export extendLV)
 (re-export patBeam)

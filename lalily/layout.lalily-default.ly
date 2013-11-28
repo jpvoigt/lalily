@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.16.0"
+\version "2.17.29"
 
 #(define lalily-relincl-tmp (ly:get-option 'relative-includes))
 #(ly:set-option 'relative-includes #t)
@@ -55,7 +55,7 @@
     \ChoirStaff
     \name "SemiChoirStaff"
     \consists "Span_bar_engraver"
-    \override SpanBar #'stencil =
+    \override SpanBar.stencil =
       #(lambda (grob) 
         (if (string=? (ly:grob-property grob 'glyph-name) "|")
             (set! (ly:grob-property grob 'glyph-name) ""))
@@ -64,36 +64,36 @@
   \context {
     \StaffGroup
     \name "ChoirGroup"
-    \override SpanBar #'transparent = ##t
+    \override SpanBar.transparent = ##t
   }
   \context {
     \Score
     \accepts SemiChoirStaff
     \accepts ChoirGroup
-    \override LyricExtender #'stencil = #lyric-extender::print-applic
+    \override LyricExtender.stencil = #lyric-extender::print-applic
   }
   
   \context {
     \Score
-    \override MetronomeMark #'padding = #3
-    \override BarNumber #'stencil = #(make-stencil-rboxer 0.1 0.4 ly:text-interface::print)    
-    \override BarNumber #'font-size = #0
-    \override BarNumber #'padding = #2
+    \override MetronomeMark.padding = #3
+    \override BarNumber.stencil = #(make-stencil-rboxer 0.1 0.4 ly:text-interface::print)    
+    \override BarNumber.font-size = #0
+    \override BarNumber.padding = #2
     
-    \override StaffGrouper #'default-staff-staff-spacing = #'((basic-distance . 12)
+    \override StaffGrouper.default-staff-staff-spacing = #'((basic-distance . 12)
      (minimum-distance . 1)
      (padding . 1)
      (stretchability . 6))
-    \override StaffGrouper #'nonstaff-relatedstaff-spacing = #'((basic-distance . 6)
+    \override StaffGrouper.nonstaff-relatedstaff-spacing = #'((basic-distance . 6)
      (minimum-distance . 1)
      (padding . 0.5)
      (stretchability . 0))
-    \override StaffGrouper #'nonstaff-unrelatedstaff-spacing = #'((basic-distance . 6)
+    \override StaffGrouper.nonstaff-unrelatedstaff-spacing = #'((basic-distance . 6)
      (minimum-distance . 1)
      (padding . 2)
      (stretchability . 0))
     
-    \override StaffGrouper #'nonstaff-nonstaff-spacing = #'((basic-distance . 6)
+    \override StaffGrouper.nonstaff-nonstaff-spacing = #'((basic-distance . 6)
      (minimum-distance . 1)
      (padding . 1)
      (stretchability . 0))
@@ -101,18 +101,18 @@
   }
   \context {
     \Score
-    \override InstrumentName #'self-alignment-X = #RIGHT
-    \override InstrumentName #'padding = #1
+    \override InstrumentName.self-alignment-X = #RIGHT
+    \override InstrumentName.padding = #1
   }
   \context {
     \Lyrics
-    \override LyricHyphen #'dash-period = #5
-    \override LyricHyphen #'length = #.5
+    \override LyricHyphen.dash-period = #5
+    \override LyricHyphen.length = #.5
   }
   \context {
     \Voice
-    \override Script #'padding = #0.5
-    \override FootnoteItem #'annotation-line = ##f
+    \override Script.padding = #0.5
+    \override FootnoteItem.annotation-line = ##f
   }
   \context { \Voice \remove "Instrument_switch_engraver" }
   \context { \Staff \consists "Instrument_switch_engraver" }
@@ -122,3 +122,12 @@
 \registerMidi #'(lalily default) \midi {
   \tempo 4 = 120
 }
+
+
+%{
+/usr/bin/python: /home/jpv/lily2.17/lilypond/usr/lib/libz.so.1: no
+version information available (required by /usr/bin/python) convert-ly
+(GNU LilyPond) 2.17.96  convert-ly: »« wird verarbeitet... Anwenden
+der Umwandlung: 2.17.0, 2.17.4, 2.17.5, 2.17.6, 2.17.11, 2.17.14,
+2.17.15, 2.17.18, 2.17.19, 2.17.20, 2.17.25, 2.17.27, 2.17.29
+%}

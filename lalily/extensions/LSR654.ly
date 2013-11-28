@@ -1,3 +1,4 @@
+\version "2.17.29"
 %% version 24/04/2012
 %% for lilypond 2.16 or higher
 
@@ -352,3 +353,12 @@ nSkip = #(define-music-function (parser location n)(integer?)
 #{
   \nCopy #n s
 #})
+
+
+%{
+/usr/bin/python: /home/jpv/lily2.17/lilypond/usr/lib/libz.so.1: no
+version information available (required by /usr/bin/python) convert-ly
+(GNU LilyPond) 2.17.96  convert-ly: »« wird verarbeitet... Anwenden
+der Umwandlung: 2.17.0, 2.17.4, 2.17.5, 2.17.6, 2.17.11, 2.17.14,
+2.17.15, 2.17.18, 2.17.19, 2.17.20, 2.17.25, 2.17.27, 2.17.29
+%}

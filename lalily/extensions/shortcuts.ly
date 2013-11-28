@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.16.0"
+\version "2.17.29"
 
 #(define lalily-relincl-tmp (ly:get-option 'relative-includes))
 #(ly:set-option 'relative-includes #t)
@@ -32,14 +32,14 @@
 \parserDefineScheme #'adecr
 #(make-dynamic-script (markup #:normal-text #:style 'dynamic "decr."))
 
-% \once \override DynamicText #'extra-offset
+% \once \override DynamicText.extra-offset
 \parserDefineScheme #'dyneo
 #(define-music-function (parser location xy)(number-pair?)
-   #{ \once \override DynamicText #'extra-offset = $xy #})
-% \once \override DynamicText #'X-offset
+   #{ \once \override DynamicText.extra-offset = $xy #})
+% \once \override DynamicText.X-offset
 \parserDefineScheme #'dynxo
 #(define-music-function (parser location x)(number?)
-   #{ \once \override DynamicText #'X-offset = #$x #})
+   #{ \once \override DynamicText.X-offset = #$x #})
 
 % empty dynamicText
 \parserDefineScheme #'stopdyn
@@ -52,7 +52,7 @@
 
 % breathing with fermata
 \parserDefineMusic #'breatheferm {
-  \once \override BreathingSign #'text = \markup {
+  \once \override BreathingSign.text = \markup {
     \line {
       \musicglyph #"scripts.rcomma"
       \translate #'(-1 . 1.6)
@@ -64,31 +64,31 @@
 \parserDefineScheme #'breathefermoff
 #(define-music-function (parser location off)(number?)
    #{
-     \once \override BreathingSign #'X-offset = $off
+     \once \override BreathingSign.X-offset = $off
      \breatheferm
    #})
 
 % Dynamic stencils = ##f
 \parserDefineMusic #'dynOff {
-  \override Hairpin #'stencil = ##f
-  \override DynamicLineSpanner #'stencil = ##f
-  \override DynamicText #'stencil = ##f
-  \override DynamicTextSpanner #'stencil = ##f
+  \override Hairpin.stencil = ##f
+  \override DynamicLineSpanner.stencil = ##f
+  \override DynamicText.stencil = ##f
+  \override DynamicTextSpanner.stencil = ##f
 }
 % revert Dynamic stencils
 \parserDefineMusic #'dynOn {
-  \revert Hairpin #'stencil
-  \revert DynamicLineSpanner #'stencil
-  \revert DynamicText #'stencil
-  \revert DynamicTextSpanner #'stencil
+  \revert Hairpin.stencil
+  \revert DynamicLineSpanner.stencil
+  \revert DynamicText.stencil
+  \revert DynamicTextSpanner.stencil
 }
 
 % once override DynamicText self-alignemnt and X-offset
 \parserDefineScheme #'grobdyn
 #(define-music-function (parser location align move)(integer? number?)
    #{
-     \once \override DynamicText #'self-alignment-X = $align
-     \once \override DynamicText #'X-offset =
+     \once \override DynamicText.self-alignment-X = $align
+     \once \override DynamicText.X-offset =
      $(lambda (grob)(- (ly:self-alignment-interface::x-aligned-on-self grob) move))
    #})
 % left shifted dynamics - useful, to save vertical space e.g. in SATB scores
@@ -98,8 +98,8 @@
 \parserDefine #'moveDyn
 #(define-music-function (parser location mov)(number-pair?)
    #{
-     \once \override DynamicText #'self-alignment-X = $(car mov)
-     \once \override DynamicText #'X-offset =
+     \once \override DynamicText.self-alignment-X = $(car mov)
+     \once \override DynamicText.X-offset =
      $(lambda (grob)(- (ly:self-alignment-interface::x-aligned-on-self grob) (cdr mov)))
    #})
 
@@ -107,7 +107,7 @@
 \parserDefineScheme #'liftFerm
 #(define-music-function (parser location off)(number?)
    #{
-     \once \override Script #'Y-offset = $off
+     \once \override Script.Y-offset = $off
    #})
 
 % one space, markup
@@ -116,26 +116,26 @@
 \parserDefineScheme #'lyrML
 #(define-music-function (parser location offx)(number?)
    #{
-     \once \override LyricText #'self-alignment-X = #LEFT
-     \once \override LyricText #'X-offset = $offx
+     \once \override LyricText.self-alignment-X = #LEFT
+     \once \override LyricText.X-offset = $offx
    #})
 
 % 
 \parserDefine #'lyreop
 #(define-music-function (parser location mov mus)(number-pair? ly:music?)
    #{ {
-     \override LyricText #'extra-offset = $mov
-     \override LyricHyphen #'extra-offset = $mov
-     \override LyricExtender #'extra-offset = $mov
+     \override LyricText.extra-offset = $mov
+     \override LyricHyphen.extra-offset = $mov
+     \override LyricExtender.extra-offset = $mov
      $mus
-     \revert LyricText #'extra-offset
-     \revert LyricHyphen #'extra-offset
-     \revert LyricExtender #'extra-offset
+     \revert LyricText.extra-offset
+     \revert LyricHyphen.extra-offset
+     \revert LyricExtender.extra-offset
    } #})
 
 \parserDefineMusic #'spanVisible {
-  \once \override StaffGroup.SpanBar #'transparent = ##f
-  \once \override StaffGroup.BarLine #'allow-span-bar = ##t
+  \once \override StaffGroup.SpanBar.transparent = ##f
+  \once \override StaffGroup.BarLine.allow-span-bar = ##t
 }
 
 \parserDefine #'T
@@ -153,9 +153,9 @@
 \parserDefine #'cueName
 #(define-music-function (parser location name dir align xoff yoff)(string? integer? integer? number? number?)
    #{
-     \once \override TextScript #'direction = $dir
-     \once \override TextScript #'self-alignment-X = $align
-     \once \override TextScript #'extra-offset = $(cons xoff yoff)
+     \once \override TextScript.direction = $dir
+     \once \override TextScript.self-alignment-X = $align
+     \once \override TextScript.extra-offset = $(cons xoff yoff)
      s1*0-\markup \fontsize #-4 { $name }
    #})
 \parserDefine #'cueNameUp
@@ -172,9 +172,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% dynamics
 
-\parserDefine #'Odynx { \once \override DynamicText #'X-offset = #0 }
-\parserDefine #'Wdynx { \override DynamicText #'X-offset = #0 }
-\parserDefine #'Rdynx { \revert DynamicText #'X-offset }
+\parserDefine #'Odynx { \once \override DynamicText.X-offset = #0 }
+\parserDefine #'Wdynx { \override DynamicText.X-offset = #0 }
+\parserDefine #'Rdynx { \revert DynamicText.X-offset }
 
 #(define-markup-command (extdyn layout props text dyn)(markup? string?)
    "markup extent"
@@ -236,24 +236,33 @@
                    (set! hl `(,@hl ,(begin #{ \markup { \translate #`(,dx . ,(/ y 2)) \musicglyph #"noteheads.s2" } #})))
                    ) pos)
        #{
-         \once \override NoteHead  #'stencil = #ly:text-interface::print
-         \once \override NoteHead #'text = \markup { \concat $hl }
+         \once \override NoteHead.stencil = #ly:text-interface::print
+         \once \override NoteHead.text = \markup { \concat $hl }
        #})))
 \parserDefine hdou {
-  \once \override NoteHead  #'stencil = #ly:text-interface::print
-  \once \override NoteHead #'text = \markup \concat
+  \once \override NoteHead.stencil = #ly:text-interface::print
+  \once \override NoteHead.text = \markup \concat
   { \musicglyph #"noteheads.s2" \musicglyph #"noteheads.s2" }
 }
 \parserDefine htri {
-  \once \override NoteHead  #'stencil = #ly:text-interface::print
-  \once \override NoteHead #'text = \markup \concat
+  \once \override NoteHead.stencil = #ly:text-interface::print
+  \once \override NoteHead.text = \markup \concat
   { \musicglyph #"noteheads.s2" \musicglyph #"noteheads.s2" \musicglyph #"noteheads.s2" }
 }
 \parserDefine remstem
 #(define-music-function (parser location mus)(ly:music?)
    #{
-     \override Stem #'stencil = ##f
+     \override Stem.stencil = ##f
      $mus
-     \revert Stem #'stencil
+     \revert Stem.stencil
      #})
 
+
+
+%{
+/usr/bin/python: /home/jpv/lily2.17/lilypond/usr/lib/libz.so.1: no
+version information available (required by /usr/bin/python) convert-ly
+(GNU LilyPond) 2.17.96  convert-ly: »« wird verarbeitet... Anwenden
+der Umwandlung: 2.17.0, 2.17.4, 2.17.5, 2.17.6, 2.17.11, 2.17.14,
+2.17.15, 2.17.18, 2.17.19, 2.17.20, 2.17.25, 2.17.27, 2.17.29
+%}

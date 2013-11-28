@@ -1,4 +1,4 @@
-\version "2.16.0"
+\version "2.17.29"
 
 #(define lalily-relincl-tmp (ly:get-option 'relative-includes))
 #(ly:set-option 'relative-includes #t)
@@ -10,7 +10,7 @@
 %% staff and between staves. Will ignore tuplets on ordinary beams and
 %% with visible brackets.
 %%
-%% Usage: \override TupletNumber #'Y-offset = #kneed-beam
+%% Usage: \override TupletNumber.Y-offset = #kneed-beam
 %%
 %% You must use manual beaming for this function to work properly.
 %%
@@ -94,7 +94,7 @@
 %% A function which horizontally centers a tuplet number on a kneed beam.  May
 %% be used in conjunction with the earlier function.
 %%
-%% Usage: \override  TupletNumber #'X-offset = #center-on-beam
+%% Usage: \override  TupletNumber.X-offset = #center-on-beam
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #(define (center-on-beam tuplet-number)
@@ -117,7 +117,16 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \parserDefine kneeTupletBeam {
-  \once \override TupletNumber #'Y-offset = #kneed-beam
-  \once \override TupletNumber #'X-offset = #center-on-beam
+  \once \override TupletNumber.Y-offset = #kneed-beam
+  \once \override TupletNumber.X-offset = #center-on-beam
 }
 
+
+
+%{
+/usr/bin/python: /home/jpv/lily2.17/lilypond/usr/lib/libz.so.1: no
+version information available (required by /usr/bin/python) convert-ly
+(GNU LilyPond) 2.17.96  convert-ly: »« wird verarbeitet... Anwenden
+der Umwandlung: 2.17.0, 2.17.4, 2.17.5, 2.17.6, 2.17.11, 2.17.14,
+2.17.15, 2.17.18, 2.17.19, 2.17.20, 2.17.25, 2.17.27, 2.17.29
+%}

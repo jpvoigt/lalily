@@ -326,136 +326,22 @@
     (loop n)
     coords))
 
-(define-public shapeSlur
-  (define-music-function (parser location offsets) (list?)
-    (ly:input-warning location "Deprecated shape-function")
-    #{
-      \once \override Slur #'control-points = $(alter-curve offsets)
-    #}))
-(define-public shapePhSlur
-  (define-music-function (parser location offsets) (list?)
-    (ly:input-warning location "Deprecated shape-function")
-    #{
-      \once \override PhrasingSlur #'control-points = $(alter-curve offsets)
-    #}))
-(define-public shapeTie
-  (define-music-function (parser location offsets) (list?)
-    (ly:input-warning location "Deprecated shape-function")
-    #{
-      \once \override Tie #'control-points = $(alter-tie offsets)
-    #}))
-
-(define-public ySlur
-  (define-music-function (parser location dy)(number?)
-    (ly:input-warning location "Deprecated shape-function")
-    #{
-      \once \override Slur #'control-points = $(alter-curve (list 0 0 0 dy 0 dy 0 0))
-    #}))
-(define-public yPhSlur
-  (define-music-function (parser location dy)(number?)
-    (ly:input-warning location "Deprecated shape-function")
-    #{
-      \once \override PhrasingSlur #'control-points = $(alter-curve (list 0 0 0 dy 0 dy 0 0))
-    #}))
-(define-public yTie
-  (define-music-function (parser location dy)(number?)
-    (ly:input-warning location "Deprecated shape-function")
-    #{
-      \once \override Tie #'control-points = $(alter-tie (list 0 0 0 dy 0 dy 0 0))
-    #}))
-(define-public yySlur
-  (define-music-function (parser location dy dz)(number? number?)
-    (ly:input-warning location "Deprecated shape-function")
-    #{
-      \once \override Slur #'control-points = $(alter-curve (list 0 dy 0 (+ dy dz) 0 (+ dy dz) 0 dy))
-    #}))
-(define-public yyPhSlur
-  (define-music-function (parser location dy dz)(number? number?)
-    (ly:input-warning location "Deprecated shape-function")
-    #{
-      \once \override PhrasingSlur #'control-points = $(alter-curve (list 0 dy 0 (+ dy dz) 0 (+ dy dz) 0 dy))
-    #}))
-(define-public yyTie
-  (define-music-function (parser location dy dz)(number? number?)
-    (ly:input-warning location "Deprecated shape-function")
-    #{
-      \once \override Tie #'control-points = $(alter-tie (list 0 dy 0 (+ dy dz) 0 (+ dy dz) 0 dy))
-    #}))
-
 (define-public pTie
   (define-music-function (parser location dy)(number?)
     #{
-      \once \override Tie #'staff-position = $dy
+      \once \override Tie.staff-position = $dy
     #}))
 
 
 (define-public extendLV
   (define-music-function (parser location further) (number?)
     #{
-      \once \override LaissezVibrerTie  #'X-extent = #'(0 . 0)
-      \once \override LaissezVibrerTie  #'details #'note-head-gap = $(/ further -2)
-      \once \override LaissezVibrerTie  #'extra-offset = $(cons (/ further 2) 0)
+      \once \override LaissezVibrerTie.X-extent = #'(0 . 0)
+      \once \override LaissezVibrerTie.details #'note-head-gap = #(/ further -2)
+      \once \override LaissezVibrerTie.extra-offset = #(cons (/ further 2) 0)
     #}))
 
 
-
-(define curve-warning-color red)
-
-(define ((offset-control-points offsets function) grob)
-  (let ((coords (function grob)))
-    (if (null? offsets)
-        coords
-        (map
-         (lambda (x y)
-           (coord-translate x y))
-         coords offsets))))
-
-(define ((shape-curve offsets location) grob)
-  (let* ((orig (ly:grob-original grob))
-         (siblings (if (and (ly:grob? orig) (ly:spanner? grob))
-                       (ly:spanner-broken-into orig) '() ))
-         (total-found (length siblings))
-         (function (assoc-get 'control-points
-                     (cdr (ly:grob-basic-properties grob))))
-         (grob-name
-          (assoc-get 'name
-            (assoc-get 'meta
-              (ly:grob-basic-properties grob)))))
-
-    (define (helper sibs offs)
-      (if (and (eq? (car sibs) grob)
-               (pair? offs))
-          ((offset-control-points (car offs) function) grob)
-          (if (pair? offs)
-              (helper (cdr sibs) (cdr offs))
-              ((offset-control-points '() function) grob))))
-
-    ; standardize input so #'((dx1 . dy1) . . . )
-    ; and #'( ((dx1 . dy1) . . . ) ) possible
-    (if (not (list? (car offsets)))
-        (set! offsets (list offsets)))
-
-    ; warnings
-    (if (not (= (length offsets) total-found))
-        (if (zero? total-found)
-            (if (pair? (cdr offsets))
-                (begin
-                 (set! (ly:grob-property grob 'color) curve-warning-color)
-                 (ly:input-warning location
-                   "~a is unbroken, modifications for ~a pieces requested"
-                   grob-name (length offsets))))
-            (if (eq? (last siblings) grob) ; print warning only once
-                (begin
-                 (for-each
-                  (lambda (piece) (set! (ly:grob-property piece 'color) curve-warning-color))
-                  siblings)
-                 (ly:input-warning location
-                   "~a is broken into ~a pieces, modifications for ~a requested"
-                   grob-name total-found (length offsets))))))
-
-    (if (>= total-found 2)
-        (helper siblings offsets)
-        ((offset-control-points (car offsets) function) grob))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; modify beams
@@ -481,6 +367,9 @@
       \revert Beam #'damping
       \dummy
     #}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; make Octaves
 
 (define (octave-up m octave)
   (let* ((old-pitch (ly:music-property m 'pitch))

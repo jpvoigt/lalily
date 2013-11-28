@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.16.0"
+\version "2.17.29"
 
 #(define lalily-relincl-tmp (ly:get-option 'relative-includes))
 #(ly:set-option 'relative-includes #t)
@@ -278,9 +278,9 @@
        \new StaffGroup \with {
          $(if kat #{ \with { \consists "Keep_alive_together_engraver" } #})
          $(if (ly:context-mod? mods) mods)
-         \override BarLine #'allow-span-bar = $(if mensur #t #f )
-         %\override SpanBar #'transparent = $(if (ly:assoc-get 'mensur options #f #f) #f #t )
-         \override BarLine #'transparent = $(if mensur #t #f )
+         \override BarLine.allow-span-bar = $(if mensur #t #f )
+         %\override SpanBar.transparent = $(if (ly:assoc-get 'mensur options #f #f) #f #t )
+         \override BarLine.transparent = $(if mensur #t #f )
        } <<
          \stackTemplate ##f #'(staff) ##t $piece $options #'staff $staffs
        >>
@@ -339,7 +339,7 @@
                                                  ((voc . bas)(inst . "B")(clef . "bass"))) #f)))
      #{
        \new StaffGroup \with {
-         \override SpanBar #'transparent = ##t
+         \override SpanBar.transparent = ##t
        } \stackTemplate ##f #'(.. staff) ##f #'() $options #'staff $staffs
      #}))
 
@@ -352,7 +352,7 @@
          (vv (assoc-get 'verses options (get-music-keys (create-music-path #f '(text)) location))))
      #{
        \new StaffGroup \with {
-         \override SpanBar #'transparent = ##t
+         \override SpanBar.transparent = ##t
        } <<
          \new Staff = "SA" \with {
            \consists \editionEngraver \musicPath #'(noten SA)
@@ -392,7 +392,7 @@
      #{
        \new PianoStaff \with {
          $(if (ly:context-mod? mods) mods)
-         \override StaffGrouper #'staff-staff-spacing = #'((basic-distance . 6)(minimum-distance . 1)(padding . 1)(stretchability . 4))
+         \override StaffGrouper.staff-staff-spacing = #'((basic-distance . 6)(minimum-distance . 1)(padding . 1)(stretchability . 4))
        } <<
          \new Staff = "right" \with {
            \consists \editionEngraver \musicPath #'(right)
@@ -402,7 +402,7 @@
          >>
          \new Dynamics \with {
            \consists \editionEngraver $piece
-           \override DynamicText #'padding = #1
+           \override DynamicText.padding = #1
          } { \getMusic {} #'(dynamics) }
          \new Staff = "left" \with {
            \consists \editionEngraver \musicPath #'(left)
@@ -412,7 +412,16 @@
          >>
          \new Dynamics \with {
            \consists \editionEngraver $piece
-           \override DynamicText #'padding = #1
+           \override DynamicText.padding = #1
          } \getMusic {} #'(pedal)
        >>
      #}))
+
+
+%{
+/usr/bin/python: /home/jpv/lily2.17/lilypond/usr/lib/libz.so.1: no
+version information available (required by /usr/bin/python) convert-ly
+(GNU LilyPond) 2.17.96  convert-ly: »« wird verarbeitet... Anwenden
+der Umwandlung: 2.17.0, 2.17.4, 2.17.5, 2.17.6, 2.17.11, 2.17.14,
+2.17.15, 2.17.18, 2.17.19, 2.17.20, 2.17.25, 2.17.27, 2.17.29
+%}
