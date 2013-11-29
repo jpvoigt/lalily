@@ -24,14 +24,14 @@
 
 (define-public (glue-list lst glue)
   "create string from list containing arbitrary objects"
-  (string-join (map (lambda (s)(format "~A" s)) lst) glue 'infix))
+  (string-join (map object->string lst) glue 'infix))
 (define-public (glue-symbol lst . glue)
   "create symbol from list containig arbitrary objects"
-  (string->symbol (string-join (map (lambda (s)(format "~A" s)) lst) (if (> (length glue) 0)(car glue) ":") 'infix)))
+  (string->symbol (string-join (map object->string lst) (if (> (length glue) 0)(car glue) ":") 'infix)))
 
 (define-public (format-alist l . ind)
   "create string from (a-)list for pretty printing
-                                    example: (format-alist '((a . 1)(b . 2)))
+example: (format-alist '((a . 1)(b . 2)))
 ==>  a=1
      b=2"
 (let ((i (if (> (length ind) 1) (cadr ind) 0))
@@ -60,24 +60,24 @@
   "produce a string A, B, ..., Z, AA, AB, ... for numbers
 usable to allow 2.17+ list input like in: \\editionMod notes.sop.Voice.A
 ATTENTION: there will be no ZZ but YZ -> AAA and YZZ -> AAAA"
-  (let ((A (char->integer (if (< i 0) #\a #\A)))
-        (i (if (< i 0) (- -1 i) i)))
+(let ((A (char->integer (if (< i 0) #\a #\A)))
+      (i (if (< i 0) (- -1 i) i)))
 
-    (define (baseX x i)
-      (let ((q (quotient i x))
-            (r (remainder i x)))
-        (if (and (> q 0) (< q x))
-            (list (- q 1) r)
-            (let ((ret '()))
-              (if (> q 0) (set! ret (baseX x q)))
-              `(,@ret ,r))
-            )))
+  (define (baseX x i)
+    (let ((q (quotient i x))
+          (r (remainder i x)))
+      (if (and (> q 0) (< q x))
+          (list (- q 1) r)
+          (let ((ret '()))
+            (if (> q 0) (set! ret (baseX x q)))
+            `(,@ret ,r))
+          )))
 
-    (list->string
-     (map
-      (lambda (d) (integer->char (+ A d)))
-      (baseX 26 i)))
-    ))
+  (list->string
+   (map
+    (lambda (d) (integer->char (+ A d)))
+    (baseX 26 i)))
+  ))
 
 (define-public (with-append-file fn func)
   (let ((fport #f))
@@ -96,7 +96,7 @@ ATTENTION: there will be no ZZ but YZ -> AAA and YZZ -> AAAA"
 
 (define-public (normalize-path path)
   "create list, removing '.. elements
-                                    example: (normalize-path '(a b .. c d)) ==> '(a c d)"
+example: (normalize-path '(a b .. c d)) ==> '(a c d)"
 (let ((ret '()))
   (for-each (lambda (e)
               (set! ret (cond ((eq? e '..)(if (> (length ret) 1) (cdr ret) '()))
@@ -117,7 +117,7 @@ ATTENTION: there will be no ZZ but YZ -> AAA and YZZ -> AAAA"
 
 (define-public (normalize-path-list path)
   "create list, removing \"..\" elements
-                                    example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"c\" \"d\")"
+example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"c\" \"d\")"
 (let ((ret '()))
   (for-each (lambda (e)
               (set! ret (cond ((equal? e "..")(if (> (length ret) 1) (cdr ret) (cdr (reverse (listcwd)))))

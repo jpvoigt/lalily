@@ -279,6 +279,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; styled table of contents
 ;; toc-sections
+;; TODO
 (define-public (set-toc-section! text) #f)
 (define-public (get-toc-section text) #f)
 (let ((toc-section #f))
@@ -287,44 +288,8 @@
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; modify slurs and ties
-;; based on David Nalesniks work
-
-(define ((alter-curve offsets) grob)
-  ;; get default control-points
-  (let ((coords (ly:slur::calc-control-points grob))
-        (n 0))
-    ;; add offsets to default coordinates
-    (define loop (lambda (n)
-                   (set-car! (list-ref coords n)
-                     (+ (list-ref offsets (* 2 n))
-                       (car (list-ref coords n))))
-                   (set-cdr! (list-ref coords n)
-                     (+ (list-ref offsets (1+ (* 2 n)))
-                       (cdr (list-ref coords n))))
-                   (if (< n 3)
-                       (loop (1+ n)))))
-    ;; return altered coordinates
-    (loop n)
-    coords))
-
-(define ((alter-tie offsets) grob)
-  ;; get default control-points
-  (let ((coords (ly:tie::calc-control-points grob))
-        (n 0))
-    ;; add offsets to default coordinates
-    (define loop (lambda (n)
-                   (set-car! (list-ref coords n)
-                     (+ (list-ref offsets (* 2 n))
-                       (car (list-ref coords n))))
-                   (set-cdr! (list-ref coords n)
-                     (+ (list-ref offsets (1+ (* 2 n)))
-                       (cdr (list-ref coords n))))
-                   (if (< n 3)
-                       (loop (1+ n)))))
-    ;; return altered coordinates
-    (loop n)
-    coords))
+;; TODO -> lalily-extensions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-public pTie
   (define-music-function (parser location dy)(number?)
@@ -340,8 +305,6 @@
       \once \override LaissezVibrerTie.details #'note-head-gap = #(/ further -2)
       \once \override LaissezVibrerTie.extra-offset = #(cons (/ further 2) 0)
     #}))
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; modify beams
