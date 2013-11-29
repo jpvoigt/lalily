@@ -205,11 +205,16 @@
          (pad (/ (- line-width stil-width) (if (> (length widths) 1) (- (length widths) 1) 2)))
          (th (ly:output-def-lookup layout 'line-thickness))
          )
+    
     (if (< pad 0)
         (let ((xs (/ line-width stil-width)))
           (set! stils (map (lambda (stil) (ly:stencil-scale stil xs 1)) stils))
           (set! pad 0)
           ))
+    (if (chain-assoc-get 'draw-marker props #f #f)
+        (set! stils
+              (map (lambda (st)
+              (ly:stencil-add (make-line-stencil .1 0 0 0 1) st)) stils)))
     (if (chain-assoc-get 'draw-line props #f #f)
         (if (> (length stils) 1)
 
@@ -266,7 +271,7 @@
     (interpret-markup layout props (mup layout props (list)))))
 (register-markup-producer year-markup
   (lambda (layout props args)
-    (markup (strftime "%Y" (localtime (current-time))))
+    (markup (chain-assoc-get 'header:copyright-year props (strftime "%Y" (localtime (current-time)))))
     ))
 
 (define-markup-command (copyright layout props)()
@@ -366,7 +371,10 @@
                    (format "\"~A\"" (cadr mup))
                    (format "\\~A ~A" (substring mn 0 (- (string-length mn) 7))
                      (apply string-append
-                       (map (lambda (a) (string-append " " (object->serialize a))) (cdr mup))))
+                       (map (lambda (a)
+                              (let ((osa (object->serialize a)))
+                                (if (string? osa) (string-append " " osa) (format "~A" osa))
+                                )) (cdr mup))))
                    ))))
        ))
     (if str (string-append "\"" mup "\"")
