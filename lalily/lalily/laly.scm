@@ -83,50 +83,50 @@
          (if once (set! reg `(,@reg ,file-path)))))
     (set-registry-val '(lalily runtime loaded) reg)))
 
-(define-public includePattern (define-music-function (parser location idir pattern)(string? string?)
-                                (let ((dirname (string-append (location-extract-path location) idir)))
+(define-public includePattern
+  (define-void-function (parser location idir pattern)(string? string?)
+    (let ((dirname (string-append (location-extract-path location) idir)))
 
-                                  (if (or (= (string-length dirname) 0)
-                                          (not (eq? #\/ (string-ref dirname (- (string-length dirname) 1)))))
-                                      (set! dirname (string-append dirname "/")))
-                                  (if (or (not (file-exists? dirname)) (not (eq? 'directory (stat:type (stat dirname)))))
-                                      (set! dirname #f))
+      (if (or (= (string-length dirname) 0)
+              (not (eq? #\/ (string-ref dirname (- (string-length dirname) 1)))))
+          (set! dirname (string-append dirname "/")))
+      (if (or (not (file-exists? dirname)) (not (eq? 'directory (stat:type (stat dirname)))))
+          (set! dirname #f))
 
-                                  (if dirname (let* ((dir (opendir dirname))
-                                                     (entry (readdir dir)))
-                                                (while (not (eof-object? entry))
-                                                  (if (regexp-match? (string-match pattern entry))
-                                                      (let ((file (string-append dirname entry)))
-                                                        (ly:parser-include-string parser
-                                                          (format "\\include \"~A\"\n" file))))
-                                                  (set! entry (readdir dir))
-                                                  )
-                                                (closedir dir)
-                                                ))
-                                  )
-                                (make-music 'SequentialMusic 'void #t)))
-(define-public includeOncePattern (define-music-function (parser location idir pattern)(string? string?)
-                                    (let ((dirname (string-append (location-extract-path location) idir)))
+      (if dirname (let* ((dir (opendir dirname))
+                         (entry (readdir dir)))
+                    (while (not (eof-object? entry))
+                      (if (regexp-match? (string-match pattern entry))
+                          (let ((file (string-append dirname entry)))
+                            (ly:parser-include-string parser
+                              (format "\\include \"~A\"\n" file))))
+                      (set! entry (readdir dir))
+                      )
+                    (closedir dir)
+                    ))
+      )))
+(define-public includeOncePattern
+  (define-void-function (parser location idir pattern)(string? string?)
+    (let ((dirname (string-append (location-extract-path location) idir)))
 
-                                      (if (not (eq? #\. (string-ref dirname 0))) (set! dirname (normalize-path-string dirname)))
-                                      (if (or (= (string-length dirname) 0)
-                                              (not (eq? #\/ (string-ref dirname (- (string-length dirname) 1)))))
-                                          (set! dirname (string-append dirname "/")))
-                                      (if (or (not (file-exists? dirname)) (not (eq? 'directory (stat:type (stat dirname)))))
-                                          (set! dirname #f))
+      (if (not (eq? #\. (string-ref dirname 0))) (set! dirname (normalize-path-string dirname)))
+      (if (or (= (string-length dirname) 0)
+              (not (eq? #\/ (string-ref dirname (- (string-length dirname) 1)))))
+          (set! dirname (string-append dirname "/")))
+      (if (or (not (file-exists? dirname)) (not (eq? 'directory (stat:type (stat dirname)))))
+          (set! dirname #f))
 
-                                      (if dirname (let* ((dir (opendir dirname))
-                                                         (entry (readdir dir)))
-                                                    (while (not (eof-object? entry))
-                                                      (if (regexp-match? (string-match pattern entry))
-                                                          (let ((file (string-append dirname entry)))
-                                                            (la:parser-include-file parser file #t)))
-                                                      (set! entry (readdir dir))
-                                                      )
-                                                    (closedir dir)
-                                                    ))
-                                      )
-                                    (make-music 'SequentialMusic 'void #t)))
+      (if dirname (let* ((dir (opendir dirname))
+                         (entry (readdir dir)))
+                    (while (not (eof-object? entry))
+                      (if (regexp-match? (string-match pattern entry))
+                          (let ((file (string-append dirname entry)))
+                            (la:parser-include-file parser file #t)))
+                      (set! entry (readdir dir))
+                      )
+                    (closedir dir)
+                    ))
+      )))
 
 
 (define-public (lalily-test-location? parser location)
@@ -197,25 +197,25 @@
       )))
 
 (define-public (get-a-tree parser location name path)
-   (if (string? name) (set! name (string->symbol name)))
-   (let ((opts (ly:parser-lookup parser name)))
-     (define (getval ol op)
-       (let ((sym (car op)))
-         (cond
-          ((> (length op) 1)
-           (let ((al (assoc-get sym ol #f)))
-             (if (list? al)
-                 (getval al (cdr op))
-                 #f)))
-          ((= (length op) 1)
-           (assoc-get (car op) ol #f))
-          (else #f))))
-     (if (list? opts)
-         (getval opts path)
-         (begin
-          (ly:input-warning location "~A is not list (~A)" name opts)
-          #f)
-         )))
+  (if (string? name) (set! name (string->symbol name)))
+  (let ((opts (ly:parser-lookup parser name)))
+    (define (getval ol op)
+      (let ((sym (car op)))
+        (cond
+         ((> (length op) 1)
+          (let ((al (assoc-get sym ol #f)))
+            (if (list? al)
+                (getval al (cdr op))
+                #f)))
+         ((= (length op) 1)
+          (assoc-get (car op) ol #f))
+         (else #f))))
+    (if (list? opts)
+        (getval opts path)
+        (begin
+         (ly:input-warning location "~A is not list (~A)" name opts)
+         #f)
+        )))
 (define (add-a-tree parser location name sympath val assoc-set-append)
   (if (string? name) (set! name (string->symbol name)))
   (let ((opts (ly:parser-lookup parser name)))
@@ -260,8 +260,8 @@
 
 (define-public clratree clralist)
 (define-public getatree
-   (define-scheme-function (parser location name sympath)(string-or-symbol? list?)
-     (get-a-tree parser location name sympath)))
+  (define-scheme-function (parser location name sympath)(string-or-symbol? list?)
+    (get-a-tree parser location name sympath)))
 (define-public addatree
   (define-void-function (parser location name sympath val)(string-or-symbol? list? scheme?)
     (add-a-tree parser location name sympath val
@@ -287,89 +287,3 @@
   (set! get-toc-section (lambda ()(begin toc-section)))
   )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; TODO -> lalily-extensions
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define-public pTie
-  (define-music-function (parser location dy)(number?)
-    #{
-      \once \override Tie.staff-position = $dy
-    #}))
-
-
-(define-public extendLV
-  (define-music-function (parser location further) (number?)
-    #{
-      \once \override LaissezVibrerTie.X-extent = #'(0 . 0)
-      \once \override LaissezVibrerTie.details #'note-head-gap = #(/ further -2)
-      \once \override LaissezVibrerTie.extra-offset = #(cons (/ further 2) 0)
-    #}))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; modify beams
-
-(define-public patBeam
-  (define-music-function (parser location n dir)(number? number?)
-    #{
-      \once \override Beam #'positions = $(cons (- n (* 0.25 dir)) (+ n (* 0.25 dir)))
-    #}))
-(define-public beamDamp
-  (define-music-function (parser location damp)(number?)
-    #{
-      \once \override Beam #'damping = $damp
-    #}))
-(define dummy (make-music 'SequentialMusic 'void #t))
-(define-public stemBeamLen
-  (define-music-function (parser location damp len mus)(number? number? ly:music?)
-    #{
-      \override Beam #'damping = $damp
-      \override Stem #'(details beamed-lengths) = $(list len)
-      $mus
-      \revert Stem #'details
-      \revert Beam #'damping
-      \dummy
-    #}))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; make Octaves
-
-(define (octave-up m octave)
-  (let* ((old-pitch (ly:music-property m 'pitch))
-         (new-note (ly:music-deep-copy m))
-         (new-pitch (ly:make-pitch
-                     (+ octave (ly:pitch-octave old-pitch))
-                     (ly:pitch-notename old-pitch)
-                     (ly:pitch-alteration old-pitch))))
-    (set! (ly:music-property new-note 'pitch) new-pitch)
-    new-note))
-
-(define (octavize-chord elements t)
-  (cond ((null? elements) elements)
-    ((eq? (ly:music-property (car elements) 'name) 'NoteEvent)
-     (cons (car elements)
-       (cons (octave-up (car elements) t)
-         (octavize-chord (cdr elements) t))))
-    (else (cons (car elements) (octavize-chord (cdr elements ) t)))))
-
-(define (octavize music t)
-  (cond
-   ((eq? (ly:music-property music 'name) 'EventChord)
-    (ly:music-set-property! music 'elements
-      (octavize-chord
-       (map (lambda (e) (if (eq? (ly:music-property music 'name) 'EventChord)
-                            (let ((elms (ly:music-property e 'elements)))
-                              (if (and (list? elms)(> (length elms) 0)) (car elms) e))
-                            e))
-         (ly:music-property music 'elements)) t)))
-   ((eq? (ly:music-property music 'name) 'NoteEvent)
-    (let ((artics (ly:music-property music 'articulations)))
-      (ly:music-set-property! music 'articulations '())
-      (set! music (make-music 'EventChord 'elements `(,music ,(octave-up music t) ,@artics) ))
-      ))
-   )
-  music)
-
-(define-public makeOctaves
-  (define-music-function (parser location arg mus) (integer? ly:music?)
-    (music-map (lambda (x) (octavize x arg)) mus)))
