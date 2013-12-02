@@ -24,7 +24,7 @@
 
 (define-public (glue-list lst glue)
   "create string from list containing arbitrary objects"
-  (string-join (map object->string lst) glue 'infix))
+  (string-join (map (lambda (s) (format "~A" s)) lst) glue 'infix))
 (define-public (glue-symbol lst . glue)
   "create symbol from list containig arbitrary objects"
   (string->symbol (string-join (map object->string lst) (if (> (length glue) 0)(car glue) ":") 'infix)))
