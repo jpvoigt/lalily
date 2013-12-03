@@ -8,6 +8,7 @@
 \registerTemplate #'(lalily instrument)
 #(define-music-function (parser location piece options)(list? list?)
    (let ((name (ly:assoc-get 'name options "instrument" #f))
+         (init-voice (ly:assoc-get 'init-voice options #f))
          (transp (ly:assoc-get 'transposition options (ly:make-pitch 0 0 0) #f))
          (input-concert-pitch (ly:assoc-get 'input-concert-pitch options #t #f))
          (output-concert-pitch (ly:assoc-get 'output-concert-pitch options #t #f))
@@ -28,28 +29,28 @@
             #{
               \transpose $transp c' <<
                 { \getMusicDeep #'meta }
-                { \getMusicDeep {} #(glue-symbol (list name 'global) "-") \getMusic #'() }
+                { \getMusicDeep {} #(glue-symbol (list name 'global) "-") $(if (ly:music? init-voice) init-voice) \getMusic #'() }
               >>
             #})
            ((and (not input-concert-pitch) output-concert-pitch)
             #{
               <<
                 { \getMusicDeep #'meta }
-                \transpose c' $transp { \getMusicDeep {} #(glue-symbol (list name 'global) "-") \getMusic #'() }
+                \transpose c' $transp { \getMusicDeep {} #(glue-symbol (list name 'global) "-") $(if (ly:music? init-voice) init-voice) \getMusic #'() }
               >>
             #})
            ((and (not input-concert-pitch) (not output-concert-pitch))
             #{
               <<
                 \transpose c' $transp { \getMusicDeep #'meta }
-                { \getMusicDeep {} #(glue-symbol (list name 'global) "-") \getMusic #'() }
+                { \getMusicDeep {} #(glue-symbol (list name 'global) "-") $(if (ly:music? init-voice) init-voice) \getMusic #'() }
               >>
             #})
            (else
             #{
               <<
                 { \getMusicDeep #'meta }
-                { \getMusicDeep {} #(glue-symbol (list name 'global) "-") \getMusic #'() }
+                { \getMusicDeep {} #(glue-symbol (list name 'global) "-") $(if (ly:music? init-voice) init-voice) \getMusic #'() }
               >>
             #})
            )

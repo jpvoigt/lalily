@@ -60,9 +60,10 @@
            % set instrument name from options
            instrumentName = $instrname
            shortInstrumentName = $shortname
-         } <<
-           % create Voice with name 'voicename'
-           \new Voice = $voicename {
+         }
+         % create Voice with name 'voicename'
+         \new Voice = $voicename <<
+           {
              % call template #'(global voice) - not relative to this template
              \callTemplate #'(/ global voice) #'() #'()
              % set clef from options
@@ -170,7 +171,7 @@
 \putMusic #'(bas lyrics) \getMusic #'(sop lyrics)
 % basso music
 \putMusic #'(bas melody) \relative c {
-  f2 f4( c) | f2 c4( f) | bes,2 f'4( c) | f2 f | 
+  f2 f4( c) | f2 c4( f) | bes,2 f'4( c) | f2 f |
   c2 f4( bes,) | f'2 c4( d) | c( bes) f'( c) | f,2 f \breathe |
   f'2 f4( d) | g1 | c,2 f4( c) | f2 f |
   c4( d) g,( c) | f2 bes,4( f') | c( d) g,( c) | f2 f |
@@ -187,9 +188,9 @@
 
 
 %{
-/usr/bin/python: /home/jpv/lily2.17/lilypond/usr/lib/libz.so.1: no
-version information available (required by /usr/bin/python) convert-ly
-(GNU LilyPond) 2.17.96  convert-ly: »« wird verarbeitet... Anwenden
-der Umwandlung: 2.17.0, 2.17.4, 2.17.5, 2.17.6, 2.17.11, 2.17.14,
-2.17.15, 2.17.18, 2.17.19, 2.17.20, 2.17.25, 2.17.27, 2.17.29
+  /usr/bin/python: /home/jpv/lily2.17/lilypond/usr/lib/libz.so.1: no
+  version information available (required by /usr/bin/python) convert-ly
+  (GNU LilyPond) 2.17.96  convert-ly: »« wird verarbeitet... Anwenden
+  der Umwandlung: 2.17.0, 2.17.4, 2.17.5, 2.17.6, 2.17.11, 2.17.14,
+  2.17.15, 2.17.18, 2.17.19, 2.17.20, 2.17.25, 2.17.27, 2.17.29
 %}
