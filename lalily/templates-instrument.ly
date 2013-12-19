@@ -5,16 +5,55 @@
 \include "../lalily.ly"
 #(ly:set-option 'relative-includes lalily-relincl-tmp)
 
+#(define-public (naturalize-pitch p)
+   (let ((o (ly:pitch-octave p))
+         (a (* 4 (ly:pitch-alteration p)))
+         ;; alteration, a, in quarter tone steps,
+         ;; for historical reasons
+         (n (ly:pitch-notename p)))
+     (cond
+      ((and (> a 1) (or (eq? n 6) (eq? n 2)))
+       (set! a (- a 2))
+       (set! n (+ n 1)))
+      ((and (< a -1) (or (eq? n 0) (eq? n 3)))
+       (set! a (+ a 2))
+       (set! n (- n 1))))
+     (cond
+      ((> a 2) (set! a (- a 4)) (set! n (+ n 1)))
+      ((< a -2) (set! a (+ a 4)) (set! n (- n 1))))
+     (if (< n 0) (begin (set! o (- o 1)) (set! n (+ n 7))))
+     (if (> n 6) (begin (set! o (+ o 1)) (set! n (- n 7))))
+     (ly:make-pitch o n (/ a 4))))
+#(define-public (naturalize music)
+   (let ((es (ly:music-property music 'elements))
+         (e (ly:music-property music 'element))
+         (p (ly:music-property music 'pitch)))
+     (if (pair? es)
+         (ly:music-set-property!
+          music 'elements
+          (map (lambda (x) (naturalize x)) es)))
+     (if (ly:music? e)
+         (ly:music-set-property!
+          music 'element
+          (naturalize e)))
+     (if (ly:pitch? p)
+         (begin
+          (set! p (naturalize-pitch p))
+          (ly:music-set-property! music 'pitch p)))
+     music))
+
 \registerTemplate #'(lalily instrument)
 #(define-music-function (parser location piece options)(list? list?)
    (let ((name (ly:assoc-get 'name options "instrument" #f))
          (init-voice (ly:assoc-get 'init-voice options #f))
          (transp (ly:assoc-get 'transposition options (ly:make-pitch 0 0 0) #f))
+         (natpit (ly:assoc-get 'naturalize options #f))
          (input-concert-pitch (ly:assoc-get 'input-concert-pitch options #t #f))
          (output-concert-pitch (ly:assoc-get 'output-concert-pitch options #t #f))
          (staff-mods (ly:assoc-get 'staff-mods options #f #f))
          (voice-mods (ly:assoc-get 'voice-mods options #f #f))
          (midi-instrument (assoc-get 'midi-instrument options #f #f)))
+     (define (natmus mus) (if natpit (naturalize mus) mus))
      #{
        \new Staff = $name \with {
          $(if (ly:context-mod? staff-mods) staff-mods)
@@ -26,19 +65,19 @@
          $(if (not output-concert-pitch) #{ \transposition $transp #})
          $(cond
            ((and input-concert-pitch (not output-concert-pitch))
-            #{
+            (natmus #{
               \transpose $transp c' <<
                 { \getMusicDeep #'meta }
                 { \getMusicDeep {} #(glue-symbol (list name 'global) "-") $(if (ly:music? init-voice) init-voice) \getMusic #'() }
               >>
-            #})
+              #}))
            ((and (not input-concert-pitch) output-concert-pitch)
-            #{
+            (natmus #{
               <<
                 { \getMusicDeep #'meta }
                 \transpose c' $transp { \getMusicDeep {} #(glue-symbol (list name 'global) "-") $(if (ly:music? init-voice) init-voice) \getMusic #'() }
               >>
-            #})
+              #}))
            ((and (not input-concert-pitch) (not output-concert-pitch))
             #{
               <<
@@ -168,9 +207,9 @@
 
 
 %{
-/usr/bin/python: /home/jpv/lily2.17/lilypond/usr/lib/libz.so.1: no
-version information available (required by /usr/bin/python) convert-ly
-(GNU LilyPond) 2.17.96  convert-ly: »« wird verarbeitet... Anwenden
-der Umwandlung: 2.17.0, 2.17.4, 2.17.5, 2.17.6, 2.17.11, 2.17.14,
-2.17.15, 2.17.18, 2.17.19, 2.17.20, 2.17.25, 2.17.27, 2.17.29
+  /usr/bin/python: /home/jpv/lily2.17/lilypond/usr/lib/libz.so.1: no
+  version information available (required by /usr/bin/python) convert-ly
+  (GNU LilyPond) 2.17.96  convert-ly: »« wird verarbeitet... Anwenden
+  der Umwandlung: 2.17.0, 2.17.4, 2.17.5, 2.17.6, 2.17.11, 2.17.14,
+  2.17.15, 2.17.18, 2.17.19, 2.17.20, 2.17.25, 2.17.27, 2.17.29
 %}
