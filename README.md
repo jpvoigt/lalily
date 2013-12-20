@@ -65,7 +65,12 @@ But then I wanted to have two choirs. Wouldn't it be nice just to call \\satb tw
 lalily-templates
 ----------------
 
-The result is, that I don't use lily-variables like sopran={} for the music, but have a tree-like structure to store the music.
+Here is a description of the template mechanism. It uses lilypond-music-functions - this is done using scheme.
+If you fear scheme, I have the good news, that there are a few predefined templates.
+Whenever you can name a template, you don't need to touch scheme.
+But now, here is a description of the internals for the brave.
+
+I don't use lily-variables like sopran={} for the music, but have a tree-like structure to store the music.
 This is accompanioned by two functions \\putMusic and \\getMusic. The template-music-functions now all have the same signature
 and are stored with \\registerTemplate and called with \\callTemplate. Music and templates are stored and addressed with a path,
 which is in fact a scheme-list. And there is a globally stored current path or music-folder, which these functions refer to.
@@ -159,7 +164,9 @@ predefined templates
 lalily comes with some predefined templates, wich are loaded automatically with \\include "lalily.ly".
 Most of them (templates.ly) where made up for the author own special needs.
 In templates-instrument.ly and templates-vocal.ly I started to organize the predefine templates with a "namespace" lalily.
+
 The basic instrument template is called via 'lalily.instrument', wich is called for example by 'lalily.instrument.trumpet'.
+
 
 TODO
 
@@ -180,7 +187,7 @@ is equivalent to
 
 and can be called inside {}.
 The variable is (re)defined globally, meaning that any subsequent call returns the last version.
-You can use this function inside a template to create the options for a nested template-call, but you have to be aware not to override any import value!
+You can use this function inside a template to create the options for a nested template-call, but you have to be aware not to override any important value!
 
 lalily-editions
 ---------------
