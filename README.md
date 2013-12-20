@@ -196,6 +196,28 @@ But the current music folder is taken into account, when addressing the context.
 When a file is compiled for the first time, a file "<name>-edition.log" is created, where all contexts are listed, wich consist an edition-engraver.
 Every edition-engraver has a path, wich should be <music-path>.<ContextName>.<N>.
 (The template author is responsible for consisting the edition-engraver!)
+The context-name is included, to differentiate Voice, Staff and Lyrics on the same Path.
+N is a character counter (A-Z), wich counts the contexts on a specified path.
+So if you have two voice on the same path, they will have names <...>.A and <...>.B .
 
+Whenever the edition-engraver is called, it looks for the current measure - for the current active timing-context, wich might not be be the "base" timing for polymetric music! -
+and the moment in this measure and constructs a path <edition>.<measure>.<moment>.<engraver-path> for all active editions.
+With these paths it looks in a global edition tree for all active editions.
+In the example above, the edition-engraver for the soprano-voice will find the override in measure 2, 2. quarter and apply it.
+Before that, the override was stored in Partitur.<measure>.<moment>.music.choral.altatrinita.sop.melody.Voice.A with
+
+    \editionMod Partitur 2 2/4 sop.melody.Voice.A \once \override ...
+
+The editionMod command can collect [\\once] \\override, [\\once] \\set, \\with {} (=ly:context-mod?), \\clef, \\break, \\pageBreak and TextScript events.
+
+TODO
+
+editorial annotations
+--------------------
+
+To collect editorial annotations, lalily consists (per default) the Score context with an engraver, wich listens to TextScript events containing a music-property 'annotation.
+This is stored in a globally, so that for each annotation there is music-location and source-location found.
+On each finalization of this annotation-engraver, a file <name>-todo.log is created.
+The \\annolist markup-list-command writes out all stored annotations.
 
 TODO
