@@ -251,6 +251,7 @@ automatically loaded files
 --------------------------
 
 With '\\include "lalily.ly"' the lalily toolchain is loaded.
+After extending the %load-path to include the scheme-part of lalily, 'lalily/init.scm' is loaded.
 
 
 TODO
