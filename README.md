@@ -100,7 +100,7 @@ or \\callTemplate fetch music and templates relative to the current path. So a s
 
 We have a lalily.demo.choral.satb template which calls lalily.demo.choral.staff:
 
-    \registerTemplate #'(lalily demo choral staff)
+    \registerTemplate lalily.demo.choral.staff
     #(define-music-function (parser location piece options)(list? list?)
       (let* ((instrname (ly:assoc-get 'instrname options "Voc?" #f))
              (shortname (ly:assoc-get 'shortname options #f #f))
@@ -175,8 +175,27 @@ And make changes with
     \editionMod Partitur 2 2/4 <a path> \once \override DynamicText #'extra-offset = #'(-1 . 1)
 
 The dynamic text gets an extra-offset in measure 2 on the 3rd quarter. Addressing the right context
-is a little bit clumsy, but if it is integrated into the templates, its more reasonable.
-I would call this experimental, but I use it regularly for \\shape and \\break, to tweak the output
-without polluting the music-source with tag-once-override and similar constructs.
+is a little bit difficult, but if it is integrated into the templates, its more reasonable.
+I use it regularly for \\shape and \\break, to tweak the output without polluting the music-source with tag-once-override and similar constructs.
+
+There are three steps, to make the edition-engraver work:
+
+1 set the current music folder
+2 register the modifications for a moment and a context
+3 register the 'active' edition tags
+
+This might look like:
+
+    \setMusicFolder music.choral.altatrinita
+    \editionMod Partitur 2 2/4 sop.melody.Voice.A \once \override DynamicText #'extra-offset = #'(-1 . 1)
+    \addEdition Partitur
+
+The first step might have been done implicitly by setDefaultTemplate or by an include.
+(If you are note sure, if it is set correctly, you can also address the contexts with an absolute path like #'(/ music choral altatrinita sop melody Voice A) )
+But the current music folder is taken into account, when addressing the context.
+When a file is compiled for the first time, a file "<name>-edition.log" is created, where all contexts are listed, wich consist an edition-engraver.
+Every edition-engraver has a path, wich should be <music-path>.<ContextName>.<N>.
+(The template author is responsible for consisting the edition-engraver!)
+
 
 TODO
