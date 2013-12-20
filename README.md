@@ -14,7 +14,7 @@ folders and files
 * lalily/ - is the folder, which contains the framework
 * lalily-extensions/ - is a folder, which MAY be created in this project folder and/or next to this project folder.
   All files in this folder with a name suffix ".ly" are included by lalily.
-  If a file config.scm is found, it is loaded first.
+  If a file config.scm is found here, it is loaded first.
 * in examples/ are a few examples using lalily
 
 the idea
@@ -65,19 +65,25 @@ But then I wanted to have two choirs. Wouldn't it be nice just to call \\satb tw
 lalily-templates
 ----------------
 
-The result is, that I don't use lily-variables like sopran=... for the music, but have a tree-like structure, where I store my music.
-This is accompanioned by two functions \\putMusic and \\getMusic. My template-music-functions now all have the same signature
+The result is, that I don't use lily-variables like sopran={} for the music, but have a tree-like structure to store the music.
+This is accompanioned by two functions \\putMusic and \\getMusic. The template-music-functions now all have the same signature
 and are stored with \\registerTemplate and called with \\callTemplate. Music and templates are stored and addressed with a path,
 which is in fact a scheme-list. And there is a globally stored current path or music-folder, which these functions refer to.
-So if I have a music-folder music.choral.altatrinita (wich results in a scheme-list #'(music choral altatrinita)) and make a call \\putMusic sop.melody {...}, it will store the music in music.choral.altatrinita.sop.melody .
-A template function is called with \\callTemplate template.path music.path options and the signature of template function is
+So if I have a music-folder 'music.choral.altatrinita' (wich results in a scheme-list #'(music choral altatrinita)) and make a call \\putMusic sop.melody {...},
+it will store the music in 'music.choral.altatrinita.sop.melody'.
+A template function is called with \\callTemplate /template.path/ /music.path/ /options/ and the signature of template function is
 
     #(define-music-function (parser location piece options)(list? list?)
+	    ; piece is the current music path
+		; options is an a-list with optional settings for this template
         ; ... return some music here
 		)
 
-When the template function is called, the current music path and the current template path are set, and any calls to \\getMusic
-or \\callTemplate fetch music and templates relative to the current path. So a satb template might look like this:
+The 'piece'-parameter is not necessary -- the current music folder can always be accessed globally -- but kept here for historical reasons.
+When the template function is called, the current _music path_ and the current _template path_ are set, and any calls to \\getMusic
+or \\callTemplate fetch music and templates relative to the current path.
+
+A satb template might look like this:
 
     \registerTemplate lalily.demo.choral.satb
     #(define-music-function (parser location piece options)(list? list?)
@@ -87,8 +93,8 @@ or \\callTemplate fetch music and templates relative to the current path. So a s
            % \once \override StaffGroup.BarLine #'allow-span-bar = ##t
            \override BarLine #'allow-span-bar = ##f
          } <<
-           % call template choral.staff relative to this template path ( lalil.demo.choral.satb )
-           % with path sop relative to the current piece/path
+           % call template 'choral.staff' relative to this template path ('lalil.demo.choral.satb')
+           % with path 'sop' relative to the current piece (or music-folder-path)
            % with options specifying clef, instrument name and short name
            \callTemplate #'(.. staff) sop #'((clef . "G")(instrname . "Soprano")(shortname . "S"))
            % do the same for alt, ten and bas
@@ -98,7 +104,7 @@ or \\callTemplate fetch music and templates relative to the current path. So a s
          >>
        #})
 
-We have a lalily.demo.choral.satb template which calls lalily.demo.choral.staff:
+We have a 'lalily.demo.choral.satb' template which calls 'lalily.demo.choral.staff':
 
     \registerTemplate lalily.demo.choral.staff
     #(define-music-function (parser location piece options)(list? list?)
@@ -120,7 +126,7 @@ We have a lalily.demo.choral.satb template which calls lalily.demo.choral.staff:
           >>
        #}))
 
-(You can find a running example (for lilypond 2.17.97) in the examples folder)
+(You can find a running example for lilypond 2.17.97 in the examples folder)
 
 And when you have a choral piece under another path, you just change the current music-folder and call the template.
 
@@ -139,23 +145,42 @@ another template, for example:
 
      \callTemplate #'(/ lalily demo choral satb) choir.a #'()
 
-(if a path starts with '/', it is read as an absolute path)
+(if a path starts with '/', it is interpreted as an absolute path)
 
 Internally the music is stored in a singleton tree-structure.
 
-For now, these functions still need the #'() notation, if the path consists of characters, not allowed in "direct" symbol-list-input.
+For now, these functions still need the #'() notation, *if* the path consists of characters, not allowed in "direct" symbol-list-input or 'dot-notation'.
 This is the case for '..' (one folder/directory up) and '/' (specify an absolute path.
-These are often used combinations, so there might be a change in the future.
+These are often used path elements, so there shall be a change or addition in the future.
 
 predefined templates
 --------------------
 
-There is a start of predefined templates, wich are loaded automatically with \\include "lalily.ly".
-Most of them (templates.ly) where made up for my own needs.
+lalily comes with some predefined templates, wich are loaded automatically with \\include "lalily.ly".
+Most of them (templates.ly) where made up for the author own special needs.
 In templates-instrument.ly and templates-vocal.ly I started to organize the predefine templates with a "namespace" lalily.
-So the basic instrument template is called via 'lalily.instrument', wich is called for example by 'lalily.instrument.trumpet'.
+The basic instrument template is called via 'lalily.instrument', wich is called for example by 'lalily.instrument.trumpet'.
 
 TODO
+
+utilities
+---------
+
+The lalily-templates use association-lists for the parameter option. If the template to call needs multiple parameters,
+it can get quite difficult to write the needed a-list. To compensate this, lalily comes with functions, to ease the creation:
+
+    \clratree opts
+	\addatree opts clef "bass"
+	\addatree opts instrname "Basso"
+	\addatree opts shortname "B"
+
+is equivalent to
+
+    opts = #'((clef . "bass")(instrname . "Basso")(shortname . "B"))
+
+and can be called inside {}.
+The variable is (re)defined globally, meaning that any subsequent call returns the last version.
+You can use this function inside a template to create the options for a nested template-call, but you have to be aware not to override any import value!
 
 lalily-editions
 ---------------
@@ -219,5 +244,13 @@ To collect editorial annotations, lalily consists (per default) the Score contex
 This is stored in a globally, so that for each annotation there is music-location and source-location found.
 On each finalization of this annotation-engraver, a file <name>-todo.log is created.
 The \\annolist markup-list-command writes out all stored annotations.
+
+TODO
+
+automatically loaded files
+--------------------------
+
+With '\\include "lalily.ly"' the lalily toolchain is loaded.
+
 
 TODO
