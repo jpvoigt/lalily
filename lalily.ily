@@ -131,6 +131,7 @@
 \includeOncePattern "lalily-extensions" "^.*\.ly$" % once?
 \includeOncePattern "../lalily-extensions" "^.*\.ly$" % once?
 
+% TODO look for local lalily-extensions?
 % look for local paper/layout/midi
 \includeOnceIfExists "lalily-paper.ly" % once?
 \includeOnceIfExists "lalily-layout.ly" % once?

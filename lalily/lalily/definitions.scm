@@ -1,6 +1,6 @@
 ;;;; This file is part of lalily, an extension to lilypond <http://www.lilypond.org/>.
 ;;;;
-;;;; Copyright (C) 2011--2012 Jan-Peter Voigt <jp.voigt@gmx.de>
+;;;; Copyright (C) 2011--2013 Jan-Peter Voigt <jp.voigt@gmx.de>
 ;;;;
 ;;;; lalily is free software: you can redistribute it and/or modify
 ;;;; it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 
 (define-module (lalily definitions))
 
-(define-public lalily:version '(0 8 13))
+(define-public lalily:version '(0 8 20))
 (define-public lalily:init (localtime (current-time)))
 
 (define-public lalily:registry-verbose '(lalily runtime verbose))
