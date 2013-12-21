@@ -2,7 +2,13 @@ lalily
 ======
 
 lalily is a framework and a collection of utilities, to extend lilypond.
-To use it, include 'lalily.ly'.
+
+To use it, make sure, lalily is in your include list either via the -I option an the commandline
+or for example in frescobaldi add the path under preferences->lilypond-settings. Now you can use
+
+    \include "lalily.ly"
+
+to load lalily.
 
 folders and files
 -----------------
