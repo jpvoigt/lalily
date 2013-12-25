@@ -83,6 +83,32 @@
          (if once (set! reg `(,@reg ,file-path)))))
     (set-registry-val '(lalily runtime loaded) reg)))
 
+(define-public includeFolder
+  (define-void-function (parser location options)(list?)
+    (let* ((relative (assoc-get 'relative options #f))
+           (idir (assoc-get 'directory options "."))
+           (dirname (if relative (string-append (location-extract-path location) idir) (normalize-path-string idir)))
+           (ionce (assoc-get 'once options #t))
+           (pattern (assoc-get 'pattern options "^.*\\.ly$")))
+      (if (not (eq? #\. (string-ref dirname 0))) (set! dirname (normalize-path-string dirname)))
+      (if (or (= (string-length dirname) 0)
+              (not (eq? #\/ (string-ref dirname (- (string-length dirname) 1)))))
+          (set! dirname (string-append dirname "/")))
+      (if (or (not (file-exists? dirname)) (not (eq? 'directory (stat:type (stat dirname)))))
+          (set! dirname #f))
+
+      (if dirname (let* ((dir (opendir dirname))
+                         (entry (readdir dir)))
+                    (while (not (eof-object? entry))
+                      (if (regexp-match? (string-match pattern entry))
+                          (let ((file (string-append dirname entry)))
+                            (la:parser-include-file parser file ionce)))
+                      (set! entry (readdir dir))
+                      )
+                    (closedir dir)
+                    ))
+      )))
+
 (define-public includePattern
   (define-void-function (parser location idir pattern)(string? string?)
     (let ((dirname (string-append (location-extract-path location) idir)))
@@ -127,7 +153,6 @@
                     (closedir dir)
                     ))
       )))
-
 
 (define-public (lalily-test-location? parser location)
   (let ((outname (ly:parser-output-name parser))
