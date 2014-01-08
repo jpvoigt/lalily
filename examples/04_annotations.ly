@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.17.29"
+\version "2.17.97"
 % include "lalily.ly" from folder above
 \include "../lalily.ly"
 % include "templates-satb.ly" with template definition and music
@@ -33,3 +33,4 @@
 \lalilyTest
 
 \markuplist \annolist
+

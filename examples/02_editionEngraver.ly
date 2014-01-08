@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.17.29"
+\version "2.18.0"
 % include "lalily.ly" from folder above
 \include "../lalily.ly"
 % include "templates-satb.ly" with template definition and music
@@ -42,25 +42,25 @@
 
 % enter modifications in bar 7 at the first 4th
 % for editionEngraver at path #'(music choral altatrinita sop Voice 1)
-\editionMod demo 7 0/4 #'(sop Staff A) ^\todo "Slur" "Here we modify the shape of the slur"
-\editionMod demo 7 0/4 #'(sop Voice A) \shape #'((0 . 0)(0 . 1)(0 . 1)(0 . 0)) Slur
+\editionMod demo 7 0/4 sop.Staff.A ^\todo #'() #'() "Slur" "Here we modify the shape of the slur"
+\editionMod demo 7 0/4 sop.Voice.A \shape #'((0 . 0)(0 . 1)(0 . 1)(0 . 0)) Slur
 
-\editionMod demo 6 2/4 #'(ten Staff A) ^\todo "Slur" "Here we modify the shape of the slur"
-\editionMod demo 6 2/4 #'(ten Voice A) \shape #'((0 . 0)(0 . 1)(0 . 1)(0 . 0)) Slur
+\editionMod demo 6 2/4 ten.Staff.A ^\todo #'() #'() "Slur" "Here we modify the shape of the slur"
+\editionMod demo 6 2/4 ten.Voice.A \shape #'((0 . 0)(0 . 1)(0 . 1)(0 . 0)) Slur
 
-\editionMod demo 2 0/4 #'(sop Staff A) ^\todo "Lyrics" \markup \column {
+\editionMod demo 2 0/4 sop.Staff.A ^\todo #'() #'() "Lyrics" \markup \column {
   \line { use green color for 'Trinita' }
   \justify { this is set in the Score context, so all Lyrics contexts are affected }
 }
-\editionMod demo 2 0/4 #'(Score A) \override LyricText.color = #green
-\editionMod demo 3 2/4 #'(Score A) \revert LyricText.color
+\editionMod demo 2 0/4 Score.A \override LyricText.color = #green
+\editionMod demo 3 2/4 Score.A \revert LyricText.color
 
 % accessing parent context so stanza is set in all lyrics inside this StaffGroup
-\editionMod demo 9 0/4 #'(bas Lyrics A) \set StaffGroup.stanza = "St."
+\editionMod demo 9 0/4 bas.Lyrics.A \set StaffGroup.stanza = "St."
 
 % inserting some senseless breaks
-\editionMod demo 10 0/4 #'(Score A) \break
-\editionMod demo 17 0/4 #'(Score A) \pageBreak
+\editionMod demo 10 0/4 Score.A \break
+\editionMod demo 17 0/4 Score.A \pageBreak
 
 % create PDF ... "demo" edition is active
 \lalilyTest
@@ -73,12 +73,3 @@
 \bookpartIf \bookpart {
   \markuplist \annolist
 }
-
-
-%{
-/usr/bin/python: /home/jpv/lily2.17/lilypond/usr/lib/libz.so.1: no
-version information available (required by /usr/bin/python) convert-ly
-(GNU LilyPond) 2.17.96  convert-ly: »« wird verarbeitet... Anwenden
-der Umwandlung: 2.17.0, 2.17.4, 2.17.5, 2.17.6, 2.17.11, 2.17.14,
-2.17.15, 2.17.18, 2.17.19, 2.17.20, 2.17.25, 2.17.27, 2.17.29
-%}

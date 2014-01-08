@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.17.29"
+\version "2.18.0"
 % include "lalily.ly" from folder above
 \include "../lalily.ly"
 
@@ -37,7 +37,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % create and register a template for a choral staff with lyrics
-\registerTemplate #'(lalily demo choral staff)
+\registerTemplate lalily.demo.choral.staff
 % a template in lalily sontext is a music function with two parameters of kind [list?]
 #(define-music-function (parser location piece options)(list? list?)
    ; piece contains the current music folder
@@ -65,13 +65,15 @@
          \new Voice = $voicename <<
            {
              % call template #'(global voice) - not relative to this template
+             % ('/' is not allowed in dot-notation, so we need scheme notation here)
              \callTemplate #'(/ global voice) #'() #'()
              % set clef from options
              \clef $clef
              % fetch melody from the current music folder/directory
-             \getMusic #'(melody)
+             \getMusic melody
            }
            % search for "meta-track" in the music directory tree
+           % (the argument has predicate scheme?, so we have to make it a symbol here)
            \getMusicDeep #'meta
          >>
          % create Lyrics context with name 'lyricname'
@@ -80,7 +82,7 @@
            \consists \editionEngraver $piece
          }
          % assign Lyrics to Voice $voicename and get music/lyrics from path lyrics in the current directory
-         \lyricsto $voicename \lyricmode { \getMusic #'(lyrics) }
+         \lyricsto $voicename \lyricmode { \getMusic lyrics }
        >>
      #}))
 
@@ -93,14 +95,30 @@
        % \once \override StaffGroup.BarLine.allow-span-bar = ##t
        \override BarLine.allow-span-bar = ##f
      } <<
-       % call template #'(choral staff) relative to this template path
-       % with path #'(sop) relative to the current piece/path
+       % we will use an option variable called 'opts', wich is created and used for defining this template.
+       % 'opts' will not be touched (is not needed) while executing this template!
+       % It is just a helper, to avoid "native" a-list-typing like #'((clef . "bass"))
+       \clratree opts
+       % call template choral.staff relative to this template path
+       % with path sop relative to the current piece/path ('..' is not possible in dot-notation)
        % tith options specifying clef, instrument name and short name
-       \callTemplate #'(.. staff) #'(sop) #'((clef . "G")(instrname . "Soprano")(shortname . "S"))
+       \setatree opts clef "G"
+       \setatree opts instrname "Soprano"
+       \setatree opts shortname "S"
+       \callTemplate #'(.. staff) sop $opts
        % do the same for alt, ten and bas
-       \callTemplate #'(.. staff) #'(alt) #'((clef . "G")(instrname . "Alto")(shortname . "A"))
-       \callTemplate #'(.. staff) #'(ten) #'((clef . "G_8")(instrname . "Tenoro")(shortname . "T"))
-       \callTemplate #'(.. staff) #'(bas) #'((clef . "bass")(instrname . "Basso")(shortname . "B"))
+       \setatree opts clef "G"
+       \setatree opts instrname "Alto"
+       \setatree opts shortname "A"
+       \callTemplate #'(.. staff) alt $opts
+       \setatree opts clef "G_8"
+       \setatree opts instrname "Tenoro"
+       \setatree opts shortname "T"
+       \callTemplate #'(.. staff) ten $opts
+       \setatree opts clef "bass"
+       \setatree opts instrname "Basso"
+       \setatree opts shortname "B"
+       \callTemplate #'(.. staff) bas $opts
      >>
    #})
 
@@ -119,15 +137,15 @@
 
 % "meta-track" for this piece of music added to each staff!
 % stored in #'(music choral altatrinita meta)
-\putMusic #'(meta) {
+\putMusic meta {
   \key f \major \time 2/2
-  \repeat volta 2 { s1*16 \spanVisible }
+  \repeat volta 2 { s1*16 \spanVisible } % \spaneVisible 
   \repeat volta 2 { s1*8 \spanVisible }
 }
 
 % soprano lyrics
-% stored in #'(music choral altatrinita sop lyrics)
-\putMusic #'(sop lyrics) \lyricmode {
+% stored in music.choral.altatrinita.sop.lyrics
+\putMusic sop.lyrics \lyricmode {
   Al -- ta Tri -- ni -- ta be -- a -- ta,
   da noi sem -- pre ad -- o -- ra -- ta,
   Tri -- ni -- ta glo -- ri -- o -- sa
@@ -136,8 +154,8 @@
   e tut -- ta de -- si -- de -- ro -- sa.
 }
 % soprano music
-% stored in #'(music choral altatrinita sop melody)
-\putMusic #'(sop melody) \relative c' {
+% stored in music.choral.altatrinita.sop.melody
+\putMusic sop.melody \relative c' {
   f2 f4( g) | a2 g4( f) | bes2 a4( g) | a2 a |
   g2 a4( bes) | a2 g4( f) | g( bes) a( g) | f2 f \breathe |
   c'2 c4( d) | bes1 | c4( bes) a( g) | a2 a |
@@ -146,9 +164,9 @@
   f2 g4( a) | bes2 a | g4( f) bes( g) | f2 f |
 }
 % alto lyrics - reusing soprano lyrics
-\putMusic #'(alt lyrics) \getMusic #'(sop lyrics)
+\putMusic alt.lyrics \getMusic sop.lyrics
 % alto music
-\putMusic #'(alt melody) \relative c' {
+\putMusic alt.melody \relative c' {
   c2 c4( e) | f2 e4( f) | f2 f4( e) | f2 f |
   e2 f | f e4( f) | e( f) f( e) | c2 c \breathe |
   a'2 a | g1 | g2 f4( e) | f2 f |
@@ -157,9 +175,9 @@
   c2 e4( f) | f2 f | e4( d) d( e) | c2 c |
 }
 % tenoro lyrics - reusing soprano lyrics
-\putMusic #'(ten lyrics) \getMusic #'(sop lyrics)
+\putMusic ten.lyrics \getMusic sop.lyrics
 % tenor music
-\putMusic #'(ten melody) \relative c' {
+\putMusic ten.melody \relative c' {
   a2 a4( c) | c2 c | d c | c c |
   c2 c4( d) | c2 c4( a) | c( d) c2 | a a \breathe |
   f'2 f | d1 | e2 c | c c |
@@ -168,9 +186,9 @@
   a2 c | d c | c4( a) bes( c) | a2 a |
 }
 % basso lyrics - reusing soprano lyrics
-\putMusic #'(bas lyrics) \getMusic #'(sop lyrics)
+\putMusic bas.lyrics \getMusic sop.lyrics
 % basso music
-\putMusic #'(bas melody) \relative c {
+\putMusic bas.melody \relative c {
   f2 f4( c) | f2 c4( f) | bes,2 f'4( c) | f2 f |
   c2 f4( bes,) | f'2 c4( d) | c( bes) f'( c) | f,2 f \breathe |
   f'2 f4( d) | g1 | c,2 f4( c) | f2 f |
@@ -185,12 +203,3 @@
 % If the outputname is changed, this may not work!
 \lalilyTest
 
-
-
-%{
-  /usr/bin/python: /home/jpv/lily2.17/lilypond/usr/lib/libz.so.1: no
-  version information available (required by /usr/bin/python) convert-ly
-  (GNU LilyPond) 2.17.96  convert-ly: »« wird verarbeitet... Anwenden
-  der Umwandlung: 2.17.0, 2.17.4, 2.17.5, 2.17.6, 2.17.11, 2.17.14,
-  2.17.15, 2.17.18, 2.17.19, 2.17.20, 2.17.25, 2.17.27, 2.17.29
-%}
