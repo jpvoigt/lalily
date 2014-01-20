@@ -194,6 +194,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; store templates in a tree
 
+(define-macro (make-template code)
+   `(define-music-function
+     (parser location piece options)
+     (list? list?)
+     ,code))
+
 (define-public (register-template name music) #f)
 (define-public (get-template name) #f)
 (define-public (call-template name parser location piece options) #f)

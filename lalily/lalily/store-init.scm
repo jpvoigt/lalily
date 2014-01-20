@@ -432,9 +432,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; music functions
 
+; create a template
+(define-macro (make-template code)
+   `(define-music-function
+     (parser location piece options)
+     (list? list?)
+     ,code))
+
 ; get relative
 (define-public getMusic
-  (define-music-function (parser location defm path)((ly:music? #f)list?)
+  (define-music-function (parser location defm path)((ly:music? #f) list?)
     (let ((p (create-music-path #f path)))
       (if defm
           (if (has-music? p) (get-music p location) defm)
@@ -457,7 +464,7 @@
         'elements (collect-music (create-music-path #f path) pal pred))
       )))
 (define-public putMusic
-  (define-music-function (parser location path music)(list? ly:music?)
+  (define-music-function (parser location path music)((list? '()) ly:music?)
     (let ((p (create-music-path #f path)))
       (put-music p music)
       (make-music 'SimultaneousMusic 'void #t))))
