@@ -19,7 +19,7 @@
 % include "lalily.ly" from folder above
 \include "../lalily.ly"
 % include "templates-satb.ly" with template definition and music
-\include "01_templates-satb.ly"
+\include "02_templates-satb.ly"
 
 \addEdition annotations
 \editionMod annotations 2 2/4 alt.Voice.A ^\todo "E?" "Shall this be E?"

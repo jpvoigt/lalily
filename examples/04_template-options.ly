@@ -19,7 +19,7 @@
 % include "lalily.ly" from folder above
 \include "../lalily.ly"
 % include "templates-satb.ly" with template definition and music
-\include "01_templates-satb.ly"
+\include "02_templates-satb.ly"
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % this file shows, how to (re)define and register a template
@@ -33,7 +33,6 @@
 \registerTemplate lalily.demo.choral.satb
 #(define-music-function (parser location piece options)(list? list?)
    (let ((staffs (assoc-get 'staffs options '())))
-     (display staffs)(newline)
      #{
        \new StaffGroup \with {
          % disable SpanBar like in ChoirStaff, but leave the possibility to display it with
@@ -45,11 +44,14 @@
        $(make-music 'SimultaneousMusic
             'elements
             (map ; map creates a list with the result of the given function (lambda) for each element
-             (lambda (staff) #{
+             (lambda (staff) 
+               (let ((staff_path (list (car staff)))
+                     (staff_opts (cdr staff)))
+               #{
                % the staff definition is a pair consisting of a key (car staff)
                % and the staff options (cdr staff)
-               \callTemplate #'(.. staff) #(list (car staff)) #(cdr staff)
-               #}) staffs))
+               \callTemplate #'(.. staff) #staff_path #staff_opts
+               #})) staffs))
      #}))
 
 % use helper functions to create options
@@ -66,10 +68,10 @@
 \addatree opts staffs.bas.clef "bass"
 
 % we display the created Options here for debugging
-#(display opts)
+#(display (format-alist opts))
 
 % add/replace the newly created staffs option at current music-folder/path
-\addOptions #'() #opts
+\addOptions LY_LOCAL #opts
 
 % instantiate this piece of music ... creates PDF, MIDI and a log file
 % this only happens, if this file is compiled directly and not included!

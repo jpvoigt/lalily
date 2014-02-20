@@ -22,27 +22,47 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; path substitution
 
-(define (reg-path p) `(lalily runtime store path ,p))
+(define (reg-path p) `(,@lalily:store:path-variables ,(object->symbol p)))
+(define (map-name name)
+  (let ((name (object->string name display)))
+    (set! name
+          (if (string-prefix? "LY_" name) (string-append "$" (substring name 3)) name)
+          )
+    ;(ly:message name)
+    name
+    ))
 (define-public (register-path name path)
-  (if (and (eq? #\$ (string-ref (format "~A" name) 0)) (list? path))
-      (set-registry-val (reg-path name) path)
-      (ly:warning "path substitutes have to start with '$'! (~A)" name)))
+  (let ((name (map-name name)))
+    (if (and (eq? #\$ (string-ref name 0)) (list? path))
+        (set-registry-val (reg-path name) path)
+        (if (list? path)
+            (ly:warning "path substitutes have to start with '$' or 'LY_'! (~A)" name)
+            (ly:warning "path is not a list: ~A" path))
+        )))
+
 (define-public (unfold-path path uncyc)
   (let ((pemp '()))
     (if (not (list? uncyc)) (set! uncyc (list)))
     (for-each (lambda (p)
-                (if (and (eq? #\$ (string-ref (format "~A" p) 0)) (not (memq p uncyc)))
-                    (let ((subst (get-registry-val (reg-path p) #f)))
-                      (set! pemp (append pemp (if (list? subst) (unfold-path subst (cons p uncyc)) (list p)))))
-                    (set! pemp (append pemp (list p)))
-                    )) path)
+                (let ((n (map-name p)))
+                  (if (and (eq? #\$ (string-ref n 0)) (not (memq n uncyc)))
+                      (let ((subst (get-registry-val (reg-path n) #f)))
+                        (set! pemp (append pemp (if (list? subst) (unfold-path subst (cons n uncyc)) (list p)))))
+                      (set! pemp (append pemp (list p)))
+                      ))) path)
     pemp))
-(define-public registerPath (define-music-function (parser location name path)(string-or-symbol? list?)
-                              (if (symbol? name) (set! name (symbol->string name)))
-                              (if (not (eq? #\$ (string-ref name 0)))
-                                  (set! name (string-append "$" name)))
-                              (register-path (string->symbol name) path)
-                              (make-music 'SequentialMusic 'void #t)))
+(define-public registerPath
+  (define-void-function (parser location name path)(string-or-symbol? list?)
+    (let ((name (map-name name)))
+      (if (not (eq? #\$ (string-ref name 0)))
+          (set! name (string-append "$" name)))
+      (register-path name path)
+      )))
+
+(register-path '$UP '(..))
+(register-path '$EMPTY '())
+(register-path '$LOCAL '())
+(define-public LY_NOOP '())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; store music in a tree
@@ -195,10 +215,10 @@
 ;;; store templates in a tree
 
 (define-macro (make-template code)
-   `(define-music-function
-     (parser location piece options)
-     (list? list?)
-     ,code))
+  `(define-music-function
+    (parser location piece options)
+    (list? list?)
+    ,code))
 
 (define-public (register-template name music) #f)
 (define-public (get-template name) #f)
@@ -251,21 +271,31 @@
                             (tree-display templ-tree `(vformat . ,(lambda (v) "*")) )))
   )
 (define-public (create-template-path tabs path)
-  (let ((path (if (and (not tabs)(list? path)(> (length path) 0)(eq? '/ (car path))) (cdr path) path))
-        (tabs (or tabs (and (list? path)(> (length path) 0)(eq? '/ (car path))))))
+  (let* (
+          (pabs (lambda (path) (and (list? path)(> (length path) 0)(member (car path) '(/ $ROOT LY_ROOT)))))
+          (_tabs (or tabs (pabs path)))
+          (path (if (and (not tabs)(pabs path)) (cdr path) path))
+          (tabs _tabs)
+          )
     (if tabs path
         (let ((cpart (get-current-template)))
           (normalize-path (if (list? cpart)(append cpart path) path))))))
 
 (define-public (create-music-path mabs path)
-  (let ((path (if (and (not mabs)(list? path)(> (length path) 0)(eq? '/ (car path))) (cdr path) path))
-        (mabs (or mabs (and (list? path)(> (length path) 0)(eq? '/ (car path))))))
-    (unfold-path
-     (if mabs path
-         (let ((cpart (get-current-music)))
-           (if (not (list? cpart)) (set! cpart (get-music-folder)))
-           (normalize-path (if (list? cpart)(append cpart path) path))
-           )) '() )))
+  (let* (
+          (pabs (lambda (path) (and (list? path)(> (length path) 0)(member (car path) '(/ $ROOT LY_ROOT)))))
+          (_mabs (or mabs (pabs path)))
+          (path (if (and (not mabs)(pabs path)) (cdr path) path))
+          (mabs _mabs)
+          )
+    (normalize-path (unfold-path
+                     (if mabs path
+                         (let ((cpart (get-current-music)))
+                           ; TODO when does this happen?
+                           (if (not (list? cpart)) (set! cpart (get-music-folder)))
+                           (if (list? cpart)(append cpart path) path)
+                           )) '() ))
+    ))
 
 (define-public musicPath (define-scheme-function (parser location path)(list?)(create-music-path #f path)))
 (define-public templatePath (define-scheme-function (parser location path)(list?)(create-template-path #f path)))
@@ -356,7 +386,7 @@
     (if (list? field)
         (getv field)
         (ly:assoc-get field header def #f))
-     ))
+    ))
 (define-public (get-music-folder-header-field field . default)
   (apply get-default-header (get-music-folder) field default))
 

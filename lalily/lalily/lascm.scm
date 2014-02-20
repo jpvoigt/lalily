@@ -24,10 +24,18 @@
 
 (define-public (glue-list lst glue)
   "create string from list containing arbitrary objects"
-  (string-join (map (lambda (s) (format "~A" s)) lst) glue 'infix))
+  (string-join (map (lambda (s) (object->string s display)) lst) glue 'infix))
 (define-public (glue-symbol lst . glue)
   "create symbol from list containig arbitrary objects"
-  (string->symbol (string-join (map (lambda (s) (format "~A" s)) lst) (if (> (length glue) 0)(car glue) ":") 'infix)))
+  (string->symbol (string-join (map (lambda (s) (object->string s display)) lst) (if (> (length glue) 0)(car glue) ":") 'infix)))
+(define-public (object->symbol o)
+    "create symbol from any object"
+   (cond
+    ((symbol? o) o)
+    ((string? o) (string->symbol o))
+    ((list? o) (glue-symbol o))
+    (else (string->symbol (object->string o display)))
+    ))
 
 (define-public (format-alist l . ind)
   "create string from (a-)list for pretty printing

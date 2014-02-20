@@ -39,22 +39,32 @@
 
 (re-export extent-size)
 (re-export info-message)
+(define (return-music val)(if (ly:music? val) val (make-music 'SequentialMusic 'void #t)))
 (define-public displayMessage
   (define-music-function (parser location format val)(string? scheme?)
     (ly:message format val)
-    (if (ly:music? val)
-        val
-        (make-music 'SequentialMusic 'void #t)
-        )
-    ))
+    (return-music val)))
 (define-public inputMessage
   (define-music-function (parser location format val)(string? scheme?)
     (ly:input-message location format val)
-    (if (ly:music? val)
-        val
-        (make-music 'SequentialMusic 'void #t)
-        )
-    ))
+    (return-music val)))
+(define-public displayObject
+  (define-music-function (parser location val)(scheme?)
+    (display val)
+    (return-music val)))
+(define-public displayLine
+  (define-music-function (parser location val)(scheme?)
+    (display val)(newline)
+    (return-music val)))
+(define-public writeObject
+  (define-music-function (parser location val)(scheme?)
+    (write val)
+    (return-music val)))
+(define-public writeLine
+  (define-music-function (parser location val)(scheme?)
+    (write-line val)
+    (return-music val)))
+
 
 (define (not-null? v)(not (null? v)))
 
@@ -125,9 +135,9 @@
       )))
 (define-public includeRelIf
   (define-void-function (parser location file proc)(string? procedure?)
-      (if (proc parser location) 
-          (ly:music-function-exec includeRelative parser location file))
-      ))
+    (if (proc parser location)
+        (ly:music-function-exec includeRelative parser location file))
+    ))
 
 (re-export includePattern)
 (re-export includeOncePattern)
@@ -314,13 +324,13 @@
   \revert Staff.RestCollision #'positioning-done
   \revert Staff.MultiMeasureRest #'Y-offset
   #})
-  (define-public mergeRests #{ \layout {
-    \context {
-      \Staff
-      \override RestCollision #'positioning-done = #merge-rests-on-positioning
-      \override MultiMeasureRest #'Y-offset = #merge-multi-measure-rests-on-Y-offset
-    }
-} #})
+(define-public mergeRests #{ \layout {
+  \context {
+    \Staff
+    \override RestCollision #'positioning-done = #merge-rests-on-positioning
+    \override MultiMeasureRest #'Y-offset = #merge-multi-measure-rests-on-Y-offset
+  }
+  } #})
 
 ;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

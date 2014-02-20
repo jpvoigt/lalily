@@ -17,6 +17,8 @@
 
 (use-modules (lalily store)(lalily definitions))
 
+(re-export LY_NOOP)
+
 (define-public (log-music-folder)
   (ly:message "music folder: ~A~A"
     (glue-list (get-music-folder) "/")

@@ -17,6 +17,7 @@
 
 (use-modules (lalily lascm))
 
+(re-export object->symbol)
 (re-export glue-list)
 (re-export glue-symbol)
 (re-export format-alist)

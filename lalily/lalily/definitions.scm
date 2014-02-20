@@ -31,6 +31,7 @@
 (define-public lalily:test-predicate '(lalily runtime test-predicate))
 (define-public lalily:create '(lalily runtime create))
 
+(define-public lalily:store:path-variables '(lalily runtime store path variables))
 (define-public lalily:get-music-load-callbacks '(lalily runtime store load callbacks))
 (define-public lalily:get-music-store-callbacks '(lalily runtime store store callbacks))
 

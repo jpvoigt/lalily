@@ -19,11 +19,11 @@
 % include "lalily.ly" from folder above
 \include "../lalily.ly"
 % include "templates-satb.ly" with template definition and music
-\include "01_templates-satb.ly"
+\include "02_templates-satb.ly"
 
 % after including the file above, the folder is set, 
 % but if you include a bunch of files, it may be set to some other path
-\setMusicFolder #'(music choral altatrinita)
+\setMusicFolder music.choral.altatrinita
 % set a different paper
 \setPaper \paper {
   indent = 15\mm

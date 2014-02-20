@@ -21,12 +21,12 @@
            $(if (ly:context-mod? voice-mods) voice-mods #{ \with {} #})
          } <<
            \getMusicDeep #'meta
-           { \callTemplate #'(/ global voice) #'() #'() \clef $clef \getMusic #'(music) }
+           { \callTemplate #'(/ global voice) #'() #'() \clef $clef \getMusic music }
          >>
          \new Lyrics \with {
            $(if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #})
            \consists \editionEngraver $piece
-         }\lyricsto $vocname \getMusic #'(text)
+         }\lyricsto $vocname \getMusic lyrics
        >>
      #}))
 
