@@ -114,7 +114,7 @@ lalily templates
 
 I want to be able to code the music once and then include and engrave it (almost) anywhere.
 When you develop in object oriented computer languages like for example Java or C++,
-you will know the concept of namespaces and inheritance.
+you will know the concept of namespaces and of inheritance.
 So I asked myself: What would it mean to organize the music like that?
 The result is, that the functions in my templating system are called with an associated namespace set.
 
@@ -138,8 +138,6 @@ And if there is a template to create a staff with lyrics, it can be called with 
 where voice and voice-options may be variables inside a loop, which name the /relative/ namespace and the related options.
 That might be `#'ten` for the path and `#'((clef . "G_8")(name . "Tenor"))` for the options.
 And the loop might result from a given list in the wrapping template.
-(NOTE: The examples in lalily still use an old template, which is organized slightly different,
-and the template mentioned here is not included right now -- that has to be changed!)
 
 This leads to several possibilities. For example if you have a piece for two choirs,
 you might call the template twice in a wrapping template with namespaces `A` and `B`.
