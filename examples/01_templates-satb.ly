@@ -87,7 +87,7 @@
      #}))
 
 % create a template for a SATB StaffGroup
-\registerTemplate #'(lalily demo choral satb)
+\registerTemplate lalily.demo.choral.satb
 #(define-music-function (parser location piece options)(list? list?)
    #{
      \new StaffGroup \with {
@@ -129,7 +129,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % set current music folder and assign a template with options to it
-\setDefaultTemplate #'(music choral altatrinita) #'(lalily demo choral satb) #'()
+\setDefaultTemplate music.choral.altatrinita lalily.demo.choral.satb #'()
 % set title for current (formerly set) music folder
 \setTitle "Alta Trinita Beata"
 % set composer for current music folder with #'(name . life)
