@@ -116,27 +116,33 @@ I want to be able to code the music once and then include and engrave it (almost
 When you develop in object oriented computer languages like for example Java or C++,
 you will know the concept of namespaces and of inheritance.
 So I asked myself: What would it mean to organize the music like that?
-The result is, that the functions in my templating system are called with an associated namespace set.
+The result is, that the functions in my templating system are called within an active namespace set.
 
 In lalily it is called `music-folder` because music is stored in a file-system-tree like manner.
-(I might change the naming in the future)
-The namespace is a path, which is actually a list.
+(I might change the naming in the future to namespace)
+The music-folder is addressed by a path, which is actually a list.
 The templates are `music-function`s with a fixed signature: `(piece options)(list? list?)`
 The `piece` argument is the current music-folder (or namespace) and the
 `options` argument is an association-list with all needed arguments.
-All templates are also stored in such a namespace-tree, so they can be called by their respective path.
-To engrave music, the respective template function is called with a current namespace:
+Also the templates are stored in such a folder-, directory- or namespace-tree,
+so they can be called by their respective path.
+To engrave music, the template function is called with a current namespace.
+For example:
 
-    \callTemplate choral.group my.choral.music #'()
+    \callTemplate choral.group my.choral.music #'() % alternatively you can `\LY_NOOP` for empty options
 
-This calls a template with a path `#'(lalily vocal group)` (thanks to David K.s parser improvements, it can be entered in dot-notation since lilypond 2.17.?)
+This calls a template with a path `#'(lalily vocal group)`
+(thanks to David K.s parser improvements, it can be entered in dot-notation since lilypond 2.17.?)
 The namespace is set to `#'(my choral music)` and options are empty --- SATB four stave is default for the template.
-When the template-function returns, the current namespace is set to its previous value.
-Inside the template function, the music is accessed using `\getMusic sop.melody`, to get the melody for the soprano voice,
-which leads to a music-folder `my.choral.music.sop.melody`.
-And if there is a template to create a staff with lyrics, it can be called with `\callTemplate staff $voice $voice-options`,
-where voice and voice-options may be variables inside a loop, which name the /relative/ namespace and the related options.
-That might be `#'ten` for the path and `#'((clef . "G_8")(name . "Tenor"))` for the options.
+When the template-function returns, the current namespace is reset to its previous value.
+Inside the template function, the music is accessed using `\getMusic sop.melody`,
+to get the melody for the soprano voice.
+In affect music is taken from a music-folder `my.choral.music.sop.melody`.
+And if there is a template to create a staff with lyrics,
+it can be called with `\callTemplate staff $voice $voice-options`,
+where voice and voice-options may be variables inside a loop,
+which name the /relative/ namespace and the related options.
+That might be `#'(ten)` for the path and `#'((clef . "G_8")(name . "Tenor"))` for the options.
 And the loop might result from a given list in the wrapping template.
 
 This leads to several possibilities. For example if you have a piece for two choirs,
