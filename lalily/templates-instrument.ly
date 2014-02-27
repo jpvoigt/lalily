@@ -42,18 +42,30 @@
           (ly:music-set-property! music 'pitch p)))
      music))
 
+#(define (get-option key options def)
+   (let ((default (ly:assoc-get 'default options '() #f)))
+     (ly:assoc-get key options (ly:assoc-get key default def #f) #f)
+     ))
+
 \registerTemplate #'(lalily instrument)
 #(define-music-function (parser location piece options)(list? list?)
-   (let ((name (ly:assoc-get 'name options "instrument" #f))
-         (init-voice (ly:assoc-get 'init-voice options #f))
-         (transp (ly:assoc-get 'transposition options (ly:make-pitch 0 0 0) #f))
-         (natpit (ly:assoc-get 'naturalize options #f))
-         (input-concert-pitch (ly:assoc-get 'input-concert-pitch options #t #f))
-         (output-concert-pitch (ly:assoc-get 'output-concert-pitch options #t #f))
-         (staff-mods (ly:assoc-get 'staff-mods options #f #f))
-         (voice-mods (ly:assoc-get 'voice-mods options #f #f))
-         (midi-instrument (assoc-get 'midi-instrument options #f #f)))
+   (let ((name (get-option 'name options "instrument"))
+         (init-voice (get-option 'init-voice options #f))
+         (clef (get-option 'clef options #f))
+         (transp (get-option 'transposition options (ly:make-pitch 0 0 0)))
+         (natpit (get-option 'naturalize options #f))
+         (input-concert-pitch (get-option 'input-concert-pitch options #t))
+         (output-concert-pitch (get-option 'output-concert-pitch options #t))
+         (staff-mods (get-option 'staff-mods options #f))
+         (voice-mods (get-option 'voice-mods options #f))
+         (midi-instrument (get-option 'midi-instrument options #f))
+         (meta (get-music-deep piece 'meta #f location))
+         )
      (define (natmus mus) (if natpit (naturalize mus) mus))
+     (if (string? clef)
+         (set! meta (make-music 'SimultaneousMusic
+                      'elements (list #{ \clef #clef #} meta)))
+         )
      #{
        \new Staff = $name \with {
          $(if (ly:context-mod? staff-mods) staff-mods)
@@ -67,28 +79,28 @@
            ((and input-concert-pitch (not output-concert-pitch))
             (natmus #{
               \transpose $transp c' <<
-                { \getMusicDeep #'meta }
+                { #meta }
                 { \getMusicDeep {} #(glue-symbol (list name 'global) "-") $(if (ly:music? init-voice) init-voice) \getMusic #'() }
               >>
               #}))
            ((and (not input-concert-pitch) output-concert-pitch)
             (natmus #{
               <<
-                { \getMusicDeep #'meta }
+                { #meta }
                 \transpose c' $transp { \getMusicDeep {} #(glue-symbol (list name 'global) "-") $(if (ly:music? init-voice) init-voice) \getMusic #'() }
               >>
               #}))
            ((and (not input-concert-pitch) (not output-concert-pitch))
             #{
               <<
-                \transpose c' $transp { \getMusicDeep #'meta }
+                \transpose c' $transp { #meta }
                 { \getMusicDeep {} #(glue-symbol (list name 'global) "-") $(if (ly:music? init-voice) init-voice) \getMusic #'() }
               >>
             #})
            (else
             #{
               <<
-                { \getMusicDeep #'meta }
+                { #meta }
                 { \getMusicDeep {} #(glue-symbol (list name 'global) "-") $(if (ly:music? init-voice) init-voice) \getMusic #'() }
               >>
             #})
@@ -127,7 +139,7 @@
 \registerTemplate #'(lalily instrument oboe)
 #(define-music-function (parser location piece options)(list? list?)
    (call-template (create-template-path #f '(..)) parser location piece
-     (assoc-set-all! options `((name . "english-horn")
+     (assoc-set-all! options `((name . "oboe")
                                (midi-instrument . "oboe")
                                ))))
 
@@ -176,16 +188,22 @@
 \registerTemplate #'(lalily instrument trumpet)
 #(define-music-function (parser location piece options)(list? list?)
    (call-template (create-template-path #f '(..)) parser location piece
-     (assoc-set-all! options `((name . "trumpet")
-                               (transposition . ,(ly:make-pitch -1 6 -1/2))
-                               (midi-instrument . "trumpet")
-                               ))))
+     (assoc-set-all! options `((default .
+                                 ((name . "trumpet")
+                                  (transposition . ,(ly:make-pitch -1 6 -1/2))
+                                  (midi-instrument . "trumpet")
+                                  (output-concert-pitch . #f)
+                                  )))
+       )))
 \registerTemplate #'(lalily instrument trombone)
 #(define-music-function (parser location piece options)(list? list?)
    (call-template (create-template-path #f '(..)) parser location piece
-     (assoc-set-all! options '((name . "trombone")
-                               (midi-instrument . "trombone")
-                               ))))
+     (assoc-set-all! options '((default .
+                                 ((name . "trombone")
+                                  (midi-instrument . "trombone")
+                                  (clef . "bass")
+                                  )))
+       )))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% string
