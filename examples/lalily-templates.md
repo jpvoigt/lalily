@@ -16,6 +16,7 @@ But this also didn't met my needs fully, when I had to copy and then edit the ne
 So I started to use scheme and create `music-function`s, which let me enter the needed changes to the wrapper with parameters to a function.
 
 For example, one might create a function, which conditionally creates a SATB score in two or four staves:
+(jump to [lalily-templates](#lalily-templates))
 
 ```
 \version "2.18.0"
