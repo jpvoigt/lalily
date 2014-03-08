@@ -283,18 +283,20 @@
 
 (define-public (create-music-path mabs path)
   (let* (
+          (path (if (list? path) (unfold-path path '()) '()))
           (pabs (lambda (path) (and (list? path)(> (length path) 0)(member (car path) '(/ $ROOT LY_ROOT)))))
           (_mabs (or mabs (pabs path)))
           (path (if (and (not mabs)(pabs path)) (cdr path) path))
           (mabs _mabs)
           )
-    (normalize-path (unfold-path
-                     (if mabs path
-                         (let ((cpart (get-current-music)))
-                           ; TODO when does this happen?
-                           (if (not (list? cpart)) (set! cpart (get-music-folder)))
-                           (if (list? cpart)(append cpart path) path)
-                           )) '() ))
+    (normalize-path
+     (unfold-path
+      (if mabs path
+          (let ((cpart (get-current-music)))
+            ; TODO when does this happen?
+            (if (not (list? cpart)) (set! cpart (get-music-folder)))
+            (if (list? cpart)(append cpart path) path)
+            )) '() ))
     ))
 
 (define-public musicPath (define-scheme-function (parser location path)(list?)(create-music-path #f path)))
