@@ -12,6 +12,7 @@
          (staff-mods (assoc-get 'staff-mods options #f #f))
          (voice-mods (assoc-get 'voice-mods options #f #f))
          (lyric-mods (assoc-get 'lyric-mods options #f #f)))
+     (if (not (string? vocname)) (set! vocname (glue-list piece "-")))
      #{
        <<
          \new Staff \with {
