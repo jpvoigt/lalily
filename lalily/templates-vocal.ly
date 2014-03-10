@@ -12,7 +12,11 @@
          (staff-mods (assoc-get 'staff-mods options #f #f))
          (voice-mods (assoc-get 'voice-mods options #f #f))
          (lyric-mods (assoc-get 'lyric-mods options #f #f)))
-     (if (not (string? vocname)) (set! vocname (glue-list piece "-")))
+     (if (not (string? vocname))
+         (let ((tmpname (glue-list piece "-")))
+           (ly:input-warning location "using ~A as vocname!" tmpname)
+           (set! vocname tmpname)
+           ))
      #{
        <<
          \new Staff \with {
@@ -27,7 +31,7 @@
          \new Lyrics \with {
            $(if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #})
            \consists \editionEngraver $piece
-         }\lyricsto $vocname \getMusic lyrics
+         } \lyricsto $vocname { \getMusic lyrics }
        >>
      #}))
 

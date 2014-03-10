@@ -106,7 +106,7 @@
                     #{
                       \keepWithTag $r \new Lyrics \with {
                         \consists \editionEngraver \musicPath $(list (car lyric))
-                      } \lyricsto $voice
+                      } \lyricsto { $voice }
                       {
                         $(if (and stanza (= c 1)) #{ \set stanza = $(cdr lyric) #}) \getLyrics $(list (car lyric))
                       }
@@ -114,7 +114,7 @@
          #{
            \new Lyrics \with {
              \consists \editionEngraver \musicPath $(list (car lyric))
-           } \lyricsto $voice
+           } \lyricsto { $voice }
            {
              $(if stanza #{ \set stanza = $(cdr lyric) #}) \getLyrics $(list (car lyric))
            }
@@ -154,7 +154,7 @@
        >>
        \new Lyrics \with {
          \consists \editionEngraver $piece
-       } \lyricsto "melodie" \getLyrics #'(text)
+       } \lyricsto "melodie" { \getLyrics #'(text) }
      >>
    #})
 
@@ -180,14 +180,14 @@
                                                     #{
                                                       \new Lyrics \with {
                                                         \consists \editionEngraver \musicPath #(list v r)
-                                                      } \lyricsto "melodie" \keepWithTag $r \getMusic $`(text ,v)
+                                                      } \lyricsto "melodie" { \keepWithTag $r \getMusic $`(text ,v) }
                                                     #}) repeats)))
                             verses)
                           (map (lambda (v)
                                  #{
                                    \new Lyrics \with {
                                      \consists \editionEngraver \musicPath #(list v)
-                                   } \lyricsto "melodie" \getLyrics $`(text ,v)
+                                   } \lyricsto "melodie" { \getLyrics $`(text ,v) }
                                  #}) verses)
                           ))
        >>
