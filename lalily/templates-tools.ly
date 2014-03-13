@@ -20,14 +20,3 @@
        \createScoreWithOptions #path #options
      #}))
 
-\parserDefine inheritHeader
-#(define-void-function (parser location path field)((list? '(..)) symbol?)
-   (let ((p (create-music-path #f path)))
-     (music-folder-header-set! parser location field (get-default-header p field))
-     ))
-\parserDefine inheritHeaders
-#(define-void-function (parser location path fields)((list? '(..)) list?)
-   (map (lambda (field)
-          (let ((p (create-music-path #f path)))
-            (music-folder-header-set! parser location field (get-default-header p field))
-            )) fields))

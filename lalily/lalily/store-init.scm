@@ -107,12 +107,12 @@
   (define-void-function (parer location proc)(procedure?)
     (let ((cbs (get-registry-val lalily:get-music-load-callbacks '())))
       (set-registry-val lalily:get-music-load-callbacks (cons proc cbs))
-    )))
+      )))
 (define-public registerMusicStoreCallback
   (define-void-function (parer location proc)(procedure?)
     (let ((cbs (get-registry-val lalily:get-music-store-callbacks '())))
       (set-registry-val lalily:get-music-store-callbacks (cons proc cbs))
-    )))
+      )))
 
 (define-public aGetMusic
   (define-music-function (parser location path)(list?)
@@ -351,10 +351,28 @@
       (if (string? field) (set! field (string->symbol field)))
       (get-default-header p field default))))
 (define-public inheritHeader
-  (define-music-function (parser location path field)((list? '(..)) string-or-symbol?)
+  (define-void-function (parser location path field)((list? '(..)) symbol?)
     (let ((p (create-music-path #f path)))
       (if (string? field) (set! field (string->symbol field)))
       (music-folder-header-set! parser location field (get-default-header p field))
+      )))
+(define-public inheritHeaders
+  (define-void-function (parser location path fields)((list? '(..)) list?)
+    (let ((p (create-music-path #f path)))
+      (for-each
+       (lambda (field)
+         (if (string? field) (set! field (string->symbol field)))
+         (music-folder-header-set! parser location field (get-default-header p field))
+         ) fields)
+      )))
+(define-public inheritAllHeaders
+  (define-void-function (parser location path)(list?)
+    (let* ((p (create-music-path #f path))
+           (head (assoc-get 'header (get-default-options p location) '() #f)))
+      (for-each
+       (lambda (p)
+         (music-folder-header-set! parser location (car p) (cdr p))
+         ) head)
       )))
 
 (define-public setTocLabel
@@ -436,10 +454,10 @@
 
 ; create a template
 (define-macro (make-template code)
-   `(define-music-function
-     (parser location piece options)
-     (list? list?)
-     ,code))
+  `(define-music-function
+    (parser location piece options)
+    (list? list?)
+    ,code))
 
 ; get relative
 (define-public getMusic
