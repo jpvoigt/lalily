@@ -9,6 +9,7 @@
 #(define-music-function (parser location piece options)(list? list?)
    (let ((clef (assoc-get 'clef options "G" #f))
          (vocname (assoc-get 'vocname options #f #t))
+         (staffname (assoc-get 'staffname options #f #f))
          (staff-mods (assoc-get 'staff-mods options #f #f))
          (voice-mods (assoc-get 'voice-mods options #f #f))
          (lyric-mods (assoc-get 'lyric-mods options #f #f)))
@@ -17,9 +18,10 @@
            (ly:input-warning location "using ~A as vocname!" tmpname)
            (set! vocname tmpname)
            ))
+     (if (not (string? staffname)) (set! staffname (glue-list piece ":")))
      #{
        <<
-         \new Staff \with {
+         \new Staff = $staffname \with {
            $(if (ly:context-mod? staff-mods) staff-mods #{ \with {} #})
            \consists \editionEngraver $piece
          } \new Voice = $vocname \with {
@@ -57,7 +59,7 @@
                    (let* ((key (assoc-get 'music (cdr staff) (list (car staff))))
                           (vocname (string-append
                                     (assoc-get 'prefix (cdr staff) "")
-                                    (assoc-get 'vocname (cdr staff) (format "~A" key))
+                                    (assoc-get 'vocname (cdr staff) (glue-list key "-"))
                                     ))
                           (opts (assoc-set-all!
                                  (get-default-options (create-music-path #f key) location)
