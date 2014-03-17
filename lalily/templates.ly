@@ -114,7 +114,7 @@
          #{
            \new Lyrics \with {
              \consists \editionEngraver \musicPath $(list (car lyric))
-           } \lyricsto { $voice }
+           } \lyricsto $voice
            {
              $(if stanza #{ \set stanza = $(cdr lyric) #}) \getLyrics $(list (car lyric))
            }

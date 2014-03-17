@@ -198,6 +198,11 @@
   (define-void-function (parser location size)(number?)
     (set-registry-val lalily:paper:global-staff-size size)
     (set-global-staff-size size)))
+(define-public setLocalStaffSize
+  (define-void-function (parser location size)(number?)
+    (if ((get-registry-val lalily:test-predicate lalily-test-location?) parser location)
+        (ly:music-function-exec setGlobalStaffSize parser location size)
+        )))
 
 (define-public midiTempo
   (define-music-function (parser location frac)(fraction?)
