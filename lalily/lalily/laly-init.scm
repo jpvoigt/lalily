@@ -453,13 +453,24 @@
   \once \override Score.RehearsalMark #'break-visibility = ##(#t #t #f)
   \mark \markup { \musicglyph #"scripts.ufermata" }
   #})
-(define-public markFine #{
-  \once \override Score.RehearsalMark #'break-visibility = ##(#t #t #f)
-  \once \override Score.RehearsalMark #'self-alignment-X = #RIGHT
-  \once \override Score.RehearsalMark #'direction = #DOWN
-  \once \override Score.RehearsalMark #'extra-offset = #'(0 . -2)
-  \mark \markup { \small \italic "fine." }
-  #})
+(define-public markDaX
+  (define-music-function (parser location eo text)((number-pair? '(0 . 0)) markup?)
+    #{
+      \once \override Score.RehearsalMark #'break-visibility = ##(#t #t #f)
+      \once \override Score.RehearsalMark #'self-alignment-X = #RIGHT
+      \once \override Score.RehearsalMark #'direction = #DOWN
+      \once \override Score.RehearsalMark #'extra-offset = #eo
+      \mark \markup { \small \italic $text }
+    #}))
+(define-public markFine
+  (define-music-function (parser location eo)(number-pair?)
+    #{
+      \once \override Score.RehearsalMark #'break-visibility = ##(#t #t #f)
+      \once \override Score.RehearsalMark #'self-alignment-X = #RIGHT
+      \once \override Score.RehearsalMark #'direction = #DOWN
+      \once \override Score.RehearsalMark #'extra-offset = #eo
+      \mark \markup { \small \italic "fine." }
+    #}))
 (define-public markDCFine
   (define-music-function (parser location eo)(number-pair?)
     #{
