@@ -178,10 +178,10 @@ Now you can start with some shortcut functions:
 \putMusic ten.music \relative c' { c4 }
 \putMusic bas.music \relative c { c4 }
 % insert text
-\putMusic sop.text \lyricmode { sop }
-\putMusic alt.text \lyricmode { alt }
-\putMusic ten.text \lyricmode { ten }
-\putMusic bas.text \lyricmode { bas }
+\putMusic sop.lyrics \lyricmode { sop }
+\putMusic alt.lyrics \lyricmode { alt }
+\putMusic ten.lyrics \lyricmode { ten }
+\putMusic bas.lyrics \lyricmode { bas }
 % engrave score if parser output name matches current location, that is, if this file is not included, but compiled directly
 \lalilyTest
 ```
