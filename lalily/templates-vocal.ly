@@ -12,7 +12,9 @@
          (staffname (assoc-get 'staffname options #f #f))
          (staff-mods (assoc-get 'staff-mods options #f #f))
          (voice-mods (assoc-get 'voice-mods options #f #f))
-         (lyric-mods (assoc-get 'lyric-mods options #f #f)))
+         (lyric-mods (assoc-get 'lyric-mods options #f #f))
+         (repeats (assoc-get 'repeats options #f #f))
+         (verses (assoc-get 'verses options #f #f)))
      (if (not (string? vocname))
          (let ((tmpname (glue-list piece "-")))
            (ly:input-warning location "using ~A as vocname!" tmpname)
@@ -30,10 +32,24 @@
            \getMusicDeep #'meta
            { \callTemplate #'(/ global voice) #'() #'() \clef $clef \getMusic music }
          >>
-         \new Lyrics \with {
-           $(if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #})
-           \consists \editionEngraver $piece
-         } \lyricsto $vocname { \getMusic lyrics }
+         % TODO repeats
+         $(if (list? verses)
+              (make-music 'SimultaneousMusic
+                'elements (map (lambda (v)
+                                 #{
+                                   \new Lyrics \with {
+                                     $(if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #})
+                                     $(let ((lyric-mods (assoc-get (glue-symbol `(lyric-mods ,v) "-") options #f #f)))
+                                        (if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #}))
+                                     \consists \editionEngraver $piece
+                                   } \lyricsto $vocname { \getMusic #`(lyrics ,v) }
+                                 #}) verses))
+              #{
+                \new Lyrics \with {
+                  $(if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #})
+                  \consists \editionEngraver $piece
+                } \lyricsto $vocname { \getMusic lyrics }
+              #})
        >>
      #}))
 
