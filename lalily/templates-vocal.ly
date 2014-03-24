@@ -68,6 +68,7 @@
      #{
        \new StaffGroup \with {
          $(if (ly:context-mod? groupmod) groupmod)
+         \consists \editionEngraver $piece
          \override BarLine.allow-span-bar = $(if mensur #t #f )
          \override BarLine.transparent = $(if mensur #t #f )
        } $(make-music 'SimultaneousMusic 'elements
