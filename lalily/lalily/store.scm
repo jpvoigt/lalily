@@ -143,7 +143,7 @@
                              (set! m (tree-get music-tree path))
                              (cond
                               ((ly:music? m) #t)
-                              ((> (length cbs) 1) (search path (cdr cbs)))
+                              ((> (length cbs) 1) (search (cdr cbs)))
                               (else #f)
                               )))
                           (else #f)))
