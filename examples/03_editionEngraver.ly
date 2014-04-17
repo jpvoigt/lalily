@@ -62,6 +62,10 @@
 \editionMod demo 10 0/4 Score.A \break
 \editionMod demo 17 0/4 Score.A \pageBreak
 
+% moving a System ... this doesn't make sense that much, but it shows, how it works
+\editionMod demo 10 0/4 Score.A
+\overrideProperty Score.NonMusicalPaperColumn.line-break-system-details #'((Y-offset . 100)(X-offset . 6))
+
 % create PDF ... "demo" edition is active
 \lalilyTest
 % display annotations on new page (in new bookpart)
