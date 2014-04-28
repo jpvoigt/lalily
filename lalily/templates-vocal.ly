@@ -64,6 +64,7 @@
 #(define-music-function (parser location piece options)(list? list?)
    (let ((groupmod (ly:assoc-get 'groupmod options #f #f))
          (staffs (ly:assoc-get 'staffs options lalily_vocal_group_default #f))
+         (staff-mods (ly:assoc-get 'staff-mods options #f #f))
          (mensur (ly:assoc-get 'mensur options #f)))
      #{
        \new StaffGroup \with {
@@ -87,7 +88,16 @@
                                   ((symbol? instr) `(.. ,instr))
                                   ((list? instr) `(.. ,@instr))
                                   (else '(..))
-                                  )))
+                                  ))
+                          (staff-mods-loc (ly:assoc-get 'staff-mods opts #f #f))
+                          )
+                     (cond
+                      ((and
+                        (ly:context-mod? staff-mods)
+                        (ly:context-mod? staff-mods-loc))
+                       (set! opts (assoc-set! opts 'staff-mods #{ \with { #staff-mods #staff-mods-loc } #})))
+                      ((ly:context-mod? staff-mods) (set! opts (assoc-set! opts 'staff-mods staff-mods)))
+                      )
                      #{ \callTemplate #templ #key #opts #}
                      )) staffs))
      #}))
