@@ -53,10 +53,11 @@
 % breathing with fermata
 \parserDefineMusic #'breatheferm {
   \once \override BreathingSign.text = \markup {
-    \line {
-      \musicglyph #"scripts.rcomma"
-      \translate #'(-1 . 1.6)
+    \translate #'(0 . 1.4)
+    \override #'(baseline-skip . 1.4)
+    \center-column {
       \musicglyph #"scripts.ufermata"
+      \musicglyph #"scripts.rcomma"
     }
   } \breathe
 }
@@ -120,7 +121,7 @@
      \once \override LyricText.X-offset = $offx
    #})
 
-% 
+%
 \parserDefine #'lyreop
 #(define-music-function (parser location mov mus)(number-pair? ly:music?)
    #{ {
@@ -179,14 +180,14 @@
 #(define-markup-command (extdyn layout props text dyn)(markup? string?)
    "markup extent"
    (let* (
-          (atr-stencil (interpret-markup layout props (markup #:normal-text #:italic text)))
-          (dyn-stencil (interpret-markup layout props (markup #:dynamic dyn)))
-          (atr-x-ext (ly:stencil-extent atr-stencil X))
-          (dyn-x-ext (ly:stencil-extent dyn-stencil X))
-          (atr-x (- (cdr atr-x-ext)(car atr-x-ext)))
-          (dyn-x (- (cdr dyn-x-ext)(car dyn-x-ext)))
-          (x-align (/ (+ atr-x (/ dyn-x 2)) (+ atr-x dyn-x) ))
-          )
+           (atr-stencil (interpret-markup layout props (markup #:normal-text #:italic text)))
+           (dyn-stencil (interpret-markup layout props (markup #:dynamic dyn)))
+           (atr-x-ext (ly:stencil-extent atr-stencil X))
+           (dyn-x-ext (ly:stencil-extent dyn-stencil X))
+           (atr-x (- (cdr atr-x-ext)(car atr-x-ext)))
+           (dyn-x (- (cdr dyn-x-ext)(car dyn-x-ext)))
+           (x-align (/ (+ atr-x (/ dyn-x 2)) (+ atr-x dyn-x) ))
+           )
      (interpret-markup layout props (markup #:halign x-align #:line (#:normal-text #:italic text #:dynamic dyn)))
      ))
 #(define (make-dynamic-script-ext text dyn)
@@ -195,14 +196,14 @@
 #(define-markup-command (extdynr layout props dyn text)(string? markup?)
    "markup extent"
    (let* (
-          (atr-stencil (interpret-markup layout props (markup #:normal-text #:italic text)))
-          (dyn-stencil (interpret-markup layout props (markup #:dynamic dyn)))
-          (atr-x-ext (ly:stencil-extent atr-stencil X))
-          (dyn-x-ext (ly:stencil-extent dyn-stencil X))
-          (atr-x (- (cdr atr-x-ext)(car atr-x-ext)))
-          (dyn-x (- (cdr dyn-x-ext)(car dyn-x-ext)))
-          (x-align (/ (- (+ (/ dyn-x 2) atr-x)) (+ atr-x dyn-x) ))
-          )
+           (atr-stencil (interpret-markup layout props (markup #:normal-text #:italic text)))
+           (dyn-stencil (interpret-markup layout props (markup #:dynamic dyn)))
+           (atr-x-ext (ly:stencil-extent atr-stencil X))
+           (dyn-x-ext (ly:stencil-extent dyn-stencil X))
+           (atr-x (- (cdr atr-x-ext)(car atr-x-ext)))
+           (dyn-x (- (cdr dyn-x-ext)(car dyn-x-ext)))
+           (x-align (/ (- (+ (/ dyn-x 2) atr-x)) (+ atr-x dyn-x) ))
+           )
      (interpret-markup layout props (markup #:halign x-align #:line ( #:dynamic dyn #:normal-text #:italic text )))
      ))
 #(define (make-dynamic-script-ext-r dyn text)
@@ -255,7 +256,7 @@
      \override Stem.stencil = ##f
      $mus
      \revert Stem.stencil
-     #})
+   #})
 
 
 
