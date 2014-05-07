@@ -246,6 +246,12 @@
       )
     (make-music 'SequentialMusic 'void #t)))
 
+(define-public optionsInit clratree)
+(define-public optionsGet getatree)
+(define-public optionsSet setatree)
+(define-public optionsAdd addatree)
+(define-public optionsRemove rematree)
+
 (define-public getOption
   (define-scheme-function (parser location path field default)((list? '()) string-or-symbol? (scheme? #f))
     (let* ((piece (create-music-path #f path))
