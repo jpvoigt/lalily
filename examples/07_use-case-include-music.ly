@@ -25,36 +25,36 @@
 % this is equivalent to
 % opts = #'()
 % but can also be written inside curly braces
-\clratree opts
+\optionsInit opts
 % append list to #'((mirror-path . (..)))
 % the template can get this option via (assoc-get 'mirror-path opts #f #f)
-\addatree opts mirror-path #'(..) % set the mirror-path to '..' = upper folder
+\optionsAdd opts mirror-path #'(..) % set the mirror-path to '..' = upper folder
 % now we override the staffs option for the inherited template lalily.vocal.group,
 % so we will define all needed sub options:
 % set staff-context-modifications
-\addatree opts staffs.sop.staff-mods \with {
+\optionsAdd opts staffs.sop.staff-mods \with {
   instrumentName = "Sopranos"
   shortInstrumentName = "S"
   midiInstrument = "voice oohs"
 }
-\addatree opts staffs.alt.staff-mods \with {
+\optionsAdd opts staffs.alt.staff-mods \with {
   instrumentName = "Altos"
   shortInstrumentName = "A"
   midiInstrument = "voice oohs"
 }
-\addatree opts staffs.ten.staff-mods \with {
+\optionsAdd opts staffs.ten.staff-mods \with {
   instrumentName = "Tenoros"
   shortInstrumentName = "T"
   midiInstrument = "choir aahs"
 }
 % set clef for tenor
-\addatree opts staffs.ten.clef "G_8"
-\addatree opts staffs.bas.staff-mods \with {
+\optionsAdd opts staffs.ten.clef "G_8"
+\optionsAdd opts staffs.bas.staff-mods \with {
   instrumentName = "Bassos"
   shortInstrumentName = "B"
   midiInstrument = "choir aahs"
 }
-\addatree opts staffs.bas.clef "bass"
+\optionsAdd opts staffs.bas.clef "bass"
 
 % \setTransposedTemplate (like \setDefaultTemplate does with 1-3) combines four commands:
 % 1. set music-folder
