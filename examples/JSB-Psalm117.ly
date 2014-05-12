@@ -17,8 +17,8 @@
 }
 
 \putMusic sop.music \relative c {
-  r4 c' e g c e, g c
-  e f8 e d c b a b4 g'8 f e d c b
+  r4 c'\melisma e g c e, g c
+  e f8[ e]\melismaEnd d c b a b4 g'8 f e d c b
   c4 c d d g, a8 b c2~
   c4 bes8 a bes2~ bes4 a8 g a4 d
   %% 5
@@ -219,7 +219,7 @@
 
 
 \putMusic sop.lyrics \lyricmode {
-  Lo- - - - - - - - - - bet - den - Herrn, al- - - - - - - le, al- le Hei- - - - - - - den,  %% T 4
+  Lo -- bet - den - Herrn, al- - - - - - - le, al- le Hei- - - - - - - den,  %% T 4
   - al- le Hei- den, al- - - - - - - - - le - Hei- den, - al- le, %% T 7 Anfang
   al- le Hei- - - - - - - - - - den, - al- le - Hei- den lo- - - - - - - bet, %% T 10
   lo- - bet, lo- - - - - bet, lo- bet den Herrn, %% T 12
@@ -762,9 +762,9 @@
   R\breve
   %% 5
   R\breve
-  r4 g b d g b, c g'
-  a bes8 a g f e d e4 c'8 b a g f e
-  f4 f g g c, d8 e f2~
+  r4 g\melisma b d g b, c g'
+  a bes8[ a]\melismaEnd g[ f] e[ d] e4 c'8[\melisma b] a[ g f e]
+  f4\melismaEnd f g g c, d8 e f2~
   f4 e8 d e4 a f d g8 ( a g f
   %% 10
   e4 ) c e g c ( d8 c ) b4 a
@@ -958,7 +958,7 @@
 }
 
 \putMusic bas.lyrics \lyricmode {
-  Lo -- bet - den Herrn, al -- le, al -- le Hei- - - - den, - al- le, %% T 9 Mitte
+  Lo -- bet den Herrn, al -- le, al -- le Hei- - - - den, - al- le, %% T 9 Mitte
   al- le Hei- den, lo- bet, lo- bet den Herrn, %% T 11
   al- le, al- - - - le Hei- - - - - - den, al- le Hei- den %% T 15
   al- le Hei- - - - - - den, al- le Hei- den, al- - - - le, al- - - - le al- le Hei- den, %% T 18
