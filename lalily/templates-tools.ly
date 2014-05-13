@@ -5,6 +5,9 @@
 \include "../lalily.ly"
 #(ly:set-option 'relative-includes lalily-relincl-tmp)
 
+\parserDefine Path
+#(define-scheme-function (parser location p)(list?) p)
+
 % mirror another music-folder
 % needs option 'mirror-path
 % may set other options fo the inherited templated
@@ -19,4 +22,30 @@
      #{
        \createScoreWithOptions #path #options
      #}))
+
+% create a group
+\registerTemplate lalily.group
+#(define-music-function (parser location piece options)(list? list?)
+   (let* ((elms (assoc-get 'element options '()))
+          (group (assoc-get 'group options #f))
+          (group-mods (assoc-get 'group-mods options #f))
+          (parts (if (> (length elms) 0)
+                     (make-music 'SimultaneousMusic 'elements
+                       (map
+                        (lambda (p)
+                          (let* ((opts (cdr p))
+                                 (template (assoc-get 'template opts '(generic)))
+                                 (path (assoc-get 'music opts (list (car p))))
+                                 )
+                            #{ \callTemplate ##t #template #path #opts #}
+                            )) elms))
+                     (make-music 'SimultaneousMusic 'void #t))))
+     (if (symbol? group)
+         #{
+           \new $group \with {
+             $(if (ly:context-mod? group-mods) group-mods)
+           } $parts
+         #}
+         parts
+         )))
 
