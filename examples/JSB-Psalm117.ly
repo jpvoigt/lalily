@@ -2,6 +2,7 @@
 \include "lalily.ly"
 
 \optionsInit opts
+\optionsAdd opts staff-mods \with { midiInstrument = "choir aahs" }
 \setDefaultTemplate jsb.lobet lalily.vocal.group #opts
 
 \setTitle "Lobet den Herrn, alle Heiden (Psalm 117)"
@@ -18,12 +19,12 @@
 
 \putMusic sop.music \relative c {
   r4 c'\melisma e g c e, g c
-  e f8[ e]\melismaEnd d c b a b4 g'8 f e d c b
-  c4 c d d g, a8 b c2~
-  c4 bes8 a bes2~ bes4 a8 g a4 d
+  e f8[ e]\melismaEnd d[ c] b[ a] b4 g'8[\melisma f] e[ d c b]
+  c4\melismaEnd c d d g,\melisma a8[ b] c2~
+  c4 bes8[ a] bes2~ bes4\melismaEnd a8[ g] a4 d
   %% 5
-  b g c8 e d f e2~ e8 d e f
-  g4 d8 e f2~ f4 e8 d e2~
+  b g c8[\melisma e d f] e2~ e8 d[ e f]
+  g4\melismaEnd d8[ e] f2~ f4 e8[ d] e2~
   e4 e a, b c2~ c4 d8 e
   d2~ d4 e8 f e2~ e4 d8 c
   d4 c8 b c2~ c4 b8 a b2
@@ -219,8 +220,8 @@
 
 
 \putMusic sop.lyrics \lyricmode {
-  Lo -- bet - den - Herrn, al- - - - - - - le, al- le Hei- - - - - - - den,  %% T 4
-  - al- le Hei- den, al- - - - - - - - - le - Hei- den, - al- le, %% T 7 Anfang
+  Lo -- bet den Herrn, al -- le, al -- le Hei -- den,  %% T 4
+  al -- le Hei -- den, al -- le Hei -- den, al -- le, %% T 7 Anfang
   al- le Hei- - - - - - - - - - den, - al- le - Hei- den lo- - - - - - - bet, %% T 10
   lo- - bet, lo- - - - - bet, lo- bet den Herrn, %% T 12
   al- le, al- - - - le Hei- - - - - den, %% T 15 Anfang
