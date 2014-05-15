@@ -23,33 +23,33 @@
   c4\melismaEnd c d d g,\melisma a8[ b] c2~
   c4 bes8[ a] bes2~ bes4\melismaEnd a8[ g] a4 d
   %% 5
-  b g c8[\melisma e d f] e2~ e8 d[ e f]
+  b g c8[\melisma e d f] e2~ e8[ d e f]
   g4\melismaEnd d8[ e] f2~ f4 e8[ d] e2~
-  e4 e a, b c2~ c4 d8 e
+  e4 e a, b c2~\melisma c4 d8 e
   d2~ d4 e8 f e2~ e4 d8 c
-  d4 c8 b c2~ c4 b8 a b2
+  d4\melismaEnd c8 b c2~\melisma c4 b8[ a]\melismaEnd b2
   %% 10
-  c4 g'8 f e d c b c4 g g c~
-  c b d8 c b a b4 b b cis8 cis
+  c4 g'8[\melisma f] e[ d c b] c4\melismaEnd g g\melisma c~\melismaEnd
+  c b d8[\melisma c b a] b4\melismaEnd b b cis8 cis
   d4 r4 r2 r1
-  r4 e, ( a ) c e f8 e d4 c
-  d1~ d4 e8 f e4 d
+  r4 e, ( a ) c e\melisma f8[ e] d4\melismaEnd c
+  d1~ d4\melisma e8[ f] e4 d\melismaEnd
   %% 15
-  c e8 d c b a gis a4 e a c8 b
+  c e8[\melisma d] c[ b a gis] a4\melismaEnd e a c8 b
   c4 c8 ( b c4 ) a fis'1~
   fis4 e g f8 e d4 r4 r2
-  r4 c2 b4 c c, e g
-  c e, g c e f8 e d c b a
+  r4 c2 b4 c c, e\melisma g
+  c e, g c e f8[ e]\melismaEnd d[ c] b[ a]
   %% 20
-  b4 g'8 f e d c b c4 c d d
-  g, a8 b c2~ c4 bes8 a bes2~
-  bes4 a8 g a4 d b g c c
+  b4 g'8[\melisma f] e[ d c b] c4\melismaEnd c d d
+  g,\melisma a8[ b] c2~ c4 bes8[ a] bes2~
+  bes4\melismaEnd a8[ g] a4 d b g c c
   c1~ c4 b4 r4 d4
-  e8 f e d c d c b a4 g8 a b4 a8 b
+  e8[\melisma f e d] c[ d c b] a4\melismaEnd g8 a b4 a8[ b]
   %% 25
-  c4 d8 e f2~ f4 g8 f e d c b
+  c4\melisma d8[ e] f2~ f4\melismaEnd g8[ f] e[ d] c[ b]
   c4 g4 r4 b4 c2~ c4 d8 c
-  b4 c8 d e d c e d4 g,4 r4 d'4
+  b4\melisma c8[ d] e[ d]\melismaEnd c[ e] d4 g,4 r4 d'4
   b c8 d e4 e8 d c d e c d e f d
   e g f g a g f e d4 e8 f g f e d
   %% 30
@@ -222,14 +222,14 @@
 \putMusic sop.lyrics \lyricmode {
   Lo -- bet den Herrn, al -- le, al -- le Hei -- den,  %% T 4
   al -- le Hei -- den, al -- le Hei -- den, al -- le, %% T 7 Anfang
-  al- le Hei- - - - - - - - - - den, - al- le - Hei- den lo- - - - - - - bet, %% T 10
-  lo- - bet, lo- - - - - bet, lo- bet den Herrn, %% T 12
-  al- le, al- - - - le Hei- - - - - den, %% T 15 Anfang
-  lo- - - - - - - bet, lo- bet den Herrn, al- le Hei- den, lo- bet den Herrn, %% T 17
-  al- le Hei- den, lo- - - - - - - - - bet - den - Herrn, %% T 20 Anfang
-  al- - - - - - - le, al- le Hei- - - - - - - den, - al- le Hei- den, al- le Hei- den, %% T 23
-  und prei- - - - - - - - - set ihn, al- le- - Völ- - - - ker, - al- - le- - Völ- ker, %% T 26
-  und prei- set ihn, al- - - - - le- - Völ-  ker, %% T 27
+  al -- le Hei -- den, al -- le __ Hei -- den lo -- bet, %% T 10
+  lo -- bet, lo -- bet, lo -- bet den Herrn, %% T 12
+  al -- le, al -- le Hei -- den, %% T 15 Anfang
+  lo -- bet, lo -- bet den Herrn, al -- le Hei -- den, lo -- bet den Herrn, %% T 17
+  al -- le Hei -- den, lo -- bet den Herrn, %% T 20 Anfang
+  al -- le, al -- le Hei -- den, al -- le Hei -- den, al -- le Hei -- den, %% T 23
+  und prei -- set ihn, al -- le Völ -- ker, al -- le Völ -- ker, %% T 26
+  und prei- set ihn, al -- le Völ -- ker, %% T 27
   und prei- set, - prei- set ihn, al- - - - - - - - - - - - - - - - - - - - - le- - Völ- ker, %% T 29 Anfang
   prei- set ihn, al- le, al- le, - al- le - Völ- ker, al- le- - Völ- ker, %% T 32 Mitte
   und prei- - - - - - - - - set - ihn, und prei- - - - - - - - - set - ihn, al- le - Völ- - - ker, %% T 35
