@@ -2,7 +2,7 @@
 \include "lalily.ly"
 
 \optionsInit opts
-\optionsAdd opts staff-mods \with { midiInstrument = "choir aahs" }
+%\optionsAdd opts staff-mods \with { midiInstrument = "choir aahs" }
 \setDefaultTemplate jsb.lobet lalily.vocal.group #opts
 
 \setTitle "Lobet den Herrn, alle Heiden (Psalm 117)"
@@ -27,7 +27,7 @@
   g4\melismaEnd d8[ e] f2~ f4 e8[ d] e2~
   e4 e a, b c2~\melisma c4 d8 e
   d2~ d4 e8 f e2~ e4 d8 c
-  d4\melismaEnd c8 b c2~\melisma c4 b8[ a]\melismaEnd b2
+  d4\melismaEnd c8[ b] c2~ c4 b8[ a] b2
   %% 10
   c4 g'8[\melisma f] e[ d c b] c4\melismaEnd g g\melisma c~\melismaEnd
   c b d8[\melisma c b a] b4\melismaEnd b b cis8 cis
@@ -36,7 +36,7 @@
   d1~ d4\melisma e8[ f] e4 d\melismaEnd
   %% 15
   c e8[\melisma d] c[ b a gis] a4\melismaEnd e a c8 b
-  c4 c8 ( b c4 ) a fis'1~
+  c4 c8[( b] c4 ) a fis'1~
   fis4 e g f8 e d4 r4 r2
   r4 c2 b4 c c, e\melisma g
   c e, g c e f8[ e]\melismaEnd d[ c] b[ a]
@@ -50,65 +50,65 @@
   c4\melisma d8[ e] f2~ f4\melismaEnd g8[ f] e[ d] c[ b]
   c4 g4 r4 b4 c2~ c4 d8 c
   b4\melisma c8[ d] e[ d]\melismaEnd c[ e] d4 g,4 r4 d'4
-  b c8 d e4 e8 d c d e c d e f d
-  e g f g a g f e d4 e8 f g f e d
+  b c8[ d] e4 e8 d c[\melisma d e c] d[ e f d]
+  e[ g f g] a[ g f e] d4 e8[ f] g[ f]\melismaEnd e[ d]
   %% 30
-  c4 c f f8 g a4 a4 r4 g4~ (
-  g8 f ) e f d4 e8 f g4 g c,2~
-  c4 b8 a b2 c4 g c8 d c b
-  a4 b8 c d e d c b4 b e8 f e d
-  c4 d8 e f g f e d4 e8 ( f g f ) e d
+  c4 c f f8 g a4 a4 r4 g4~(
+  g8 f) e[ f] d4 e8[ f] g4 g c,2~
+  c4 b8[ a] b2 c4 g c8[\melisma d c b]
+  a4 b8[ c] d[ e]\melismaEnd d[ c] b4 b e8[\melisma f e d]
+  c4 d8[ e] f[ g]\melismaEnd f[ e] d4 e8([ f] g[ f]) e[ d]
   %% 35
-  cis4 d2 cis4 d2 r4 d
-  d8 e d c b c b a g4 a8 b c4 c
-  c8 d c bes a bes a g a4 b8 c d2~
-  d4 c b e c c r2
+  cis4\melisma d2 cis4\melismaEnd d2 r4 d
+  d8[\melisma e d c] b[ c b a] g4\melismaEnd a8 b c4 c
+  c8[\melisma d c bes] a[ bes a g] a4 b8[ c] d2~
+  d4\melismaEnd c b e c c r2
   R\breve
   %% 40
-  r2 r4 d e8 f e d c d c b
-  a4 g8 a b4 a8 b c4 d8 e f2~
-  f4 g8 f e d e c d4 g,4 r4 d'4
-  e8 f e d c d c b a4 g8 a b4 a8 b
-  c4 d8 e f2~ f4 g8 f e d c b
+  r2 r4 d e8[\melisma f e d] c[ d c b]
+  a4\melismaEnd g8 a b4 a8[ b] c4\melisma d8[ e] f2~
+  f4\melismaEnd g8[ f] e[ d] e[ c] d4 g,4 r4 d'4
+  e8[\melisma f e d] c[ d c b] a4\melismaEnd g8 a b4 a8[ b]
+  c4\melisma d8[ e] f2~ f4\melismaEnd g8[ f] e[\melisma d c b]
   %% 45
-  c4 f b,2 c4 g c8 d c bes
-  a g a bes c4 a f a d8 e d c
-  b a b c d4 a b g d'2~
-  d4 c8 d e4 a, d d~ d8 c b a
-  b4 e,4 r4 e'4 e8 f e d c d c b
+  c4\melismaEnd f b,2 c4 g c8[\melisma d c bes]
+  a[ g a bes] c4\melismaEnd a f a d8[\melisma e d c]
+  b[ a b c] d4\melismaEnd a b g d'2~
+  d4\melisma c8[ d] e4\melismaEnd a, d d~ d8[ c] b[ a]
+  b4 e,4 r4 e'4 e8[\melisma f e d] c[ d c b]
   %% 50
-  a4 b8 c d4 d d8 e d c b c b a
-  g4 a8 b c b c4 b e~ e8 dis e fis
-  b,4 b a8 g a fis g4 e4 r4 e'8 d
-  cis4 d2 cis4 d f8 e d c b a
-  b4 c c ( b ) c c, e g
+  a4\melismaEnd b8 c d4 d d8[\melisma e d c] b[ c b a]
+  g4 a8[ b] c[ b]\melismaEnd c4 b\melisma e~ e8[ dis e fis]
+  b,4\melismaEnd b a8[ g] a[ fis] g4 e4 r4 e'8[\melisma d]
+  cis4 d2\melismaEnd cis4 d f8[\melisma e] d[ c b a]
+  b4\melismaEnd c c( b) c c,\melisma e g
   %% 55
-  c e, g c e f8 e d c b a
-  b4 g'8 ( f e d ) c b c4 a4 r4 d4
-  g, a8 b c2~ c4 b8 a b2
+  c e, g c e f8[ e]\melismaEnd d[ c] b[ a]
+  b4 g'8[( f] e[ d]) c[ b] c4 a4 r4 d4
+  g, a8 b c2~ c4 b8[ a] b2
   c r4 g c2 c
   c ( b4 a ) b2 b
   %% 60
-  e1 a,2 d4 e4
+  e1 a,2 d4\melisma e4
   f1. e2~
-  e2 d1 c4 ( b )
+  e2 d1\melismaEnd c4( b)
   a4. ( gis8 ) a2 gis r4 b
-  c b c1 b2
+  c b c1\melisma b2
   %% 65
-  c1 c2 c
-  d2. ( c4 ) b2 bes4 c
+  c1\melismaEnd c2 c
+  d2.( c4) b2 bes4\melisma c
   d1 c
-  bes a2~ a4 a
+  bes a2~ a4\melismaEnd a
   a2 g a r4 a
   %% 70
   d2 d d4 ( cis d2 )
   cis e f4 ( e f2 )
-  e r2 r2 d4 e8 f
-  g4 d g f e d8 e f4 e
-  d c8 d e4 d c a d c
+  e r2 r2 d4\melisma e8[ f]
+  g4 d g f e d8[ e] f4 e
+  d c8[ d] e4 d c a d c
   %% 75
-  bes a8 bes c4 bes a b c2
-  f4 ( e ) f2 e4 f g f8 e
+  bes a8[ bes] c4 bes a b\melismaEnd c2
+  f4( e) f2 e4 f g f8[ e]
   d2 r2 r1
   R\breve
   R\breve
@@ -120,99 +120,99 @@
   g ( c2 ) bes4 a ( g ) a ( bes )
   %% 85
   c ( d ) c ( bes ) a c8 ( bes c4 ) c
-  c8 f, g a bes c d bes c4 d8 e f e d c
-  b a b d c d e c d4 e8 fis g f e d
-  cis b cis e d e f d e4 f8 g a g f e
+  c8[\melisma f, g a] bes[ c]\melismaEnd d bes c4\melisma d8[ e] f[ e]\melismaEnd d[ c]
+  b[\melisma a b d] c[ d]\melismaEnd e[ c] d4 e8[ fis] g[ f] e[ d]
+  cis[\melisma b cis e] d[ e f d] e4 f8[ g] a[ g]\melismaEnd f[ e]
   f4 a,2 b4 cis ( a a' ) g8 a
   %% 90
-  f4 ( e ) f ( d ) cis d8 e f e d c
-  b4 a b cis d a d2~
-  d cis d r4 a
-  d c8 b a4 g8 a b4 c d b
-  a g8 fis g2~ g4 fis8 g a4 d,
+  f4 ( e ) f ( d ) cis\melisma d8[ e] f[ e d c]
+  b4\melismaEnd a b cis d a d2~
+  d cis d r4 a\melisma
+  d c8[ b] a4 g8[ a] b4\melismaEnd c d b
+  a g8[ fis] g2~ g4\melisma fis8[ g] a4\melismaEnd d,
   %% 95
-  d g8 ( a b4 ) e c d8 ( e f4 ) d
-  g, (a8 b ) c2 f,4 ( g8 a bes4 ) g
-  a a8 g a4 b c g c2~
-  c b c r2
-  c8 d e d c e
+  d g8([ a] b4) e c d8([ e] f4) d
+  g,( a8[ b]) c2 f,4( g8[ a] bes4) g
+  a a8[ g] a4 b c\melisma g c2~
+  c\melismaEnd b c r2
+  c8[ d e d] c[ e]
   %% 100
   d4 g, g'~
-  g f8 e f d
-  e ( f g4 ) r4
-  r4 g,8 a b g
+  g f8[ e] f[ d]
+  e([ f] g4) r4
+  r4 g,8[ a] b[ g]
   c4 a d
   %% 105
   b ( e ) c
-  g' f8 e f d
+  g' f8[ e] f[ d]
   e4 g, c~
-  c b8 a b g
-  a b c e d c
+  c b8[ a] b[ g]
+  a[\melisma b c e d c]
   %% 110
-  b c d4 g~
-  g f8 e d f
+  b[ c] d4\melismaEnd g~
+  g\melisma f8[ e]\melismaEnd d[ f]
   e4 a,4 r4
-  r4 b e~
-  e d8 c b d
+  r4 b\melisma e~
+  e\melismaEnd d8[ c] b[ d]
   %% 115
-  c d c b a c
-  b a b d cis e
+  c[\melisma d c b a c]
+  b[ a]\melismaEnd b[ d] cis[ e]
   d4 a d~
-  d c8 b a c
+  d\melisma c8[ b]\melismaEnd a[ c]
   b4 e, e'~
   %% 120
   e c a
   d2 d4~
   d b g
-  c8 b a b c a
-  fis'4 e8 ( dis e4 )
+  c8[\melisma b a b c a]
+  fis'4\melismaEnd e8([ dis] e4 )
   %% 125
-  a,8 g a fis b a
-  g4 b e~
-  e d8 c b d
-  c b c e d c
-  b a g a b g
+  a,8[ g a fis] b[ a]
+  g4 b\melisma e~
+  e\melismaEnd d8[ c] b[ d]
+  c[\melisma b c e d c]
+  b[ a g a b g]
   %% 130
-  d'4 r4 r4
-  r4 e8 d c e
-  d4 b e
+  d'4\melismaEnd r4 r4
+  r4 e8[\melisma d c e]
+  d4\melismaEnd b e
   a,2.~
-  a8 b c b a c
+  a8[\melisma b c b a c]
   %% 135
-  b4 e, e'~
-  e d8 c d b
+  b4\melismaEnd e,\melisma e'~
+  e d8[ c]\melismaEnd d[ b]
   c2.
   b
-  a8 b c b a c
+  a8[ b c b a c]
   %% 140
-  b c d c b d
+  b[ c d c] b[ d]
   c4 e, a~
   a gis2
   a4 r4 r4
   R2.
   %% 145
   R2.
-  e'8 d c d e c
+  e'8[ d c d] e[ c]
   d4 g4 r4
-  c,8 b a b c a
+  c,8[ b a b] c[ a]
   b4 e4 r4
   %% 150
-  a,8 g f g a f
-  g4 c8 ( b c4 )
+  a,8[ g f g] a[ f]
+  g4 c8[( b] c4 )
   f2.~
-  f4 e8 d e4~
-  e8 f \grace e8 d4. ( c8 )
+  f4\melisma e8[ d]\melismaEnd e4~
+  e8[ f] \grace e8 d4. ( c8 )
   %% 155
   c4 r4 r4
-  r4 e8 f g4~
+  r4 e8[ f] g4~
   g d g
-  r4 c,8 d e4~
+  r4 c,8[ d] e4~
   e b e
   %% 160
-  r4 a,8 b c4~
+  r4 a,8[ b] c4~
   c g c
-  r4 a8 b c a
-  d4 c8 b c4~
+  r4 a8[ b c a]
+  d4 c8[ b] c4~
   c8 d b4. c8
   %% 165
   c2.\fermata
@@ -222,7 +222,7 @@
 \putMusic sop.lyrics \lyricmode {
   Lo -- bet den Herrn, al -- le, al -- le Hei -- den,  %% T 4
   al -- le Hei -- den, al -- le Hei -- den, al -- le, %% T 7 Anfang
-  al -- le Hei -- den, al -- le __ Hei -- den lo -- bet, %% T 10
+  al -- le Hei -- den, al -- le Hei -- den lo -- bet, %% T 10
   lo -- bet, lo -- bet, lo -- bet den Herrn, %% T 12
   al -- le, al -- le Hei -- den, %% T 15 Anfang
   lo -- bet, lo -- bet den Herrn, al -- le Hei -- den, lo -- bet den Herrn, %% T 17
@@ -230,133 +230,133 @@
   al -- le, al -- le Hei -- den, al -- le Hei -- den, al -- le Hei -- den, %% T 23
   und prei -- set ihn, al -- le Völ -- ker, al -- le Völ -- ker, %% T 26
   und prei- set ihn, al -- le Völ -- ker, %% T 27
-  und prei- set, - prei- set ihn, al- - - - - - - - - - - - - - - - - - - - - le- - Völ- ker, %% T 29 Anfang
-  prei- set ihn, al- le, al- le, - al- le - Völ- ker, al- le- - Völ- ker, %% T 32 Mitte
-  und prei- - - - - - - - - set - ihn, und prei- - - - - - - - - set - ihn, al- le - Völ- - - ker, %% T 35
-  und prei- - - - - - - - - set ihn, al- le, al- - - - - - - - - - - - le, al- le Völ- ker, %% T 38
-  und prei- - - - - - - - - set ihn, al- le- - Völ- - - - ker, - al- - le - Völ- ker, %% T 42
-  und prei- - - - - - - - - set ihn, al- le- - Völ- - - - ker, - al- - - - - le Völ- ker, %% T 45
-  und prei- - - - - - - - - set ihn, und prei- - - - - - - - - set ihn, und prei- - - - set ihn, al- - le- - Völ- ker, %% T 49
-  und prei- - - - - - - - - set ihn, al- le, al- - - - - - - - - - - - - le Völ- - - - - - ker, al- - le- - Völ- ker, %% T 52
-  prei- - - - set ihn, al- - - - - - - le Völ- ker! %% T 54
-  Lo- - - - - - - - - - bet - den - Herrn, al- le- - Hei- den, %% T 56
-  und prei- set ihn, al- le- - Völ- ker! %% T 58 Anfang
-  Denn sei- ne Gna- de und Wahr- heit wal- -  - - - tet_ ü- ber uns, %% T 63
-  denn sei- ne Gna- - - de und Wahr- heit   wal- - - - - - tet ü- ber uns, %% T 69
-  denn sei- ne Gna- de und Wahr- heit   %% T 72
-  wal- - - - - - - - - - - - - - - - - - - - - - - - - - - - tet ü- ber uns in E- wig- - keit, %% T 77
-  in E-- wig- keit, %% T83
-  in E- wig- keit, in  E- wig- keit, sei- ne Gna- - - - - - de und Wahr- - - - - heit - %% T 86 Ende
-  wal- - - - - - tet - ü- ber - uns - in - E- - - - - - - - - - - - - wig- - keit, %% T 89 Anfang
-  sei- ne Gna- de und Wahr- heit wal-- - - - - - - - tet ü- ber uns in E- wig- keit, %% T 92
-  wal- - - - - - - - tet ü- ber uns in - E- - - - wig- keit, %% T 95 Anfang
-  sei- ne Gna- de- und Wahr- heit wal- tet ü- ber - uns in E- - - wig- keit. %% 98 Ende
-  Hal- - - - le- - lu- ja, Hal- le- - lu- - ja, %% T 102
-  Hal- - le- - lu- ja, Hal- le- lu- ja, %% T 106 Anfang
-  Hal- - le- - lu- ja, Hal- le- - lu- - ja, - - - - - - - - %% T 110
-  Hal- - - le- - lu- ja, Hal- - le- - lu- - ja, - - - - - - - Hal- - le- - lu- ja, %% T 117
-  Hal- - - le- - lu- ja, Hal- le- lu- ja, %% T 121
-  Hal- le- lu- ja- - - - - - - Hal- le- - - - lu- - ja, %% T 126 Anfang
-  Hal- - le- - lu- - ja, - - - - - - - - - - - -  %% T 130
-  Hal- - - - - le- lu- ja, - - - - - - Hal- - - - le- - lu- ja, %% T 138
-  Hal- - - - - - le- - - - lu- - ja, Hal- le- lu- ja, %% T 143
-  Hal- - - - le- - lu- ja, Hal- - - - le- - lu- ja, %% T 149
-  Hal- - - - le- - lu- ja,- Hal- - - le- - lu- ja, %% T 154
-  Hal- - le- lu- ja, Hal- - le- lu- ja, Hal- - le- lu- ja, %% T 161
-  Hal- - - - le- lu- - ja, Hal- le- lu- ja. %% Ende
+  und prei -- set, prei -- set ihn, al -- le -- Völ -- ker, %% T 29 Anfang
+  prei -- set ihn, al -- le, al -- le, al -- le Völ -- ker, al -- le -- Völ -- ker, %% T 32 Mitte
+  und prei -- set ihn, und prei -- set ihn, al -- le Völ -- ker, %% T 35
+  und prei -- set ihn, al -- le, al -- le, al -- le Völ -- ker, %% T 38
+  und prei -- set ihn, al -- le Völ -- ker, al -- le Völ -- ker, %% T 42
+  und prei -- set ihn, al -- le -- Völ -- ker, al -- le Völ -- ker, %% T 45
+  und prei -- set ihn, und prei -- set ihn, und prei -- set ihn, al -- le -- Völ -- ker, %% T 49
+  und prei -- set ihn, al -- le, al -- le Völ -- ker, al -- le -- Völ -- ker, %% T 52
+  prei -- set ihn, al -- le Völ -- ker! %% T 54
+  Lo -- bet den Herrn, al -- le -- Hei -- den, %% T 56
+  und prei -- set ihn, al -- le -- Völ -- ker! %% T 58 Anfang
+  Denn sei -- ne Gna -- de und Wahr -- heit wal --  tet_ ü- ber uns, %% T 63
+  denn sei -- ne Gna -- de und Wahr -- heit   wal -- tet ü- ber uns, %% T 69
+  denn sei -- ne Gna -- de und Wahr -- heit   %% T 72
+  wal -- tet ü- ber uns in E -- wig -- keit, %% T 77
+  in E-- wig -- keit, %% T83
+  in E -- wig -- keit, in  E -- wig -- keit, sei -- ne Gna -- de und Wahr -- heit %% T 86 Ende
+  wal -- tet ü- ber uns in E -- wig -- keit, %% T 89 Anfang
+  sei -- ne Gna -- de und Wahr -- heit wal -- tet ü -- ber uns in E -- wig -- keit, %% T 92
+  wal -- tet ü- ber uns in E -- wig -- keit, %% T 95 Anfang
+  sei -- ne Gna -- de __ und Wahr -- heit wal -- tet ü -- ber uns in E -- wig -- keit. %% 98 Ende
+  Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, __ %% T 102
+  Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, %% T 106 Anfang
+  Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, __ %% T 110
+  Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, __ Hal -- le -- lu -- ja, %% T 117
+  Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, %% T 121
+  Hal -- le -- lu -- ja __ Hal -- le -- lu -- ja, %% T 126 Anfang
+  Hal -- le -- lu -- ja, __  %% T 130
+  Hal -- le -- lu -- ja, __ Hal -- le -- lu -- ja, %% T 138
+  Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, %% T 143
+  Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, %% T 149
+  Hal -- le -- lu -- ja, __ Hal -- le -- lu -- ja, %% T 154
+  Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, %% T 161
+  Hal -- le -- lu -- ja, Hal -- le -- lu -- ja. %% Ende
 }
 
 \putMusic alt.music \relative c {
   R\breve
-  r4 g' b d g b, c g'
-  a bes8 a g f e d e4 c'8 b a g f e
-  f4 f g g c, d8 e f2~
+  r4 g'\melisma b d g b, c g'
+  a bes8[ a]\melismaEnd g[ f] e[ d] e4 c'8[\melisma b] a[ g f e]
+  f4\melismaEnd f g g c,\melisma d8[ e] f2~
   %% 5
-  f4 e8 f g4 b, c8 g' c b c2~
-  c4 b8 c d e d c b c b a g4 g
-  e2 f g4 e a g
+  f4\melismaEnd e8[ f] g4 b, c8[\melisma g' c b] c2~
+  c4\melismaEnd b8[ c] d[\melisma e d c] b[ c b a] g4\melismaEnd g
+  e2\melisma f g4\melismaEnd e a g
   a ( f ) d g g4 r4 c,4 a'
-  g c, c d8 e a,4 f'2 e8 d
+  g c, c d8 e a,4 f'2 e8[ d]
   %% 10
-  e f g4~ g8 f e d e4 e e fis8 fis
-  g4 d'8 c b a g fis g4 d d g~
-  g f a8 g f e f4 f fis gis
-  a e c'8 b a gis a4 d8 ( c b4 ) a
-  b a gis a b c8 d c4 b
+  e[\melisma f] g4~ g8[ f e d] e4\melismaEnd e e fis8 fis
+  g4 d'8[\melisma c] b[ a g fis] g4\melismaEnd d d\melisma g~
+  g\melismaEnd f a8[\melisma g f e] f4\melismaEnd f fis gis
+  a e c'8[ b a gis] a4 d8([ c] b4) a
+  b a gis a b\melisma c8[ d] c4 b\melismaEnd
   %% 15
   a a, ( c ) e a1~
-  a~ a4 b8 c b4 a
-  g1~ g8 f e d c bes a g
-  f g a4 g g'~ g8 f e f g4 f
-  e8 d c d e4 fis g2~ g4 fis
+  a~ a4\melisma b8[ c] b4 a
+  g1~ g8[ f e d] c[ bes a g]
+  f[ g] a4\melismaEnd g g'~ g8[\melisma f e f] g4\melismaEnd f
+  e8[\melisma d c d] e4\melismaEnd fis g2~ g4 fis
   %% 20
-  g2~ g8 f e d c4 c a' g8 f
+  g2~ g8[\melisma f e d] c4\melismaEnd c a' g8[ f]
   g4 e e a8 g a4 a2 g4
   g c, c a' g g g fis8 e
   d4 fis ( g ) a g g r2
   R\breve
   %% 25
   r1 r2 r4 g
-  a8 c b a g a g f e4 d8 e fis4 e8 fis
-  g4 a8 b c2~ c4 d8 c b a g fis
+  a8[\melisma c b a] g[ a g f] e4\melismaEnd d8 e fis4 e8[ fis]
+  g4\melisma a8[ b] c2~ c4\melismaEnd d8[ c] b[ a] g[ fis]
   g4 g, r2 r4 g' g g
-  g c2 d8 c b4 b4 r4 g4
+  g c2 d8[ c] b4 b4 r4 g4
   %% 30
-  e f8 g a bes a g f g a f g a bes g
-  a c bes c d c bes d c4 c r2
+  e f8 g a[\melisma bes a g] f[ g a f] g[ a bes g]
+  a[ c bes c] d[ c]\melismaEnd bes[ d] c4 c r2
   a4 f g g g e r4 e4
-  c d8 e f g f e d4 d g8 a g f
-  e4 f8 g a bes a g f4 g8 a bes2~
+  c\melisma d8[ e] f[ g]\melismaEnd f[ e] d4 d g8[\melisma a g f]
+  e4 f8[ g] a[ bes]\melismaEnd a[ g] f4 g8[\melisma a] bes2~
   %% 35
-  bes4 a bes a a8 bes a g f g f e
-  d4 e8 fis g4 g g8 a g f e f e d
-  c4 d8 e f2~ f4 a gis a8 b
-  e,4 e d8 c b c a4 e'~ e8 d e f
-  g4 e r4 d4~ d c8 d e4 c
+  bes4\melismaEnd a bes a a8[\melisma bes a g] f[ g f e]
+  d4\melismaEnd e8 fis g4 g g8[\melisma a g f] e[ f e d]
+  c4 d8[ e] f2~ f4\melismaEnd a gis\melisma a8[ b]
+  e,4\melismaEnd e d8[ c] b[ c] a4\melisma e'~ e8[ d e f]
+  g4\melismaEnd e r4 d4~ d\melisma c8[ d] e4\melismaEnd c
   %% 40
-  f d r2 r4 b' a8 b a gis
-  a4 f8 f d4 g e8 g f e d4 f
-  g b c8 ( b c4 ) b d, g8 a g f
-  e d e f g4 e c2 r2
-  r4 g b d g b, c g'
+  f d r2 r4 b' a8[\melisma b a gis]
+  a4\melismaEnd f8 f d4 g e8[\melisma g f e] d4\melismaEnd f
+  g b c8([ b] c4 ) b d, g8[\melisma a g f]
+  e[ d e f] g4\melismaEnd e c2 r2
+  r4 g\melisma b d g b, c g'
   %% 45
-  a bes8 a g f e d e4 e8 ( f g4 ) e
-  c c r4 c4 f8 e f g a4 fis
-  b8 c b a g a g fis e4 d8 e fis4 e8 fis
-  g4 a8 b c2~ c4 d8 c b a gis fis
+  a bes8[ a]\melismaEnd g[ f] e[ d] e4 e8([ f] g4) e
+  c c r4 c4 f8[\melisma e f g] a4\melismaEnd fis
+  b8[\melisma c b a] g[ a g fis] e4\melismaEnd d8 e fis4 e8[ fis]
+  g4\melisma a8[ b] c2~ c4\melismaEnd d8[ c] b[ a] gis[ fis]
   gis4 gis a b c a r2
   %% 50
-  r4 a a8 b a g fis g fis e d4 e8 fis
-  g4 g g8 a g fis g4 a8 b c b a g
-  fis4 e2 dis4 e2 r4 bes'8 bes
-  a g bes a g f g e a4 a, r4 a'4
+  r4 a a8[\melisma b a g] fis[ g fis e] d4\melismaEnd e8 fis
+  g4 g g8[\melisma a g fis] g4 a8[ b] c[ b]\melismaEnd a[ g]
+  fis4\melisma e2 dis4\melismaEnd e2 r4 bes'8 bes
+  a[\melisma g bes a] g[ f]\melismaEnd g[ e] a4 a, r4 a'4
   d, c8 c a'4 d, g g, r4 d'4
   %% 55
   e b8 c d4 ( e2 ) d4 a' f
   g g r4 g4 g f8 e f2~
-  f4 e8 d e2~ e4 f d2
+  f4\melisma e8[ d] e2~ e4\melismaEnd f d2
   e r4 g g2 fis
   g1 g2 g
   %% 60
-  a2. ( g4 ) fis2 f4 g
+  a2. ( g4 ) fis2 f4\melisma g
   a1 g
-  f e2~ e4 e
+  f e2~ e4\melismaEnd e
   e2 d e r4 gis
   a2 e f1~
   %% 65
-  f2 e4 d e2 e
-  a ( d, ) d g4 a
+  f2\melisma e4 d\melismaEnd e2 e
+  a ( d, ) d g4\melisma a
   bes1. a2~
-  a g1 f4 ( e )
+  a g1\melismaEnd f4 ( e )
   d ( cis ) d2 cis r4 e
   %% 70
   d ( e ) f2 f4 ( e f2 )
   e a a1~
-  a4 e f d e2 r2
-  r4 g8 a bes4 a g f8 g a4 g
-  f e8 f g4 f e c f e
+  a4\melisma e f d\melismaEnd e2 r2
+  r4 g8[\melisma a] bes4 a g f8[ g] a4 g
+  f e8[ f] g4 f e c f e
   %% 75
-  d c8 d e4 d c d e8 f g4
+  d c8[ d] e4 d c d e8[ f]\melismaEnd g4
   f ( a2 ) g4 g2 r4 g
   g\breve~
   g\breve~
@@ -364,105 +364,105 @@
   %% 80
   d ( g2 ) f4 e ( d ) e ( f )
   g ( a ) g ( f ) g2 g4 g
-  g f8 e f g a f g4 f e f8 g
-  a2 d, c4 c d8 e f d
-  g4 f g2~ g8 f e g f4 e8 d
+  g\melisma f8[ e] f[ g a f] g4 f e\melismaEnd f8 g
+  a2 d, c4 c d8[ e] f[ d]
+  g4 f g2~ g8[\melisma f e g] f4\melismaEnd e8[ d]
   %% 85
-  c4 r4 r2 r4 a'8 ( g a4 ) a
-  a ( bes8 a ) g4 f e ( f8 g ) c,4 a'~
-  a g8 f g4 e fis g8 a d,4 g8 f
-  e4 a~ a8 g a4~ a8 bes a g f e d cis
-  d4 f8 e f a g f e d cis e d f e f
+  c4 r4 r2 r4 a'8([ g] a4) a
+  a( bes8[ a]) g4 f e( f8[ g]) c,4 a'~
+  a g8[ f] g4 e fis g8[ a] d,4\melisma g8[ f]
+  e4 a~ a8[ g] a4~ a8[ bes a g] f[ e]\melismaEnd d[ cis]
+  d4 f8[\melisma e] f[ a g f] e[ d cis e] d[ f e f]
   %% 90
-  d4 a'~ a8 g a f g bes a g a g f e
-  d cis d f e4 a a,2. a'4
+  d4 a'~ a8[ g a f] g[ bes a g] a[ g f e]
+  d[ cis d]\melismaEnd f e4 a a,2. a'4
   g ( f ) e2 d4 d2 e4
   fis ( d d' ) c8 d b4 ( a ) b ( g )
-  fis g8 a b a g fis e4 d e fis
+  fis\melisma g8[ a] b[ a g fis] e4\melismaEnd d e fis
   %% 95
-  g d g1 f2~
-  f e1 d2
-  c r4 g' c,8 d e f g2~
-  g4 a g ( f ) e2 r2
+  g d g1\melisma f2~
+  f e1\melismaEnd d2
+  c r4 g' c,8[\melisma d e f] g2~
+  g4 a\melismaEnd g( f) e2 r2
 
   R2.
   %% 100
-  g8 a b a g b
+  g8[ a b a] g[ b]
   a4 d, d'~
-  d c8 b c a
-  b ( c d4 ) r4
-  r4 f,8 g a f
+  d c8[ b] c[ a]
+  b([ c] d4) r4
+  r4 f,8[ g] a[ f]
   %% 105
   g4 e a
   d, g2
-  g4 g8 b a g
+  g4 g8[ b] a[ g]
   fis4 d g
   e d2
   %% 110
   d4 g e
   cis d4 r4
-  r4 e a~
-  a g8 fis e g
+  r4 e\melisma a~
+  a g8[ fis]\melismaEnd e[ g]
   fis4 b, b'~
   %% 115
-  b a8 g a4~
-  a g8 fis e4
-  a8 gis a c b a
+  b a8[\melisma g] a4~
+  a\melismaEnd g8[ fis] e4
+  a8[ gis a c] b[ a]
   gis4 e4 r4
-  r4 e8 fis g e
+  r4 e8[ fis] g[ e]
   %% 120
   a4 a, a'~
   a fis d
   g2 g4~
   g e a~
-  a g8 fis g e
+  a g8[ fis] g[ e]
   %% 125
   fis4 fis2
-  e8 fis g fis e g
+  e8[ fis] g[ fis] e[ g]
   fis4 b, b'~
-  b a8 g fis a
+  b\melisma a8[ g]\melismaEnd fis[ a]
   g4 d g~
   %% 130
-  g fis8 g a fis
-  gis4 a8 b a g
-  f d e4 r4
-  d8 e f e d f
+  g fis8[ g] a[ fis]
+  gis4 a8[ b] a[ g]
+  f[ d] e4 r4
+  d8[ e f e] d[ f]
   e4 a, a'~
   %% 135
-  a g8 a b g
+  a\melisma g8[ a]\melismaEnd b[ g]
   a4 d, b'~
-  b a8 gis a4~
-  a gis8 ( fis gis4 )
+  b a8[\melisma gis] a4~
+  a\melismaEnd gis8([ fis] gis4)
   a4 r4 r4
   %% 140
   R2.
-  c,8 d e d c e
-  d e f e d f
+  c,8[ d e d c e]
+  d[ e f e] d[ f]
   e4 a, a'~
-  a g8 f g e
+  a\melisma g8[ f g e]\melismaEnd
   %% 145
   f2.
-  e8 f g f e g
+  e8[ f] g[ f] e[ g]
   fis4 g4 r4
-  e8 d c d e c
+  e8[ d c d] e[ c]
   f4 e4 r4
   %% 150
-  f8 g a g f a
-  d,4 e8 ( f g4 )
-  f8 g a4 a
+  f8[ g a g] f[ a]
+  d,4 e8([ f] g4)
+  f8[ g] a4 a
   g2 g4
   a ( g ) f
   %% 155
-  e r8 g8 a b
-  c4 g c~
-  c b8 a b g
+  e\melisma f8[ g8 a b]
+  c4\melismaEnd g c~
+  c\melisma b8[ a]\melismaEnd b[ g]
   a4 e a~
-  a g8 f g e
+  a\melisma g8[ f]\melismaEnd g[ e]
   %% 160
   f4 c f~
-  f e8 d e c
-  d e f g a f
-  g2 g4
+  f\melisma e8[ d]\melismaEnd e[ c]
+  d[\melisma e f g a f]
+  g2\melismaEnd g4
   a g2
   %% 165
   g2.\fermata
@@ -470,46 +470,46 @@
 }
 
 \putMusic alt.lyrics \lyricmode {
-  Lo- - - - - - - - - - bet - den - Herrn, al- - - - - - -  le, al- le, Hei- - - - den, - %% T 5 Anfang
-  al- le, al- - - - -  le, - al- - - - - - - - - le,  Hei- - - den, %% T 7
-  lo- bet, lo- bet den Herrn, al- le Hei-   den, %% T 9
-  lo- bet den Herrn, al- le - Hei- - - - - - - den, %% T 10
-  lo- bet den Herrn, lo- - - - - - - bet, lo- - bet, al- - - - - le, al- le Hei- den, %% T 13
-  al- - - - le, al- le Hei- den, al- le Hei- - - - - den, %% T 15 Anfang
-  al- le Hei- - - - - - - - - - - - - - - - den, %% T 18
-  al- - - - - le Hei- - - - - den, al- le Hei- - - - - den, %% T 20
-  al- le - Hei- den, lo- bet den Herrn, al- le Hei- den, %% T 22 Anfang
-  al- le Hei- den, lo- bet den Herrn, al- le Hei- den, %% Takt 23 Ende
-  und prei- - - - - - - - - set ihn, al- le- - Völ- - - - ker, - al- - le- - Völ- ker, %% T 28
-  und prei- set ihn, al- le- - Völ- ker, und prei- set ihn al- - - - - - - - - - - - - - - - - - le - Völ- ker, %% T 31
-  al- le, al- le Völ- ker, und prei- - - - - set - ihn, und prei- - - - - - - - - set - ihn, %% T 34
-  al- - - le Völ- ker, prei- - - - - - - - - set ihn, al- le, al- - - - - - - - - - - - le, %% T 37
-  al- - - - le, al- - le- - Völ- - - - - - ker, al- - - - le Völ- ker, %% T 40
-  und prei- - - - - set ihn, al- le, al- - - - - le, al- le Völ- ker, und prei- - - - - - - - - set ihn! %% T 43
-  Lo- - - - - - - - - - bet - den - Herrn, al- le Hei- den, %% T 46
-  und prei- - - - - set, prei- - - - - - - - - set ihn, al- le - Völ- - - - ker, - al- - le- - Völ- ker, al- le Völ- ker, %% T 49
-  und prei- - - - - - - - - set ihn, al- le, al- - - - - - - - - le- - Völ- - - ker, %% T 52
-  al- le, al- - - - - - le- - Völ-  ker, und prei- set ihn, al- le Völ- ker, %% T 54 Ende
-  und prei- set ihn, al- le, al- le Völ-   ker, und prei- set ihn, al- - - - le Völ- ker! %% T 58 Anfang
-  Denn sei- ne Gna- de und Wahr- heit wal- - - - - - tet ü- ber uns, %% T 63
-  denn sei- ne Gna- - - de und Wahr- heit wal- - - - - tet ü- ber uns, %% T 69
-  denn sei- ne Gna- de und Wahr- - - - heit %% T 72
-  wal- - - - - - - - - - - - - - - - - - - - - - - - - - - tet ü- ber uns in E- wig- keit, %% T 79
-  in E- wig- keit, in E- wig- keit, %% T 81
-  sei- ne Gna- - - - - - - - - - de und Wahr- heit wal- tet ü- - ber- - uns in E- - - - - wig- - keit, %% T 85 Anfang
-  sei- ne Gna- de und Wahr- heit wal- tet - ü- ber uns in- - E- - - - - - - - - - - - wig- - keit, %% T 89
-  wal- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - tet ü- ber uns in E- wig- keit, %% T 92
-  sei- ne Gna- de und Wahr- heit wal- - - - - - - - tet ü- ber uns in E- - - wig- keit, in E- - - - - - wig- keit. %% T 98 Ende
-  Hal- - - - le- - lu- ja, Hal- le- - lu- - ja, Hal- - le- - lu- ja, %% T 103
-  Hal- le- lu- ja, Hal- - le- - lu- ja, Hal- le- lu- ja, Hal- le- lu- ja, %% T 111
-  Hal- - - - le- - lu- ja, Hal- le- - - lu- - ja, Hal- - - - le- - lu- ja, %% T 118
-  Hal- - le- - lu- ja, Hal- le- lu- ja, Hal- le- lu- ja, - Hal- - le- lu- ja, - %% T 126 Anfang
-  Hal- - le- - lu- ja,  Hal- - - le- - lu- ja, Hal- le- - lu- - ja, Hal- - le- - lu- - ja, %% 132
-  Hal- - - - le- - lu- ja, Hal- - - le- - lu- ja, Hal- le- - - lu- ja, %% 139
-  Hal- - - - - - le- - - - lu- - ja, Hal- le- - - - - lu- ja, - %% T 146
-  Hal- - le- - lu- ja, Hal- - - - le- - lu- ja, %% T 149
-  Hal- - - - le- - lu- ja, Hal- - le- lu- ja, Hal- le- lu- ja, - - - - Hal- le- - - lu- - ja, %% T 158
-  Hal- le- - - lu- - ja, Hal- le- - - lu- - ja- - - - - - - Hal- le- lu- ja.
+  Lo -- bet den Herrn, al --  le, al -- le, Hei -- den, %% T 5 Anfang
+  al -- le, al --  le, al -- le,  Hei -- den, %% T 7
+  lo -- bet, lo -- bet den Herrn, al -- le Hei --   den, %% T 9
+  lo -- bet den Herrn, al -- le Hei -- den, %% T 10
+  lo -- bet den Herrn, lo -- bet, lo -- bet, al -- le, al -- le Hei -- den, %% T 13
+  al -- le, al -- le Hei -- den, al -- le Hei -- den, %% T 15 Anfang
+  al -- le Hei -- den, %% T 18
+  al -- le Hei -- den, al -- le Hei -- den, %% T 20
+  al -- le Hei -- den, lo -- bet den Herrn, al -- le Hei -- den, %% T 22 Anfang
+  al -- le Hei -- den, lo -- bet den Herrn, al -- le Hei -- den, %% Takt 23 Ende
+  und prei -- set ihn, al -- le -- Völ -- ker, al -- le -- Völ -- ker, %% T 28
+  und prei -- set ihn, al -- le -- Völ -- ker, und prei -- set ihn al -- le Völ -- ker, %% T 31
+  al -- le, al -- le Völ -- ker, und prei -- set ihn, und prei -- set ihn, %% T 34
+  al -- le Völ -- ker, prei -- set ihn, al -- le, al -- le, %% T 37
+  al -- le, al -- le -- Völ -- ker, al -- le Völ -- ker, %% T 40
+  und prei -- set ihn, al -- le, al -- le, al -- le Völ -- ker, und prei -- set ihn! %% T 43
+  Lo -- bet den Herrn, al -- le Hei -- den, %% T 46
+  und prei -- set, prei -- set ihn, al -- le Völ -- ker, al -- le -- Völ -- ker, al -- le Völ -- ker, %% T 49
+  und prei -- set ihn, al -- le, al -- le -- Völ -- ker, %% T 52
+  al -- le, al -- le -- Völ --  ker, und prei -- set ihn, al -- le Völ -- ker, %% T 54 Ende
+  und prei -- set ihn, al -- le, al -- le Völ --   ker, und prei -- set ihn, al -- le Völ -- ker! %% T 58 Anfang
+  Denn sei -- ne Gna -- de und Wahr -- heit wal -- tet ü -- ber uns, %% T 63
+  denn sei -- ne Gna -- de und Wahr -- heit wal -- tet ü- ber uns, %% T 69
+  denn sei -- ne Gna -- de und Wahr -- heit %% T 72
+  wal -- tet ü- ber uns in E -- wig -- keit, %% T 79
+  in E -- wig -- keit, in E -- wig -- keit, %% T 81
+  sei -- ne Gna -- de und Wahr -- heit wal -- tet ü -- ber -- uns in E -- wig -- keit, %% T 85 Anfang
+  sei -- ne Gna -- de und Wahr -- heit wal -- tet ü -- ber uns in -- E -- wig -- keit, %% T 89
+  wal -- tet ü- ber uns in E -- wig -- keit, %% T 92
+  sei -- ne Gna -- de und Wahr -- heit wal -- tet ü- ber uns in E -- wig -- keit, in E -- wig -- keit. %% T 98 Ende
+  Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, %% T 103
+  Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, %% T 111
+  Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, %% T 118
+  Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, %% T 126 Anfang
+  Hal -- le -- lu -- ja,  Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, %% 132
+  Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, %% 139
+  Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, %% T 146
+  Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, %% T 149
+  Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, Hal -- le -- lu -- ja, %% T 158
+  Hal -- le -- lu -- ja, Hal -- le -- lu -- ja -- Hal -- le -- lu -- ja.
 }
 
 \putMusic ten.music \relative c {
