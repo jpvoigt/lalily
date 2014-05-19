@@ -7,6 +7,9 @@
 
 \parserDefine Path
 #(define-scheme-function (parser location p)(list?) p)
+\parserDefine PathS
+#(define-scheme-function (parser location p)(string?)
+   (map (lambda (e) (string->symbol e)) (string-split p #\/)))
 
 % mirror another music-folder
 % needs option 'mirror-path

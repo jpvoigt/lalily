@@ -65,7 +65,8 @@
    (let ((groupmod (ly:assoc-get 'groupmod options #f #f))
          (staffs (ly:assoc-get 'staffs options lalily_vocal_group_default #f))
          (staff-mods (ly:assoc-get 'staff-mods options #f #f))
-         (mensur (ly:assoc-get 'mensur options #f)))
+         (mensur (ly:assoc-get 'mensur options #f))
+         (verses (ly:assoc-get 'verses options #f)))
      #{
        \new StaffGroup \with {
          $(if (ly:context-mod? groupmod) groupmod)
@@ -81,7 +82,7 @@
                                     ))
                           (opts (assoc-set-all!
                                  (get-default-options (create-music-path #f key) location)
-                                 (cons `(vocname . ,vocname)(cdr staff))
+                                 `((vocname . ,vocname)(verses . ,verses),@(cdr staff))
                                  ))
                           (instr (ly:assoc-get 'instrument opts #f #f))
                           (templ (cond
