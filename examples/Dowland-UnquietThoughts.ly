@@ -1,62 +1,23 @@
 \version "2.18.2"
 
-\header {
-	title = "Unquiet Thoughts your civil slaughter stint"
-	composer = "John Dowland"
-	source = "The First book of Songes or Ayres"
-	opus = "Ayres and Lute Songs I"
-	date = "1597"
-	enteredby = "mutopia@chubb.wattle.id.au"
+\include "lalily.ly"
 
-	mutopiatitle="Unquiet Thoughts"
-	mutopiacomposer="DowlandJ"
-	mutopiainstrument="Voice (SATB)"
-	style="Renaissance"
-	copyright="Public Domain"
-	maintainer = "Peter Chubb"
-	maintainerEmail = "mutopia@chubb.wattle.id.au"
-	lastupdated = "2009/Aug/5"
+\optionsInit opts
+\optionsAdd opts element.choir.template \Path lalily.vocal.group
+\optionsAdd opts element.choir.staff-mods \with { midiInstrument = "choir aahs" }
+%\optionsAdd opts element.accomp.template \Path lalily.piano
 
- footer = "Mutopia-2009/08/05-21"
- tagline = \markup { \override #'(box-padding . 1.0) \override #'(baseline-skip . 2.7) \box \center-column { \small \line { Sheet music from \with-url #"http://www.MutopiaProject.org" \line { \teeny www. \hspace #-1.0 MutopiaProject \hspace #-1.0 \teeny .org \hspace #0.5 } • \hspace #0.5 \italic Free to download, with the \italic freedom to distribute, modify and perform. } \line { \small \line { Typeset using \with-url #"http://www.LilyPond.org" \line { \teeny www. \hspace #-1.0 LilyPond \hspace #-1.0 \teeny .org } by \maintainer \hspace #-1.0 . \hspace #0.5 Reference: \footer } } \line { \teeny \line { This sheet music has been placed in the public domain by the typesetter, for details see: \hspace #-0.5 \with-url #"http://creativecommons.org/licenses/publicdomain" http://creativecommons.org/licenses/publicdomain } } } }
-}
-%{
-	Updated after comments from Laura Conrad:
-		-- Missing minim rest in Cantus made the harmonies weird.
-%}
-%{
-	This was transcribed from a (1597 first) edition held by the
-	UNSW library.  I haven't transcribed the lute tablature
-	because I don't know how.
-%}
-%{
-	I've attempted here to give the flavour of the original, as
-	well as a modern (singing edition.)
-
-	You'll have to imagine the page layout:
-	on the left side of a somewhat-larger than A4 spread there's
-	the Cantus with the first verse below it, and lute tablature below
-	the singing line.  The Cantus is fully barred, with a C time
-	signature, although individual bars may contain four, two or
-	six minims.  At the bottom of the page are the rest of the verses.
-
-	The altus, tenor and bassus parts are on the right hand page,
-	arranged so that the tenor would stand next to the cantus,
-	the alto opposite him, and the bass to the right.  The music
-	is laid out so that you could put the book on a table and
-	stand around it each singer would see his or her own part the
-	right way up.
-	None of these parts have bar lines, or more than the first
-	verse.
-
-	All the slurs are my editorial additions, in order to show 
-	the textual underlay.   I may have got them wrong!
-%}
+\setDefaultTemplate mutopia.DowlandJ.UnquietThoughts lalily.group #opts
+\setTitle "Unquiet Thoughts your civil slaughter stint"
+\setComposer #'("John Dowland" . "(1563-1626)")
+\setSubSubTitle "From \"The First book of Songes or Ayres\""
+\setSubTitle "Ayres and Lute Songs I"
+\setHeader #'composition "1597"
 
 
-global= {
+
+\putMusic meta {
 	\key g \minor
-	\set Staff.midiInstrument = "recorder"
 	\time 2/1
 	\skip 1*16
 	\repeat volta 2 {
@@ -64,9 +25,7 @@ global= {
 	} \alternative {{\skip 1}{\skip 1 \bar "|."}}
 }
 
-cantus=\relative c'' {
- 	\set autoBeaming = ##f
-
+\putMusic choir.sop.music \relative c'' {
 	d2 d4 d4 es1|
 	r4 d2 c bes4 a4. a8 |
 	g2 r4 a bes c d2 |
@@ -76,19 +35,19 @@ cantus=\relative c'' {
 	a4 d4. c8( bes4) c c d2 |
 	r4 a4 bes d2 c2 g4 |
 	fis bes a4. a8 g1 |
-	\repeat volta 2 {
+	%\repeat volta 2 {
 		r4 d'2 bes d4 c a |
 %10
 		bes g bes c d2 r4 a4 |
 		c c g g bes bes f f |
 		bes4 g a a
-	} \alternative {
+	%} \alternative {
 	  {  g1  }  
 	  {  g1  }
-	}
+	%}
 }
 
-cantusWords=\lyricmode{
+\putMusic choir.sop.lyrics \lyricmode{
 	Un -- qui -- et thoughts 
 	your ci -- vill slaugh -- ter 
 	stint
@@ -113,8 +72,7 @@ cantusWords=\lyricmode{
 }
 	
 
-altus=\relative c''{
- 	\set autoBeaming = ##f
+\putMusic choir.alt.music \relative c''{
 	bes2 bes4 bes g1 |
 	d2 d4 e fis( g2) fis4 |
 	g2 r4 fis4 g a bes4. bes8 |
@@ -124,18 +82,18 @@ altus=\relative c''{
 	f4 bes4. a8 g4 a8 bes4 a8 bes4 r8 bes |
 	a4 fis g4. fis8  d8([ e] f4) es2 |
 	d d4.( c8) b2 r4 g'4 |
-	\repeat volta 2 {
+	%\repeat volta 2 {
 		fis4 a d, g f2. c4 |
 		d d g4. g8 fis2 r4 c4 |
 		c es es bes d d d d |
 		d c4. a8 d4
-	} 
-	\alternative { 
+	%} 
+	%\alternative { 
 		{  b2 r4 g'4 } 
 		{  b,1 }
-	} 
+	%} 
 }
-altusWords=\lyricmode {
+\putMusic choir.alt.lyrics \lyricmode {
 	Un -- qui -- et thoughts, 
 	your ci -- vil slaugh -- ter 
 	stint 
@@ -161,9 +119,7 @@ altusWords=\lyricmode {
 %	}}
 }
 
-tenor=\relative c' {
- 	\set autoBeaming = ##f
-
+\putMusic choir.ten.music \relative c' {
 	f2 g4  f8[ bes,] bes1 |
 	bes2. a2 g4 d'4. c8 |
 	b2 r4 d4 d f f4. d8 |
@@ -173,18 +129,18 @@ tenor=\relative c' {
 	c g  bes8[ c d bes] f'4 g,2 r8 bes8 |
 	c4 d g,4. a8 bes4  a8[ bes] c4. bes8 |
 	a4 g g fis g2 es'2  |
-	\repeat volta 2 { 
+	%\repeat volta 2 { 
 		d4. c8  bes[ a] g4 bes2 a4 f4 ~ |
 		f4 bes4.( a8 g4) a a a a |
 		g g g g f f bes( a4 ~ |
 		a8) g8 g2 fis4 
-	} 
-	\alternative{ 
+	%} 
+	%\alternative{ 
 		      { g2 es'2  } 
 		      { g,1  } 
-	}
+	%}
 }
-tenorWords=\lyricmode{
+\putMusic choir.ten.lyrics \lyricmode{
 	Un qui -- et thoughts, 
 	your civ -- ile slaugh -- ter 
 	stint,  and wrap your wrongs with -- 
@@ -204,10 +160,7 @@ tenorWords=\lyricmode{
 %	}
 }
 
-
-bassus=\relative c' {
- 	\set autoBeaming = ##f
-
+\putMusic choir.bas.music \relative c' {
 	bes2 g4 bes es,1 |
 	g2 d d d4 d |
 	g,2 r4 d'4 g f bes bes, |
@@ -216,16 +169,19 @@ bassus=\relative c' {
 	f d g2 f bes,2 |
 	r1 r4 f' c c| 
 	d2. d4 g,2 r2 
-	\repeat volta 2 {
+	%\repeat volta 2 {
 		r1 r2 f'2 |
 		d4 g4.( f8) es4 
 		d4 d  f  f| c c es es 
-		bes bes  d  d |g es d d }
-	\alternative{ {g2 r2} {g1}
-	}
+		bes bes  d  d |g es d d
+        %}
+	%\alternative{
+	{g2 r2}
+	{g1}
+	%}
 }
 
-bassusWords=\lyricmode{
+\putMusic choir.bas.lyrics \lyricmode{
 	Un -- qui -- et thoughts,
 	your civ -- ile slaugh -- ters
 	stint,  and wrap your wrongs with --
@@ -246,81 +202,4 @@ bassusWords=\lyricmode{
 %	}
 }
 
-
-FullScore =  \context ChoirStaff <<
-		\context Staff ="cantus" <<
-			{\clef "G2"\global}
-			\context Voice = "cantus" \cantus
-		>>
-		\lyricsto "cantus" \context Lyrics = "cantus" \cantusWords
-		\context Staff ="altus" <<
-			 {\clef "G2"\global}
-			 \context Voice = "altus" \altus
-		>>
-		\lyricsto "altus" \context Lyrics = "altus" \altusWords
-		\context Staff ="tenor" <<
-			 {\clef "G2_8"\global}
-			 \context Voice = "tenor" \tenor
-		>>
-		\lyricsto "tenor" \context Lyrics = "tenor" \tenorWords
-		\context Staff = "bass" <<
-			 {\clef "F"\global}
-			 \context Voice = bass \bassus
-		 >>		
-		\lyricsto "bass" \context Lyrics = "bass" \bassusWords
-     >>
-
-%{ 
-% Original clefs, etc.
-
-	       \context ChoirStaff <<
-		\context Staff ="cantus" <<
-			{\clef "C1"\global}
-			\cantus
-			\context Lyrics = "cantus" \cantusWords
-		>>
-		\context Staff ="altus" <<
-			 {\clef "C2"\global}
-			 \altus
-		>>
-		\context Staff ="tenor" <<
-			 {\clef "C3"\global}
-			 \tenor
-		>>
-		\context Staff = "bass" <<
-			 {\clef "F"\global}
-			 \bassus
-			 \context Lyrics = "bass" \bassusWords
-		 >>		
-     >>
-%}
-\score {
-  \FullScore
-    \layout{
-	indent=0.0\mm
-%	crescendo_height = \staff-height/6.0
-	% Mutopia guidelines
-	line-width = 18.0\cm
-    }
-}
-
-\score {
-    \unfoldRepeats \FullScore
-  \midi {
-    \tempo 4 = 120
-    }
-}
-
-
-%{
-/usr/bin/python: /home/jpv/lily2.18/lilypond/usr/lib/libz.so.1: no
-version information available (required by /usr/bin/python) convert-ly
-(GNU LilyPond) 2.18.2  convert-ly: »« wird verarbeitet... Anwenden der
-Umwandlung: 2.12.3, 2.13.0, 2.13.1, 2.13.4, 2.13.10, 2.13.16, 2.13.18,
-2.13.20, 2.13.27, 2.13.29, 2.13.31, 2.13.36, 2.13.39, 2.13.40,
-2.13.42, 2.13.44, 2.13.46, 2.13.48, 2.13.51, 2.14.0, 2.15.7, 2.15.9,
-2.15.10, 2.15.16, 2.15.17, 2.15.18, 2.15.19, 2.15.20, 2.15.25,
-2.15.32, 2.15.39, 2.15.40, 2.15.42, 2.15.43, 2.16.0, 2.17.0, 2.17.4,
-2.17.5, 2.17.6, 2.17.11, 2.17.14, 2.17.15, 2.17.18, 2.17.19, 2.17.20,
-2.17.25, 2.17.27, 2.17.29, 2.17.97, 2.18.0
-%}
+\lalilyTest
