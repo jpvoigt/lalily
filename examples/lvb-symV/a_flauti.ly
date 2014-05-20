@@ -1,17 +1,21 @@
 \version "2.18.0"
+\include "lalily.ly"
 
-flauti = {
-  \set Staff.instrumentName = "Flauti."
-  \set Staff.midiInstrument = "flute"
-  \clef treble
-  \key c \minor
-  \time 2/4
-  \override Score.MetronomeMark.transparent = ##t
-  \tempo 2 = 96
-  \once \override TextScript.padding = #2.5
+\optionsInit opts
+\optionsAdd opts name "flauti"
+\optionsAdd opts clef "G"
+\optionsAdd opts midi-instrument "flute"
+\optionsAdd opts staff-mods \with {
+  instrumentName = "Flauti"
+  shortInstrumentName = "Fl."
+}
+\optionsAdd opts init-voice { \compressFullBarRests }
+\setDefaultTemplate \musicPath LY_lvbSB.wind.flauti lalily.instrument #opts
+
+\putMusic {
   \repeat volta 2 {
-    r2^\markup { \bold "Allegro con brio." } r2^\fermata R2 R2 r2^\fermata R2 R2 R2 R2 R2 R2 R2 R2
-    R2 R2 R2 R2 r8 <d''' g'''>8_\markup { \italic "p cresc." }[ <d''' g'''> <d''' f'''>]
+    R2 R2^\fermataMarkup R2*2 R2^\fermataMarkup R2*12
+    r8 <d''' g'''>8_\markup { \italic "p cresc." }[ <d''' g'''> <d''' f'''>]
     <c''' ees'''>4\f r << { c'''4 } \\ { c'''4 } >> r4 <b'' g'''> r4^\fermata
     r8 << { aes''8[ aes'' aes''] f''2~ f''2^\fermata } \\ { aes''8\ff[ aes'' aes''] f''2~ f''2 } >>
     R2 R2 R2 R2 R2 R2 R2 R2 R2 R2 R2 R2 R2 R2
@@ -109,18 +113,4 @@ flauti = {
   <ees''' g'''>4 <d''' g'''> <ees''' g'''> <d''' g'''> <ees''' g'''> r <g'' b''> r <g'' c'''> r \bar "|."
 }
 
-%{
-/usr/bin/python: /home/jpv/lily2.18/lilypond/usr/lib/libz.so.1: no
-version information available (required by /usr/bin/python) convert-ly
-(GNU LilyPond) 2.18.2  convert-ly: »« wird verarbeitet... Anwenden der
-Umwandlung: 2.11.2, 2.11.3, 2.11.5, 2.11.6, 2.11.10, 2.11.11, 2.11.13,
-2.11.15, 2.11.23, 2.11.35, 2.11.38, 2.11.46, 2.11.48, 2.11.50,
-2.11.51, 2.11.52, 2.11.53, 2.11.55, 2.11.57, 2.11.60, 2.11.61,
-2.11.62, 2.11.64, 2.12.0, 2.12.3, 2.13.0, 2.13.1, 2.13.4, 2.13.10,
-2.13.16, 2.13.18, 2.13.20, 2.13.27, 2.13.29, 2.13.31, 2.13.36,
-2.13.39, 2.13.40, 2.13.42, 2.13.44, 2.13.46, 2.13.48, 2.13.51, 2.14.0,
-2.15.7, 2.15.9, 2.15.10, 2.15.16, 2.15.17, 2.15.18, 2.15.19, 2.15.20,
-2.15.25, 2.15.32, 2.15.39, 2.15.40, 2.15.42, 2.15.43, 2.16.0, 2.17.0,
-2.17.4, 2.17.5, 2.17.6, 2.17.11, 2.17.14, 2.17.15, 2.17.18, 2.17.19,
-2.17.20, 2.17.25, 2.17.27, 2.17.29, 2.17.97, 2.18.0
-%}
+\lalilyTest
