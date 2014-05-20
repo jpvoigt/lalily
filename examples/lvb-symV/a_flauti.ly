@@ -10,7 +10,7 @@
   shortInstrumentName = "Fl."
 }
 \optionsAdd opts init-voice { \compressFullBarRests }
-\setDefaultTemplate \musicPath LY_lvbSB.wind.flauti lalily.instrument #opts
+\setDefaultTemplate \musicPath LY_lvbSB.I.wind.flauti lalily.instrument #opts
 
 \putMusic {
   \repeat volta 2 {

@@ -1,7 +1,7 @@
 \version "2.18.0"
 \include "lalily.ly"
 
-\setMusicFolder \musicPath LY_lvbSB
+\setMusicFolder \musicPath LY_lvbSB.I
 
 \putMusic meta {
   \numericTimeSignature
