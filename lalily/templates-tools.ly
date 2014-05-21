@@ -8,8 +8,23 @@
 \parserDefine Path
 #(define-scheme-function (parser location p)(list?) p)
 \parserDefine PathS
-#(define-scheme-function (parser location p)(string?)
-   (map (lambda (e) (string->symbol e)) (string-split p #\/)))
+#(define-scheme-function (parser location s p)((char? #\/) string?)
+   (map (lambda (e) (string->symbol e)) (string-split p s)))
+
+\parserDefine Pair
+#(define-scheme-function (parser location p)(list?)
+   (cond
+    ((>= (length p) 2)
+     (if (> (length p) 2)
+     (ly:input-warning location "more than 2 elements: ~A" p))
+     (cons (car p) (cadr p)))
+    ((> (length p) 0) (cons (car p) #f))
+    (else '(#f . #f))
+    ))
+\parserDefine PairS
+#(define-scheme-function (parser location s p)((char? #\|) string?)
+   (ly:music-function-exec Pair parser location
+     (string-split p s)))
 
 % mirror another music-folder
 % needs option 'mirror-path

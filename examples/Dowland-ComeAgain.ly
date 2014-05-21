@@ -13,6 +13,7 @@
 \setSubTitle "Ayres and Lute Songs XVII"
 \setHeader #'composition "1597"
 
+\setHeader #'copyright "Public Domain"
 
 \putMusic meta {
   \key c \major

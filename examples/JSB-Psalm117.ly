@@ -8,6 +8,7 @@
 \setTitle "Lobet den Herrn, alle Heiden (Psalm 117)"
 \setSubTitle "BWV 230"
 \setComposer #'jsb
+\setHeader #'copyright "Public Domain"
 
 \putMusic meta {
   \key c \major
