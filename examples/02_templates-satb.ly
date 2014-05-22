@@ -64,9 +64,9 @@
          % create Voice with name 'voicename'
          \new Voice = $voicename <<
            {
-             % call template #'(global voice) - not relative to this template
-             % ('/' is not allowed in dot-notation, so we need scheme notation here)
-             \callTemplate #'(/ global voice) #'() #'()
+             % call template #'(lalily init Voice vocal) - not relative to this template
+             % ('/' is not allowed in dot-notation, so we have to use lalily-path-variable ROOT)
+             \callTemplate LY_ROOT.lalily.init.Voice.vocal #'() #'()
              % set clef from options
              \clef $clef
              % fetch melody from the current music folder/directory

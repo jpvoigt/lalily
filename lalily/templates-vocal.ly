@@ -1,13 +1,41 @@
-\version "2.17.29"
+%%%% This file is part of lalily, an extension to lilypond <http://www.lilypond.org/>.
+%%%%
+%%%% Copyright (C) 2011--2014 Jan-Peter Voigt <jp.voigt@gmx.de>
+%%%%
+%%%% lalily is free software: you can redistribute it and/or modify
+%%%% it under the terms of the GNU General Public License as published by
+%%%% the Free Software Foundation, either version 3 of the License, or
+%%%% (at your option) any later version.
+%%%%
+%%%% lalily is distributed in the hope that it will be useful,
+%%%% but WITHOUT ANY WARRANTY; without even the implied warranty of
+%%%% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%%%% GNU General Public License for more details.
+%%%%
+%%%% You should have received a copy of the GNU General Public License
+%%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
+
+\version "2.18.2"
 
 #(define lalily-relincl-tmp (ly:get-option 'relative-includes))
 #(ly:set-option 'relative-includes #t)
 \include "../lalily.ly"
 #(ly:set-option 'relative-includes lalily-relincl-tmp)
 
+\registerTemplate lalily.init.Voice.vocal
+#(define-music-function (parser location piece options)(list? list?)
+   (let ((deepdef (assoc-get 'deepdef options #{ \dynamicUp \autoBeamOff #}))
+         (deepsym (assoc-get 'deepsym options 'init-vocal))
+         (init-opts (assoc-get 'init-opts options '())))
+     #{
+       \callTemplate ##t lalily.init.Voice #'() #(assoc-set-all! init-opts `((deepdef . ,deepdef)(deepsym . ,deepsym)))
+     #}))
+
+
 \registerTemplate lalily.vocal
 #(define-music-function (parser location piece options)(list? list?)
-   (let ((clef (assoc-get 'clef options "G" #f))
+   (let ((init-opts (assoc-get 'init-opts options '() #f))
+         (clef (assoc-get 'clef options "G" #f))
          (vocname (assoc-get 'vocname options #f #t))
          (staffname (assoc-get 'staffname options #f #f))
          (staff-mods (assoc-get 'staff-mods options #f #f))
@@ -30,7 +58,7 @@
            $(if (ly:context-mod? voice-mods) voice-mods #{ \with {} #})
          } <<
            \getMusicDeep #'meta
-           { \callTemplate #'(/ global voice) #'() #'() \clef $clef \getMusic music }
+           { \callTemplate ##t lalily.init.Voice.vocal #'() #init-opts \clef $clef \getMusic music }
          >>
          % TODO repeats
          $(if (list? verses)
