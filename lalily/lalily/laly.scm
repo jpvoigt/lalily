@@ -264,6 +264,16 @@
     (set! opts (setval opts sympath))
     (ly:parser-define! parser name opts)
     ))
+(define (walk-a-tree path tree proc)
+  (for-each
+   (lambda (e)
+     (let ((key (car e))
+           (val (cdr e)))
+       (if (and (list? val)(every pair? val))
+           (walk-a-tree (append path (list (car e))) val proc)
+           (proc `(,@path ,key) val))
+       )) tree)
+  )
 (define (rem-a-tree parser location name sympath)
   (if (string? name) (set! name (string->symbol name)))
   (let ((opts (ly:parser-lookup parser name)))
@@ -293,6 +303,10 @@
       (lambda (l sym val)
         (append (filter (lambda (p) (not (and (pair? p)(equal? (car p) sym)))) l)
           (list (cons sym val)))))))
+(define-public repatree
+  (define-void-function (parser location name sympath val)(string-or-symbol? list? scheme?)
+    (add-a-tree parser location name sympath val assoc-replace!)
+      ))
 (define-public setatree
   (define-void-function (parser location name sympath val)(string-or-symbol? list? scheme?)
     (add-a-tree parser location name sympath val
@@ -300,6 +314,13 @@
 (define-public rematree
   (define-void-function (parser location name sympath)(string-or-symbol? list?)
     (rem-a-tree parser location name sympath)))
+
+(define-public setatreeall
+   (define-void-function (parser location name opts)(symbol? list?)
+     (let ((opts (if (and (= 1 (length opts)) (symbol? (car opts))) (ly:parser-lookup parser (car opts)) opts)))
+       (walk-a-tree '() opts
+         (lambda (path val) (add-a-tree parser location name path val assoc-replace!)))
+       )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; styled table of contents

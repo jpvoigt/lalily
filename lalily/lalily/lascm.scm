@@ -29,33 +29,33 @@
   "create symbol from list containig arbitrary objects"
   (string->symbol (string-join (map (lambda (s) (object->string s display)) lst) (if (> (length glue) 0)(car glue) ":") 'infix)))
 (define-public (object->symbol o)
-    "create symbol from any object"
-   (cond
-    ((symbol? o) o)
-    ((string? o) (string->symbol o))
-    ((list? o) (glue-symbol o))
-    (else (string->symbol (object->string o display)))
-    ))
+  "create symbol from any object"
+  (cond
+   ((symbol? o) o)
+   ((string? o) (string->symbol o))
+   ((list? o) (glue-symbol o))
+   (else (string->symbol (object->string o display)))
+   ))
 
 (define-public (format-alist l . ind)
   "create string from (a-)list for pretty printing
 example: (format-alist '((a . 1)(b . 2)))
 ==>  a=1
      b=2"
-(let ((i (if (> (length ind) 1) (cadr ind) 0))
-      (istr (if (> (length ind) 0) (car ind) " ")))
-  (define (indsp n)(if (> n 0) (string-append istr (indsp (- n 1))) ""))
-  (cond
-   ((and (pair? l)(markup? (cdr l)))(format "~A~A=~A~&" (indsp (+ i 1)) (car l) (markup->string (cdr l))))
-   ((and (list? l)(not (dotted-list? l))(any pair? l))
-    (let ((ret ""))
-      (for-each (lambda (e)
-                  (set! ret (string-append ret (format-alist e istr (+ i 1)))))
-        l)
-      ret))
-   ((pair? l)(let ((k (car l))(v (cdr l)))(format "~A~A=~A~&" (indsp (+ i 1)) k v)))
-   (else (format "~A~A~&" (indsp i) l)))
-  ))
+  (let ((i (if (> (length ind) 1) (cadr ind) 0))
+        (istr (if (> (length ind) 0) (car ind) " ")))
+    (define (indsp n)(if (> n 0) (string-append istr (indsp (- n 1))) ""))
+    (cond
+     ((and (pair? l)(markup? (cdr l)))(format "~A~A=~A~&" (indsp (+ i 1)) (car l) (markup->string (cdr l))))
+     ((and (list? l)(not (dotted-list? l))(any pair? l))
+      (let ((ret ""))
+        (for-each (lambda (e)
+                    (set! ret (string-append ret (format-alist e istr (+ i 1)))))
+          l)
+        ret))
+     ((pair? l)(let ((k (car l))(v (cdr l)))(format "~A~A=~A~&" (indsp (+ i 1)) k v)))
+     (else (format "~A~A~&" (indsp i) l)))
+    ))
 
 (define-public (assoc-set-all! lst vls)
   "set all values from vls in lst"
@@ -64,28 +64,37 @@ example: (format-alist '((a . 1)(b . 2)))
                (set! lst (assoc-set! lst (car p) (cdr p)))) vls)
    lst))
 
+(define-public (assoc-replace! lst sym val)
+  (let ((a #t))
+    (set! lst
+          (map (lambda (p)
+                 (if (and (pair? p)(equal? sym (car p)))
+                     (begin (set! a #f) (cons sym val))
+                     p)) lst))
+    (if a `(,@lst ,(cons sym val)) lst)))
+
 (define-public (base26 i)
   "produce a string A, B, ..., Z, AA, AB, ... for numbers
 usable to allow 2.17+ list input like in: \\editionMod notes.sop.Voice.A
 ATTENTION: there will be no ZZ but YZ -> AAA and YZZ -> AAAA"
-(let ((A (char->integer (if (< i 0) #\a #\A)))
-      (i (if (< i 0) (- -1 i) i)))
+  (let ((A (char->integer (if (< i 0) #\a #\A)))
+        (i (if (< i 0) (- -1 i) i)))
 
-  (define (baseX x i)
-    (let ((q (quotient i x))
-          (r (remainder i x)))
-      (if (and (> q 0) (< q x))
-          (list (- q 1) r)
-          (let ((ret '()))
-            (if (> q 0) (set! ret (baseX x q)))
-            `(,@ret ,r))
-          )))
+    (define (baseX x i)
+      (let ((q (quotient i x))
+            (r (remainder i x)))
+        (if (and (> q 0) (< q x))
+            (list (- q 1) r)
+            (let ((ret '()))
+              (if (> q 0) (set! ret (baseX x q)))
+              `(,@ret ,r))
+            )))
 
-  (list->string
-   (map
-    (lambda (d) (integer->char (+ A d)))
-    (baseX 26 i)))
-  ))
+    (list->string
+     (map
+      (lambda (d) (integer->char (+ A d)))
+      (baseX 26 i)))
+    ))
 
 (define-public (with-append-file fn func)
   (let ((fport #f))
@@ -105,11 +114,11 @@ ATTENTION: there will be no ZZ but YZ -> AAA and YZZ -> AAAA"
 (define-public (normalize-path path)
   "create list, removing '.. elements
 example: (normalize-path '(a b .. c d)) ==> '(a c d)"
-(let ((ret '()))
-  (for-each (lambda (e)
-              (set! ret (cond ((eq? e '..)(if (> (length ret) 1) (cdr ret) '()))
-                          (else `(,e ,@ret))))) path)
-  (reverse ret)))
+  (let ((ret '()))
+    (for-each (lambda (e)
+                (set! ret (cond ((eq? e '..)(if (> (length ret) 1) (cdr ret) '()))
+                            (else `(,e ,@ret))))) path)
+    (reverse ret)))
 
 (define-public (listcwd) '())
 (define-public (absolutePath? path) #f)
@@ -126,12 +135,12 @@ example: (normalize-path '(a b .. c d)) ==> '(a c d)"
 (define-public (normalize-path-list path)
   "create list, removing \"..\" elements
 example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"c\" \"d\")"
-(let ((ret '()))
-  (for-each (lambda (e)
-              (set! ret (cond ((equal? e "..")(if (> (length ret) 1) (cdr ret) (cdr (reverse (listcwd)))))
-                          ((equal? e ".") (if (= (length ret) 0) (reverse (listcwd)) ret))
-                          (else `(,e ,@ret))))) path)
-  (reverse ret)))
+  (let ((ret '()))
+    (for-each (lambda (e)
+                (set! ret (cond ((equal? e "..")(if (> (length ret) 1) (cdr ret) (cdr (reverse (listcwd)))))
+                            ((equal? e ".") (if (= (length ret) 0) (reverse (listcwd)) ret))
+                            (else `(,e ,@ret))))) path)
+    (reverse ret)))
 (define-public (normalize-path-string s) "create normalized path string: a/b/../c/d ==> a/c/d" (string-join (normalize-path-list (string-split s #\/)) "/" 'infix))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
