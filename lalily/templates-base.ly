@@ -42,7 +42,7 @@
    (let* ((localsym (assoc-get 'init-path options '(init) #f))
           (deepsym (assoc-get 'deepsym options 'init #f))
           (deepdef (assoc-get 'deepdef options #{ #}))
-          (deepm #{ \getMusicDeep {} #deepsym #}))
+          (deepm #{ \getMusicDeep $deepdef #deepsym #}))
      #{
        \getMusic $deepm $localsym
      #}))
