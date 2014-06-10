@@ -478,6 +478,31 @@
     (make-music 'SequentialMusic 'void #t))
   )
 
+(define (memom? v)
+  (and (pair? v)(integer? (car v))
+       (let ((cv (cdr v)))
+         (if (list? cv)(set! cv (car cv)))
+         (or (rational? cv)(frac-or-mom? cv))
+         )))
+(use-modules (srfi srfi-1))
+(define (limemom? v)(and (list? v)(every memom? v)))
+(define-public editionModList
+  (define-void-function (parser location edition path mod mposl)
+    (string-or-symbol? list? music-or-contextmod? limemom?)
+    "Add modification to edition at all positions in mposl"
+    (let ((path (create-music-path #f path)))
+      (for-each
+       (lambda (p)
+         (let ((takt (car p))
+               (pos (cdr p)))
+           (if (list? pos)(set! pos (car pos)))
+           (if (fraction? pos)(set! pos (fraction->moment pos)))
+           (if (rational? pos)
+               (set! pos (ly:make-moment (numerator pos)(denominator pos))))
+           (add-edmod edition takt pos path mod)
+           )) mposl)
+      )))
+
 (define (list-or-boolean? v) (or (boolean? v)(list? v)(procedure? v)))
 (define-public editionEngraver
   (define-scheme-function (parser location tag)(list-or-boolean?)

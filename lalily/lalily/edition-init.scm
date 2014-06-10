@@ -19,6 +19,7 @@
 
 (re-export editionEngraver)
 (re-export editionMod)
+(re-export editionModList)
 
 (re-export propset?)
 (re-export override?)
