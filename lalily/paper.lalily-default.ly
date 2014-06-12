@@ -209,6 +209,10 @@ markupCopyrightBack = \markup
                 \italic \concat { \fromproperty #'header:booktitle ", " }
               }
               \on-the-fly #diff-composer \concat { \fromproperties #'(header:composername header:composer) ", " }
+              \on-the-fly #(lambda (layout props arg)
+                            (if (chain-assoc-get 'header:poet-footer props #f)
+                              (interpret-markup layout props arg)
+                              empty-stencil)) \concat { \fromproperties #'(header:poetname header:poet) ", " }
               \execMarkup #(lambda (layout props)(ly:output-def-lookup layout 'titleFooterMarkup
                                                    (markup #:bold #:fromproperties '(header:title toc:current)) ))
               \on-the-fly #has-piece \concat { ", " \fromproperty #'header:piece }
@@ -237,6 +241,10 @@ markupCopyrightBack = \markup
           \fontsize #-3 {
             \concat {
               \on-the-fly #diff-composer \concat { \fromproperties #'(header:composername header:composer) ", " }
+              \on-the-fly #(lambda (layout props arg)
+                            (if (chain-assoc-get 'header:poet-footer props #f)
+                              (interpret-markup layout props arg)
+                              empty-stencil)) \concat { \fromproperties #'(header:poetname header:poet) ", " }
               \execMarkup #(lambda (layout props)(ly:output-def-lookup layout 'titleFooterMarkup
                                                    (markup #:bold #:fromproperties '(header:title toc:current)) ))
               \on-the-fly #has-piece \concat { ", " \fromproperty #'header:piece }
