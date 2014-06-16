@@ -1,6 +1,6 @@
 %%%% This file is part of lalily, an extension to lilypond <http://www.lilypond.org/>.
 %%%%
-%%%% Copyright (C) 2011--2012 Jan-Peter Voigt <jp.voigt@gmx.de>
+%%%% Copyright (C) 2011--2014 Jan-Peter Voigt <jp.voigt@gmx.de>
 %%%%
 %%%% lalily is free software: you can redistribute it and/or modify
 %%%% it under the terms of the GNU General Public License as published by
@@ -46,6 +46,34 @@
      #{
        \getMusic $deepm $localsym
      #}))
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% create a group
+\registerTemplate lalily.group
+#(define-music-function (parser location piece options)(list? list?)
+   (let* ((elms (assoc-get 'part options (assoc-get 'element options '())))
+          (group (assoc-get 'group options #f))
+          (group-mods (assoc-get 'group-mods options #f))
+          (parts (if (> (length elms) 0)
+                     (make-music 'SimultaneousMusic 'elements
+                       (map
+                        (lambda (p)
+                          (let* ((opts (cdr p))
+                                 (template (assoc-get 'template opts '(generic)))
+                                 (path (assoc-get 'music opts (list (car p))))
+                                 )
+                            #{ \callTemplate ##t #template #path #opts #}
+                            )) elms))
+                     (make-music 'SimultaneousMusic 'void #t))))
+     (if (symbol? group)
+         #{
+           \new $group \with {
+             $(if (ly:context-mod? group-mods) group-mods)
+             \consists \editionEngraver $piece
+           } $parts
+         #}
+         parts
+         )))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Transpose
