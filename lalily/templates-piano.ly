@@ -19,6 +19,7 @@
      #{
        \new PianoStaff \with {
          $(if (ly:context-mod? mods) mods)
+         \consists \editionEngraver $piece
          \override StaffGrouper.staff-staff-spacing =
          #'((basic-distance . 6)(minimum-distance . 1)(padding . 1)(stretchability . 4))
        } <<

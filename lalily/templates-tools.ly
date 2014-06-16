@@ -78,7 +78,7 @@
 % create a group
 \registerTemplate lalily.group
 #(define-music-function (parser location piece options)(list? list?)
-   (let* ((elms (assoc-get 'element options '()))
+   (let* ((elms (assoc-get 'part options (assoc-get 'element options '())))
           (group (assoc-get 'group options #f))
           (group-mods (assoc-get 'group-mods options #f))
           (parts (if (> (length elms) 0)
@@ -96,6 +96,7 @@
          #{
            \new $group \with {
              $(if (ly:context-mod? group-mods) group-mods)
+             \consists \editionEngraver $piece
            } $parts
          #}
          parts
