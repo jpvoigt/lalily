@@ -89,45 +89,48 @@
 \addatree lalily_vocal_group_default bas.staff-mods \with { instrumentName = "Bass" }
 \addatree lalily_vocal_group_default bas.clef "bass"
 \registerTemplate lalily.vocal.group
-#(define-music-function (parser location piece options)(list? list?)
-   (let ((groupmod (ly:assoc-get 'groupmod options #f #f))
-         (staffs (ly:assoc-get 'staffs options lalily_vocal_group_default #f))
-         (staff-mods (ly:assoc-get 'staff-mods options #f #f))
-         (mensur (ly:assoc-get 'mensur options #f))
-         (verses (ly:assoc-get 'verses options #f)))
-     #{
-       \new StaffGroup \with {
-         $(if (ly:context-mod? groupmod) groupmod)
-         \consists \editionEngraver $piece
-         \override BarLine.allow-span-bar = $(if mensur #t #f )
-         \override BarLine.transparent = $(if mensur #t #f )
-       } $(make-music 'SimultaneousMusic 'elements
-            (map (lambda (staff)
-                   (let* ((key (assoc-get 'music (cdr staff) (list (car staff))))
-                          (vocname (string-append
-                                    (assoc-get 'prefix (cdr staff) "")
-                                    (assoc-get 'vocname (cdr staff) (glue-list key "-"))
+#(let ((choir 0))
+   (define (get-choir) (set! choir (+ choir 1)) (format "choir~A" choir))
+   (define-music-function (parser location piece options)(list? list?)
+     (let ((groupmod (ly:assoc-get 'groupmod options #f #f))
+           (prefix (ly:assoc-get 'prefix options (get-choir) #f))
+           (staffs (ly:assoc-get 'staffs options lalily_vocal_group_default #f))
+           (staff-mods (ly:assoc-get 'staff-mods options #f #f))
+           (mensur (ly:assoc-get 'mensur options #f))
+           (verses (ly:assoc-get 'verses options #f)))
+       #{
+         \new StaffGroup \with {
+           $(if (ly:context-mod? groupmod) groupmod)
+           \consists \editionEngraver $piece
+           \override BarLine.allow-span-bar = $(if mensur #t #f )
+           \override BarLine.transparent = $(if mensur #t #f )
+         } $(make-music 'SimultaneousMusic 'elements
+              (map (lambda (staff)
+                     (let* ((key (assoc-get 'music (cdr staff) (list (car staff))))
+                            (vocname (string-append
+                                      (assoc-get 'prefix (cdr staff) prefix)
+                                      (assoc-get 'vocname (cdr staff) (glue-list key "-"))
+                                      ))
+                            (opts (assoc-set-all!
+                                   (get-default-options (create-music-path #f key) location)
+                                   `((vocname . ,vocname)(verses . ,verses),@(cdr staff))
+                                   ))
+                            (instr (ly:assoc-get 'instrument opts #f #f))
+                            (templ (cond
+                                    ((symbol? instr) `(.. ,instr))
+                                    ((list? instr) `(.. ,@instr))
+                                    (else '(..))
                                     ))
-                          (opts (assoc-set-all!
-                                 (get-default-options (create-music-path #f key) location)
-                                 `((vocname . ,vocname)(verses . ,verses),@(cdr staff))
-                                 ))
-                          (instr (ly:assoc-get 'instrument opts #f #f))
-                          (templ (cond
-                                  ((symbol? instr) `(.. ,instr))
-                                  ((list? instr) `(.. ,@instr))
-                                  (else '(..))
-                                  ))
-                          (staff-mods-loc (ly:assoc-get 'staff-mods opts #f #f))
-                          )
-                     (cond
-                      ((and
-                        (ly:context-mod? staff-mods)
-                        (ly:context-mod? staff-mods-loc))
-                       (set! opts (assoc-set! opts 'staff-mods #{ \with { #staff-mods #staff-mods-loc } #})))
-                      ((ly:context-mod? staff-mods) (set! opts (assoc-set! opts 'staff-mods staff-mods)))
-                      )
-                     #{ \callTemplate #templ #key #opts #}
-                     )) staffs))
-     #}))
+                            (staff-mods-loc (ly:assoc-get 'staff-mods opts #f #f))
+                            )
+                       (cond
+                        ((and
+                          (ly:context-mod? staff-mods)
+                          (ly:context-mod? staff-mods-loc))
+                         (set! opts (assoc-set! opts 'staff-mods #{ \with { #staff-mods #staff-mods-loc } #})))
+                        ((ly:context-mod? staff-mods) (set! opts (assoc-set! opts 'staff-mods staff-mods)))
+                        )
+                       #{ \callTemplate #templ #key #opts #}
+                       )) staffs))
+       #})))
 
