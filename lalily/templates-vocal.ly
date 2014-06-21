@@ -40,10 +40,11 @@
          (staffname (assoc-get 'staffname options #f #f))
          (staff-mods (assoc-get 'staff-mods options #f #f))
          (voice-mods (assoc-get 'voice-mods options #f #f))
+         ;(voices (assoc-get 'voices options #f #f)) % TODO two voices in staff
          ;(lyric-mods (assoc-get 'lyric-mods options #f #f))
          ;(repeats (assoc-get 'repeats options #f #f))
          (verses (assoc-get 'verses options #f #f)))
-     (ly:message "-> ~A" options)
+     ;(ly:message "-> ~A" options)
      (if (not (string? vocname))
          (let ((tmpname (glue-list piece "-")))
            (ly:input-warning location "using ~A as vocname!" tmpname)
@@ -62,28 +63,8 @@
            { \callTemplate ##t lalily.init.Voice.vocal #'() #init-opts \clef $clef \getMusic music }
          >>
          $(if (list? verses)
-              #{ \stackTemplate lyrics lyrics #(assoc-set! options 'lyric-voice vocname) #'verse #(map (lambda (v) (list v)) verses) #}
-              #{ \callTemplate lyrics lyrics #(assoc-set! options 'lyric-voice vocname) #})
-         %{
-         % TODO repeats
-         $(if (list? verses)
-              (make-music 'SimultaneousMusic
-                'elements (map (lambda (v)
-                                 #{
-                                   \new Lyrics \with {
-                                     $(if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #})
-                                     $(let ((lyric-mods (assoc-get (glue-symbol `(lyric-mods ,v) "-") options #f #f)))
-                                        (if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #}))
-                                     \consists \editionEngraver $piece
-                                   } \lyricsto $vocname { \getMusic #`(lyrics ,v) }
-                                 #}) verses))
-              #{
-                \new Lyrics \with {
-                  $(if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #})
-                  \consists \editionEngraver $piece
-                } \lyricsto $vocname { \getMusic lyrics }
-              #})
-         %}
+              #{ \stackTemplate lyrics #'() #(assoc-set! options 'lyric-voice vocname) #'verse #(map (lambda (v) (list v)) verses) #}
+              #{ \callTemplate lyrics #'() #(assoc-set! options 'lyric-voice vocname) #})
        >>
      #}))
 
@@ -93,7 +74,7 @@
          (rr (ly:assoc-get 'repeats options #f #f))
          (lyric-mods (assoc-get 'lyric-mods options #f #f))
          (voc (ly:assoc-get 'lyric-voice options "sop" #f)))
-     (ly:message "-> ~A" options)
+     ;(ly:message "-> ~A" options)
      (if (list? rr)
          (make-music 'SimultaneousMusic 'elements
            (map (lambda (r)
@@ -103,7 +84,7 @@
                       $(let ((lyric-mods (assoc-get (glue-symbol `(lyric-mods ,v) "-") options #f #f)))
                          (if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #}))
                       \consists \editionEngraver $piece
-                    } \lyricsto $voc { \getMusic #v }
+                    } \lyricsto $voc { \getMusic #`(lyrics ,@v) }
                   #}) rr))
          #{
            \new Lyrics \with {
@@ -111,7 +92,7 @@
              $(let ((lyric-mods (assoc-get (glue-symbol `(lyric-mods ,@v) "-") options #f #f)))
                 (if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #}))
              \consists \editionEngraver $piece
-           } \lyricsto $voc { \getMusic #v }
+           } \lyricsto $voc { \getMusic #`(lyrics ,@v) }
          #}
          )))
 
