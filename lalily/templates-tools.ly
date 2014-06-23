@@ -32,7 +32,7 @@
 % create a symbol list from string separated by optional character 's' (= '/')
 \parserDefine PathS
 #(define-scheme-function (parser location s p)((char? #\/) string?)
-   (map (lambda (e) (string->symbol e)) (string-split p s)))
+   (map (lambda (e) (if (> (string-length e) 0) (string->symbol e) '/)) (string-split p s)))
 
 % create a pair from a list (that is the first two elements)
 \parserDefine Pair

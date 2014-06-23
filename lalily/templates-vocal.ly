@@ -37,14 +37,22 @@
    (let ((init-opts (assoc-get 'init-opts options '() #f))
          (clef (assoc-get 'clef options "G" #f))
          (vocname (assoc-get 'vocname options #f #t))
+         (vocname-proc #f)
          (staffname (assoc-get 'staffname options #f #f))
          (staff-mods (assoc-get 'staff-mods options #f #f))
          (voice-mods (assoc-get 'voice-mods options #f #f))
          ;(voices (assoc-get 'voices options #f #f)) % TODO two voices in staff
          ;(lyric-mods (assoc-get 'lyric-mods options #f #f))
          ;(repeats (assoc-get 'repeats options #f #f))
-         (verses (assoc-get 'verses options #f #f)))
-     ;(ly:message "-> ~A" options)
+         (verses (assoc-get 'verses options #f #f))
+         (lyrics (assoc-get 'lyrics options '() #f))
+         (upper (assoc-get 'upper options #f #f)))
+     (define (do-upper) (and (list? upper) (list? (assoc-get 'music upper #f #f))))
+     (if (procedure? vocname)
+         (begin
+          (set! vocname-proc vocname)
+          (set! vocname (vocname piece options))
+          ))
      (if (not (string? vocname))
          (let ((tmpname (glue-list piece "-")))
            (ly:input-warning location "using ~A as vocname!" tmpname)
@@ -56,15 +64,74 @@
          \new Staff = $staffname \with {
            $(if (ly:context-mod? staff-mods) staff-mods #{ \with {} #})
            \consists \editionEngraver $piece
-         } \new Voice = $vocname \with {
-           $(if (ly:context-mod? voice-mods) voice-mods #{ \with {} #})
          } <<
-           \getMusicDeep #'meta
-           { \callTemplate ##t lalily.init.Voice.vocal #'() #init-opts \clef $clef \getMusic music }
+           \callTemplate voice #'() #(assoc-set-all! options
+                                       `((init-music . ,(if (do-upper) #{ \voiceTwo #} #{ \oneVoice #}))
+                                         (vocname . ,vocname)
+                                         ))
+
+           $(if (do-upper)
+                (let ((path `(.. ,@(assoc-get 'music upper '() #f))) ; TODO absolute path
+                       (vocname (assoc-get 'vocname upper vocname-proc #f)))
+                  (if (procedure? vocname) (set! vocname (vocname (create-music-path #f path) upper)))
+                  (if (not (string? vocname))
+                      (let ((tmpname (glue-list (create-music-path #f path) "-")))
+                        (ly:input-warning location "using ~A as vocname!" tmpname)
+                        (set! vocname tmpname)
+                        ))
+                  (set! upper (assoc-set-all! options
+                                `(,@upper
+                                   (init-music . ,#{ \voiceOne #} )
+                                   (vocname . ,vocname)
+                                   )))
+                  #{
+                    \callTemplate voice #path #upper
+                  #}))
+
          >>
+         $(if (do-upper)
+              (let ((vocname (assoc-get 'vocname upper "" #f))
+                    (lyrics (assoc-get 'lyrics upper (if (> (length lyrics) 0) #f '())))
+                    (lyric-mods (assoc-get 'lyric-mods upper #f #f))
+                    (verses (assoc-get 'verses upper verses #f)))
+                (set! lyric-mods #{
+                  \with {
+                    $(if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #})
+                    alignAboveContext = $staffname
+                      } #})
+                (if (list? lyrics)
+                    #{
+                      $(if (list? verses)
+                           #{ \stackTemplate lyrics #`(.. ,@lyrics) #(assoc-set-all! upper
+                                                                       `((lyric-voice . ,vocname)
+                                                                         (lyric-mods . ,lyric-mods))
+                                                                       ) #'verse #(map (lambda (v) (list v)) verses) #}
+                           #{ \callTemplate lyrics #`(.. ,@lyrics) #(assoc-set-all! upper
+                                                                      `((lyric-voice . ,vocname)
+                                                                        (lyric-mods . ,lyric-mods))
+                                                                      ) #})
+                    #})))
          $(if (list? verses)
-              #{ \stackTemplate lyrics #'() #(assoc-set! options 'lyric-voice vocname) #'verse #(map (lambda (v) (list v)) verses) #}
-              #{ \callTemplate lyrics #'() #(assoc-set! options 'lyric-voice vocname) #})
+              #{ \stackTemplate lyrics #lyrics #(assoc-set! options 'lyric-voice vocname) #'verse #(map (lambda (v) (list v)) verses) #}
+              #{ \callTemplate lyrics #lyrics #(assoc-set! options 'lyric-voice vocname) #})
+       >>
+     #}))
+
+\registerTemplate lalily.vocal.voice
+#(define-music-function (parser location piece options)(list? list?)
+   (let ((voice-mods (assoc-get 'voice-mods options #f #f))
+         (vocname (assoc-get 'vocname options #f #t))
+         (init-opts (assoc-get 'init-opts options '() #f))
+         (init-voice (assoc-get 'init-music options (make-music 'SequentialMusic 'void #t) #f))
+         (clef (assoc-get 'clef options "G" #f))
+         (voice-context (assoc-get 'voice-context options 'Voice #f)))
+     #{
+       \new $voice-context = $vocname \with {
+         $(if (ly:context-mod? voice-mods) voice-mods #{ \with {} #})
+         $(if (not (eq? 'Voice voice-context)) #{ \with { \consists \editionEngraver #piece } #})
+       } <<
+         \getMusicDeep #'meta
+         { \callTemplate ##t lalily.init.Voice.vocal #'() #init-opts \clef $clef $init-voice \getMusic music }
        >>
      #}))
 
@@ -114,7 +181,9 @@
            (staff-mods (ly:assoc-get 'staff-mods options #f #f))
            (mensur (ly:assoc-get 'mensur options #f))
            (verses (ly:assoc-get 'verses options #f))
-           (repeats (ly:assoc-get 'repeats options #f)))
+           (repeats (ly:assoc-get 'repeats options #f))
+           (lyrics (assoc-get 'lyrics options '() #f))
+           )
        #{
          \new StaffGroup \with {
            $(if (ly:context-mod? groupmod) groupmod)
@@ -130,7 +199,7 @@
                                       ))
                             (opts (assoc-set-all!
                                    (get-default-options (create-music-path #f key) location)
-                                   `((vocname . ,vocname)(verses . ,verses)(repeats . ,repeats),@(cdr staff))
+                                   `((vocname . ,vocname)(verses . ,verses)(repeats . ,repeats)(lyrics . ,lyrics),@(cdr staff))
                                    ))
                             (instr (ly:assoc-get 'instrument opts #f #f))
                             (templ (cond
