@@ -197,6 +197,7 @@
                                       (assoc-get 'prefix (cdr staff) prefix)
                                       (assoc-get 'vocname (cdr staff) (glue-list key "-"))
                                       ))
+                            (upper (assoc-get 'upper (cdr staff) #f #f))
                             (opts (assoc-set-all!
                                    (get-default-options (create-music-path #f key) location)
                                    `((vocname . ,vocname)(verses . ,verses)(repeats . ,repeats)(lyrics . ,lyrics),@(cdr staff))
@@ -209,6 +210,14 @@
                                     ))
                             (staff-mods-loc (ly:assoc-get 'staff-mods opts #f #f))
                             )
+                       (if (and (list? upper)(list? (assoc-get 'music upper #f #f)))
+                           (let ((uvocname (string-append
+                                            (assoc-get 'prefix (cdr staff) prefix)
+                                            (assoc-get 'vocname upper (glue-list (assoc-get 'music upper) "-"))
+                                            )))
+                             (assoc-set! opts 'upper (assoc-set! upper 'vocname uvocname))
+                             ))
+
                        (cond
                         ((and
                           (ly:context-mod? staff-mods)
