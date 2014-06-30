@@ -22,6 +22,10 @@
 \include "../lalily.ly"
 #(ly:set-option 'relative-includes lalily-relincl-tmp)
 
+%{
+init vocal Voice context. Default: \dynamicUp \autoBeamOff
+looks for music named 'init-vocal
+%}
 \registerTemplate lalily.init.Voice.vocal
 #(define-music-function (parser location piece options)(list? list?)
    (let ((deepdef (assoc-get 'deepdef options #{ \dynamicUp \autoBeamOff #}))
@@ -31,7 +35,9 @@
        \callTemplate ##t lalily.init.Voice #'() #(assoc-set-all! init-opts `((deepdef . ,deepdef)(deepsym . ,deepsym)))
      #}))
 
-
+%{
+create one staff with one vocal voice and associated lyrics.
+%}
 \registerTemplate lalily.vocal
 #(define-music-function (parser location piece options)(list? list?)
    (let ((init-opts (assoc-get 'init-opts options '() #f))
@@ -163,6 +169,63 @@
          #}
          )))
 
+\registerTemplate lalily.vocal.two
+#(define-music-function (parser location piece opts)(list? list?)
+   (let* ((prefix (assoc-get 'prefix opts ""))
+          (staff-name (assoc-get 'staffname opts (glue-list piece "-") #f))
+          (staff-mods (assoc-get 'staff-mods opts #f #f))
+          (lyric-mods (assoc-get 'lyric-mods opts #{ \with {} #}))
+          (verses (assoc-get 'verses opts #f #f))
+          (lyrics (assoc-get 'lyrics opts '() #f))
+          (music-prefix (assoc-get 'music-prefix opts '(..)))
+          (upper (assoc-get 'upper opts '()))
+          (upper-music (unfold-path (assoc-get 'music upper '()) '()))
+          (upper-name (string-append prefix (assoc-get 'vocname upper (glue-list upper-music "-"))))
+          (upper-init (make-music 'SequentialMusic 'elements `(,(assoc-get 'init upper #{#}) ,#{ \voiceOne #})))
+          (upper-lyric-mods #{ \with {
+            $lyric-mods
+            $(let ((mods (assoc-get 'lyric-mods upper #{ \with {} #}))) mods)
+            alignAboveContext = $staff-name
+            } #})
+          (lower (assoc-get 'lower opts '()))
+          (lower-music (unfold-path (assoc-get 'music lower '()) '()))
+          (lower-name (string-append prefix (assoc-get 'vocname lower (glue-list lower-music "-"))))
+          (lower-init (make-music 'SequentialMusic 'elements `(,(assoc-get 'init lower #{#}) ,#{ \voiceTwo #})))
+          (lower-lyric-mods #{ \with {
+            $lyric-mods
+            $(let ((mods (assoc-get 'lyric-mods lower #{ \with {} #}))) mods)
+            alignBelowContext = $staff-name
+            } #})
+          )
+     (if (or (= 0 (length upper-music))(not (eq? #\/ (car upper-music))))
+         (set! upper-music (append music-prefix upper-music)))
+     (if (or (= 0 (length lower-music))(not (eq? #\/ (car lower-music))))
+         (set! lower-music (append music-prefix lower-music)))
+     (if (or (= 0 (length lyrics))(not (eq? #\/ (car lyrics))))
+         (set! lyrics (append music-prefix lyrics)))
+     #{
+       <<
+       \new Staff = $staff-name \with {
+         $(if (ly:context-mod? staff-mods) staff-mods #{ \with {} #})
+       } <<
+         \callTemplate LY_UP.voice #upper-music #(assoc-set-all! opts (append upper `((vocname . ,upper-name)(init-music . ,upper-init))))
+         \callTemplate LY_UP.voice #lower-music #(assoc-set-all! opts (append upper `((vocname . ,lower-name)(init-music . ,lower-init))))
+       >>
+         $(if (list? verses)
+              #{
+                <<
+                  \stackTemplate LY_UP.lyrics #upper-music #(assoc-set-all! upper `((lyric-voice . ,upper-name)(lyric-mods . ,upper-lyric-mods))) #'verse #(map (lambda (v) (list v)) verses)
+                  \stackTemplate LY_UP.lyrics #lower-music #(assoc-set-all! lower `((lyric-voice . ,lower-name)(lyric-mods . ,lower-lyric-mods))) #'verse #(map (lambda (v) (list v)) verses)
+              >> #}
+              #{
+                <<
+                \callTemplate LY_UP.lyrics #upper-music #(assoc-set-all! upper `((lyric-voice . ,upper-name)(lyric-mods . ,upper-lyric-mods)))
+                \callTemplate LY_UP.lyrics #lower-music #(assoc-set-all! lower `((lyric-voice . ,lower-name)(lyric-mods . ,lower-lyric-mods)))
+                >>
+              #})
+       >>
+     #}))
+
 
 \clratree lalily_vocal_group_default
 \addatree lalily_vocal_group_default sop.staff-mods \with { instrumentName = "Sopran" }
@@ -202,7 +265,7 @@
                                    (get-default-options (create-music-path #f key) location)
                                    `((vocname . ,vocname)(verses . ,verses)(repeats . ,repeats)(lyrics . ,lyrics),@(cdr staff))
                                    ))
-                            (instr (ly:assoc-get 'instrument opts #f #f))
+                            (instr (ly:assoc-get 'staff opts #f #f))
                             (templ (cond
                                     ((symbol? instr) `(.. ,instr))
                                     ((list? instr) `(.. ,@instr))

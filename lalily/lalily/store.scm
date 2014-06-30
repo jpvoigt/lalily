@@ -277,9 +277,16 @@
           (path (if (and (not tabs)(pabs path)) (cdr path) path))
           (tabs _tabs)
           )
-    (if tabs path
-        (let ((cpart (get-current-template)))
-          (normalize-path (if (list? cpart)(append cpart path) path))))))
+    (normalize-path
+     (unfold-path
+      (if tabs path
+          (let ((cpart (get-current-template)))
+            (if (list? cpart)(append cpart path) path)
+            )) '() ))
+    ))
+;    (if tabs path
+;        (let ((cpart (get-current-template)))
+;          (normalize-path (if (list? cpart)(append cpart path) path))))))
 
 (define-public (create-music-path mabs path)
   (let* (
