@@ -195,11 +195,13 @@
                        (let* ((proc (ly:music-property m 'procedure))
                               (mod (make <apply-context> #:proc proc)))
                          (set! mods `(,@mods ,mod))
+                         #t
                          ))
                       ((or
                         (eq? 'OttavaMusic (ly:music-property m 'name))
                         )
                        (set! mods `(,@mods ,(context-mod-from-music parser m)))
+                       #t
                        )
                       ((or
                         (eq? 'TextScriptEvent (ly:music-property m 'name))
