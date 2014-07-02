@@ -197,13 +197,17 @@
                          (set! mods `(,@mods ,mod))
                          ))
                       ((or
+                        (eq? 'OttavaMusic (ly:music-property m 'name))
+                        )
+                       (set! mods `(,@mods ,(context-mod-from-music parser m)))
+                       )
+                      ((or
                         (eq? 'TextScriptEvent (ly:music-property m 'name))
                         (eq? 'LineBreakEvent (ly:music-property m 'name))
                         (eq? 'PageBreakEvent (ly:music-property m 'name))
                         (eq? 'PageTurnEvent (ly:music-property m 'name))
                         (eq? 'ApplyOutputEvent (ly:music-property m 'name))
 
-                        (eq? 'OttavaMusic (ly:music-property m 'name))
                         (eq? 'PartCombineForceEvent (ly:music-property m 'name))
                         (eq? 'ExtenderEvent (ly:music-property m 'name))
                         (eq? 'HyphenEvent (ly:music-property m 'name))
