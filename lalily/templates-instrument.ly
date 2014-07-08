@@ -47,7 +47,7 @@
      (ly:assoc-get key options (ly:assoc-get key default def #f) #f)
      ))
 
-\registerTemplate #'(lalily instrument)
+\registerTemplate lalily.instrument
 #(define-music-function (parser location piece options)(list? list?)
    (let ((name (get-option 'name options "instrument"))
          (init-voice (get-option 'init-voice options #f))
@@ -108,7 +108,7 @@
        }
      #}))
 
-\registerTemplate #'(lalily instrument group)
+\registerTemplate lalily.instrument.group
 #(define-music-function (parser location piece options)(list? list?)
    (let ((groupmod (ly:assoc-get 'groupmod options #f #f))
          (staffs (ly:assoc-get 'staffs options '() #f)))
@@ -136,14 +136,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% woodwind
 
-\registerTemplate #'(lalily instrument oboe)
+\registerTemplate lalily.instrument.oboe
 #(define-music-function (parser location piece options)(list? list?)
    (call-template (create-template-path #f '(..)) parser location piece
      (assoc-set-all! options `((name . "oboe")
                                (midi-instrument . "oboe")
                                ))))
 
-\registerTemplate #'(lalily instrument english-horn)
+\registerTemplate lalily.instrument.english-horn
 #(define-music-function (parser location piece options)(list? list?)
    (call-template (create-template-path #f '(..)) parser location piece
      (assoc-set-all! options `((name . "english-horn")
@@ -151,14 +151,14 @@
                                (midi-instrument . "english horn")
                                ))))
 
-\registerTemplate #'(lalily instrument sax sop)
+\registerTemplate lalily.instrument.sax.sop
 #(define-music-function (parser location piece options)(list? list?)
    (call-template (create-template-path #f '(.. ..)) parser location piece
      (assoc-set-all! options `((name . "saxsop")
                                (transposition . ,(ly:make-pitch -1 6 -1/2)) ; b
                                (midi-instrument . "soprano sax")
                                ))))
-\registerTemplate #'(lalily instrument sax alt)
+\registerTemplate lalily.instrument.sax.alt
 #(define-music-function (parser location piece options)(list? list?)
    (call-template (create-template-path #f '(.. ..)) parser location piece
      (assoc-set-all! options `((name . "saxalt")
@@ -166,14 +166,14 @@
                                (midi-instrument . "alto sax")
                                ))))
 
-\registerTemplate #'(lalily instrument sax ten)
+\registerTemplate lalily.instrument.sax.ten
 #(define-music-function (parser location piece options)(list? list?)
    (call-template (create-template-path #f '(.. ..)) parser location piece
      (assoc-set-all! options `((name . "saxten")
                                (transposition . ,(ly:make-pitch -2 6 -1/2)) ; b
                                (midi-instrument . "tenor sax")
                                ))))
-\registerTemplate #'(lalily instrument sax bar)
+\registerTemplate lalily.instrument.sax.bar
 #(define-music-function (parser location piece options)(list? list?)
    (call-template (create-template-path #f '(.. ..)) parser location piece
      (assoc-set-all! options `((name . "saxbar")
@@ -185,7 +185,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% brass
 
-\registerTemplate #'(lalily instrument trumpet)
+\registerTemplate lalily.instrument.trumpet
 #(define-music-function (parser location piece options)(list? list?)
    (call-template (create-template-path #f '(..)) parser location piece
      (assoc-set-all! options `((default .
@@ -195,7 +195,7 @@
                                   (output-concert-pitch . #f)
                                   )))
        )))
-\registerTemplate #'(lalily instrument trombone)
+\registerTemplate lalily.instrument.trombone
 #(define-music-function (parser location piece options)(list? list?)
    (call-template (create-template-path #f '(..)) parser location piece
      (assoc-set-all! options '((default .
@@ -204,30 +204,39 @@
                                   (clef . "bass")
                                   )))
        )))
+\registerTemplate lalily.instrument.tuba
+#(define-music-function (parser location piece options)(list? list?)
+   (call-template (create-template-path #f '(..)) parser location piece
+     (assoc-set-all! options '((default .
+                                 ((name . "tuba")
+                                  (midi-instrument . "tuba")
+                                  (clef . "bass")
+                                  )))
+       )))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% string
 
-\registerTemplate #'(lalily instrument violin)
+\registerTemplate lalily.instrument.violin
 #(define-music-function (parser location piece options)(list? list?)
    (call-template (create-template-path #f '(..)) parser location piece
      (assoc-set-all! options '((name . "violin")
                                (midi-instrument . "violin")
                                ))))
 
-\registerTemplate #'(lalily instrument viola)
+\registerTemplate lalily.instrument.viola
 #(define-music-function (parser location piece options)(list? list?)
    (call-template (create-template-path #f '(..)) parser location piece
      (assoc-set-all! options '((name . "viola")
                                (midi-instrument . "viola")
+                               (clef . "alto")
+                               ))))
+\registerTemplate lalily.instrument.cello
+#(define-music-function (parser location piece options)(list? list?)
+   (call-template (create-template-path #f '(..)) parser location piece
+     (assoc-set-all! options '((name . "cello")
+                               (midi-instrument . "cello")
+                               (clef . "bass")
                                ))))
 
 
-
-%{
-  /usr/bin/python: /home/jpv/lily2.17/lilypond/usr/lib/libz.so.1: no
-  version information available (required by /usr/bin/python) convert-ly
-  (GNU LilyPond) 2.17.96  convert-ly: »« wird verarbeitet... Anwenden
-  der Umwandlung: 2.17.0, 2.17.4, 2.17.5, 2.17.6, 2.17.11, 2.17.14,
-  2.17.15, 2.17.18, 2.17.19, 2.17.20, 2.17.25, 2.17.27, 2.17.29
-%}
