@@ -17,7 +17,7 @@
 
 (define-module (lalily definitions))
 
-(define-public lalily:version '(0 8 20))
+(define-public lalily:version '(0 9 1))
 (define-public lalily:init (localtime (current-time)))
 
 (define-public lalily:registry-verbose '(lalily runtime verbose))

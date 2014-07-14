@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.17.29"
+\version "2.18.2"
 
 % parser-define! ilyStartup to load lalily.ily
 % instant scheme expression ($) to allow nested includes
@@ -25,11 +25,11 @@ $(ly:parser-define! parser 'ilyStartup
        (define-music-function (parser location)()
          ;(if (lalily:verbose) (ly:message "lalily already included!"))
          (make-music 'SequentialMusic 'void #t ))
-       ; include lalily.ily
+       ; include lalily/bootstrap.ily
        (define-music-function (parser location)()
          (let* ((locname (car (ly:input-file-line-char-column location)))
                 (loclen (string-length locname))
-                (iname (string-append (substring locname 0 (- loclen 2)) "i" (substring locname (- loclen 2)))))
+                (iname (string-append (substring locname 0 (- loclen 3)) "/bootstrap.ily")))
            (ly:parser-include-string parser (format "\\include \"~A\"\n" iname))
            (make-music 'SequentialMusic 'void #t )))
        ))
