@@ -50,6 +50,7 @@
 \registerTemplate lalily.instrument
 #(define-music-function (parser location piece options)(list? list?)
    (let ((name (get-option 'name options "instrument"))
+         (instrument-name (get-option 'instrument-name options #f))
          (init-voice (get-option 'init-voice options #f))
          (clef (get-option 'clef options #f))
          (transp (get-option 'transposition options (ly:make-pitch 0 0 0)))
@@ -71,6 +72,7 @@
          $(if (ly:context-mod? staff-mods) staff-mods)
          \consists \editionEngraver $piece
          midiInstrument = #midi-instrument
+         instrumentName = #instrument-name
        } \new Voice \with {
          $(if (ly:context-mod? voice-mods) voice-mods)
        } {
