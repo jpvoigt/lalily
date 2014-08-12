@@ -180,6 +180,7 @@ create one staff with one vocal voice and associated lyrics.
           (music-prefix (assoc-get 'music-prefix opts '(..)))
           (upper (assoc-get 'upper opts '()))
           (upper-music (unfold-path (assoc-get 'music upper '()) '()))
+          (upper-lyrics (unfold-path (assoc-get 'lyrics upper lyrics) '()))
           (upper-name (string-append prefix (assoc-get 'vocname upper (glue-list upper-music "-"))))
           (upper-init (make-music 'SequentialMusic 'elements `(,(assoc-get 'init upper #{#}) ,#{ \voiceOne #})))
           (upper-lyric-mods #{ \with {
@@ -189,6 +190,7 @@ create one staff with one vocal voice and associated lyrics.
             } #})
           (lower (assoc-get 'lower opts '()))
           (lower-music (unfold-path (assoc-get 'music lower '()) '()))
+          (lower-lyrics (unfold-path (assoc-get 'lyrics lower lyrics) '()))
           (lower-name (string-append prefix (assoc-get 'vocname lower (glue-list lower-music "-"))))
           (lower-init (make-music 'SequentialMusic 'elements `(,(assoc-get 'init lower #{#}) ,#{ \voiceTwo #})))
           (lower-lyric-mods #{ \with {
@@ -207,6 +209,7 @@ create one staff with one vocal voice and associated lyrics.
        <<
        \new Staff = $staff-name \with {
          $(if (ly:context-mod? staff-mods) staff-mods #{ \with {} #})
+         \consists \editionEngraver $piece
        } <<
          \callTemplate LY_UP.voice #upper-music #(assoc-set-all! opts (append upper `((vocname . ,upper-name)(init-music . ,upper-init))))
          \callTemplate LY_UP.voice #lower-music #(assoc-set-all! opts (append upper `((vocname . ,lower-name)(init-music . ,lower-init))))
@@ -214,13 +217,13 @@ create one staff with one vocal voice and associated lyrics.
          $(if (list? verses)
               #{
                 <<
-                  \stackTemplate LY_UP.lyrics #upper-music #(assoc-set-all! upper `((lyric-voice . ,upper-name)(lyric-mods . ,upper-lyric-mods))) #'verse #(map (lambda (v) (list v)) verses)
-                  \stackTemplate LY_UP.lyrics #lower-music #(assoc-set-all! lower `((lyric-voice . ,lower-name)(lyric-mods . ,lower-lyric-mods))) #'verse #(map (lambda (v) (list v)) verses)
+                  \stackTemplate LY_UP.lyrics #upper-lyrics #(assoc-set-all! upper `((lyric-voice . ,upper-name)(lyric-mods . ,upper-lyric-mods))) #'verse #(map (lambda (v) (list v)) verses)
+                  \stackTemplate LY_UP.lyrics #lower-lyrics #(assoc-set-all! lower `((lyric-voice . ,lower-name)(lyric-mods . ,lower-lyric-mods))) #'verse #(map (lambda (v) (list v)) verses)
               >> #}
               #{
                 <<
-                \callTemplate LY_UP.lyrics #upper-music #(assoc-set-all! upper `((lyric-voice . ,upper-name)(lyric-mods . ,upper-lyric-mods)))
-                \callTemplate LY_UP.lyrics #lower-music #(assoc-set-all! lower `((lyric-voice . ,lower-name)(lyric-mods . ,lower-lyric-mods)))
+                \callTemplate LY_UP.lyrics #upper-lyrics #(assoc-set-all! upper `((lyric-voice . ,upper-name)(lyric-mods . ,upper-lyric-mods)))
+                \callTemplate LY_UP.lyrics #lower-lyrics #(assoc-set-all! lower `((lyric-voice . ,lower-name)(lyric-mods . ,lower-lyric-mods)))
                 >>
               #})
        >>
