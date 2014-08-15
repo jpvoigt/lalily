@@ -176,6 +176,7 @@ create one staff with one vocal voice and associated lyrics.
           (staff-mods (assoc-get 'staff-mods opts #f #f))
           (lyric-mods (assoc-get 'lyric-mods opts #{ \with {} #}))
           (verses (assoc-get 'verses opts #f #f))
+          (repeats (assoc-get 'repeats opts #f #f))
           (lyrics (assoc-get 'lyrics opts '() #f))
           (music-prefix (assoc-get 'music-prefix opts '(..)))
           (upper (assoc-get 'upper opts '()))
@@ -217,13 +218,13 @@ create one staff with one vocal voice and associated lyrics.
          $(if (list? verses)
               #{
                 <<
-                  \stackTemplate LY_UP.lyrics #upper-lyrics #(assoc-set-all! upper `((lyric-voice . ,upper-name)(lyric-mods . ,upper-lyric-mods))) #'verse #(map (lambda (v) (list v)) verses)
-                  \stackTemplate LY_UP.lyrics #lower-lyrics #(assoc-set-all! lower `((lyric-voice . ,lower-name)(lyric-mods . ,lower-lyric-mods))) #'verse #(map (lambda (v) (list v)) verses)
+                  \stackTemplate LY_UP.lyrics #upper-lyrics #(assoc-set-all! upper `((lyric-voice . ,upper-name)(lyric-mods . ,upper-lyric-mods)(repeats . ,repeats))) #'verse #(map (lambda (v) (list v)) verses)
+                  \stackTemplate LY_UP.lyrics #lower-lyrics #(assoc-set-all! lower `((lyric-voice . ,lower-name)(lyric-mods . ,lower-lyric-mods)(repeats . ,(reverse repeats)))) #'verse #(map (lambda (v) (list v)) verses)
               >> #}
               #{
                 <<
-                \callTemplate LY_UP.lyrics #upper-lyrics #(assoc-set-all! upper `((lyric-voice . ,upper-name)(lyric-mods . ,upper-lyric-mods)))
-                \callTemplate LY_UP.lyrics #lower-lyrics #(assoc-set-all! lower `((lyric-voice . ,lower-name)(lyric-mods . ,lower-lyric-mods)))
+                \callTemplate LY_UP.lyrics #upper-lyrics #(assoc-set-all! upper `((lyric-voice . ,upper-name)(lyric-mods . ,upper-lyric-mods)(repeats . ,repeats)))
+                \callTemplate LY_UP.lyrics #lower-lyrics #(assoc-set-all! lower `((lyric-voice . ,lower-name)(lyric-mods . ,lower-lyric-mods)(repeats . ,(reverse repeats))))
                 >>
               #})
        >>
