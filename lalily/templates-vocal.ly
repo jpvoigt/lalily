@@ -218,13 +218,28 @@ create one staff with one vocal voice and associated lyrics.
          $(if (list? verses)
               #{
                 <<
-                  \stackTemplate LY_UP.lyrics #upper-lyrics #(assoc-set-all! upper `((lyric-voice . ,upper-name)(lyric-mods . ,upper-lyric-mods)(repeats . ,repeats))) #'verse #(map (lambda (v) (list v)) verses)
-                  \stackTemplate LY_UP.lyrics #lower-lyrics #(assoc-set-all! lower `((lyric-voice . ,lower-name)(lyric-mods . ,lower-lyric-mods)(repeats . ,(reverse repeats)))) #'verse #(map (lambda (v) (list v)) verses)
+                  \stackTemplate LY_UP.lyrics #upper-lyrics #(assoc-set-all! upper 
+                                                               `((lyric-voice . ,upper-name)
+                                                                 (lyric-mods . ,upper-lyric-mods)
+                                                                 (repeats . ,repeats)
+                                                                 )) #'verse #(map (lambda (v) (list v)) verses)
+                  \stackTemplate LY_UP.lyrics #lower-lyrics #(assoc-set-all! lower
+                                                               `((lyric-voice . ,lower-name)
+                                                                 (lyric-mods . ,lower-lyric-mods)
+                                                                 (repeats . ,(if (list? repeats) (reverse repeats) repeats))
+                                                                 )) #'verse #(map (lambda (v) (list v)) verses)
               >> #}
               #{
                 <<
-                \callTemplate LY_UP.lyrics #upper-lyrics #(assoc-set-all! upper `((lyric-voice . ,upper-name)(lyric-mods . ,upper-lyric-mods)(repeats . ,repeats)))
-                \callTemplate LY_UP.lyrics #lower-lyrics #(assoc-set-all! lower `((lyric-voice . ,lower-name)(lyric-mods . ,lower-lyric-mods)(repeats . ,(reverse repeats))))
+                \callTemplate LY_UP.lyrics #upper-lyrics #(assoc-set-all! upper
+                                                            `((lyric-voice . ,upper-name)
+                                                              (lyric-mods . ,upper-lyric-mods)
+                                                              (repeats . ,repeats)))
+                \callTemplate LY_UP.lyrics #lower-lyrics #(assoc-set-all! lower
+                                                            `((lyric-voice . ,lower-name)
+                                                              (lyric-mods . ,lower-lyric-mods)
+                                                              (repeats . ,(if (list? repeats) (reverse repeats) repeats))
+                                                              ))
                 >>
               #})
        >>
