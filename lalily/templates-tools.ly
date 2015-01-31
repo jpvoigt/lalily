@@ -40,7 +40,7 @@
    (cond
     ((>= (length p) 2)
      (if (> (length p) 2)
-     (ly:input-warning location "more than 2 elements: ~A" p))
+         (ly:input-warning location "more than 2 elements: ~A" p))
      (cons (car p) (cadr p)))
     ((> (length p) 0) (cons (car p) #f))
     (else '(#f . #f))
@@ -75,3 +75,11 @@
        \createScoreWithOptions #path #options
      #}))
 
+\registerTemplate lalily.chords
+#(define-music-function (parser location piece options)(list? list?)
+   (let ((mods (assoc-get 'context-mods options #f #f)))
+     #{
+       \new ChordNames \with {
+         $(if (ly:context-mod? mods) mods #{ \with {} #})
+       } \getMusic {} #'()
+     #}))
