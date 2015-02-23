@@ -49,8 +49,11 @@
 
 \registerTemplate lalily.instrument
 #(define-music-function (parser location piece options)(list? list?)
-   (let ((name (get-option 'name options "instrument"))
+   (let ((staff-context (get-option 'staff-context options "Staff"))
+         (voice-context (get-option 'voice-context options "Voice"))
+         (name (get-option 'name options "instrument"))
          (instrument-name (get-option 'instrument-name options #f))
+         (short-name (get-option 'short-name options #f))
          (init-voice (get-option 'init-voice options #f))
          (clef (get-option 'clef options #f))
          (transp (get-option 'transposition options (ly:make-pitch 0 0 0)))
@@ -68,12 +71,13 @@
                       'elements (list #{ \clef #clef #} meta)))
          )
      #{
-       \new Staff = $name \with {
+       \new $staff-context = $name \with {
          $(if (ly:context-mod? staff-mods) staff-mods)
          \consists \editionEngraver $piece
-         midiInstrument = #midi-instrument
-         instrumentName = #instrument-name
-       } \new Voice \with {
+         $(if (string? midi-instrument) #{ \with { midiInstrument = #midi-instrument } #} #{ \with {} #})
+         %$(if (string? instrument-name) #{ \with { instrumentName = #instrument-name } #} #{ \with {} #})
+         %$(if (string? short-name) #{ \with { instrumentName = #short-name } #} #{ \with {} #})
+       } \new $voice-context \with {
          $(if (ly:context-mod? voice-mods) voice-mods)
        } {
          $(if (not output-concert-pitch) #{ \transposition $transp #})
