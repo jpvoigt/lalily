@@ -41,10 +41,11 @@ create one staff with one vocal voice and associated lyrics.
 \registerTemplate lalily.vocal
 #(define-music-function (parser location piece options)(list? list?)
    (let ((init-opts (assoc-get 'init-opts options '() #f))
-         (clef (assoc-get 'clef options "G" #f))
+         (clef (assoc-get 'clef options #f #f))
          (vocname (assoc-get 'vocname options #f #t))
          (vocname-proc #f)
          (staffname (assoc-get 'staffname options #f #f))
+         (staff-context (assoc-get 'staff-context options 'Staff #f))
          (staff-mods (assoc-get 'staff-mods options #f #f))
          (voice-mods (assoc-get 'voice-mods options #f #f))
          ;(voices (assoc-get 'voices options #f #f)) % TODO two voices in staff
@@ -67,7 +68,7 @@ create one staff with one vocal voice and associated lyrics.
      (if (not (string? staffname)) (set! staffname (glue-list piece ":")))
      #{
        <<
-         \new Staff = $staffname \with {
+         \new $staff-context = $staffname \with {
            $(if (ly:context-mod? staff-mods) staff-mods #{ \with {} #})
            \consists \editionEngraver $piece
          } <<
@@ -129,7 +130,7 @@ create one staff with one vocal voice and associated lyrics.
          (vocname (assoc-get 'vocname options #f #t))
          (init-opts (assoc-get 'init-opts options '() #f))
          (init-voice (assoc-get 'init-music options (make-music 'SequentialMusic 'void #t) #f))
-         (clef (assoc-get 'clef options "G" #f))
+         (clef (assoc-get 'clef options #f #f))
          (voice-context (assoc-get 'voice-context options 'Voice #f)))
      #{
        \new $voice-context = $vocname \with {
@@ -137,7 +138,7 @@ create one staff with one vocal voice and associated lyrics.
          $(if (not (eq? 'Voice voice-context)) #{ \with { \consists \editionEngraver #piece } #})
        } <<
          \getMusicDeep #'meta
-         { \callTemplate ##t lalily.init.Voice.vocal #'() #init-opts \clef $clef $init-voice \getMusic music }
+         { \callTemplate ##t lalily.init.Voice.vocal #'() #init-opts $(if (string? clef) #{ \clef $clef #}) $init-voice \getMusic music }
        >>
      #}))
 

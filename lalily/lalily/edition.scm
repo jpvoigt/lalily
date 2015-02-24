@@ -122,7 +122,7 @@
 
 (define-public (editions) #f)
 (define-public (set-editions! ed) #f)
-(define-public (add-edmod edition takt pos path mod) #f)
+(define-public (add-edmod parser edition takt pos path mod) #f)
 (define-public (edition-engraver tag-path) #f)
 (define-public (walk-edition-engravers proc) #f)
 (define-public (display-mods) #f)
@@ -139,7 +139,7 @@
   (set! editions (lambda () (if (list? edition-list) edition-list '())))
   (set! set-editions! (lambda (eds) (if (list? eds) (set! edition-list eds) (ly:error "list expected: ~A" eds))))
   (set! add-edmod
-        (lambda (edition takt pos path modm)
+        (lambda (parser edition takt pos path modm)
           (let* ((edition (if (string? edition) (string->symbol edition) edition))
                  (path `(,edition ,takt ,pos ,@path))
                  (mods (tree-get mod-tree path)))
@@ -251,10 +251,12 @@
                                        (,edition ,takt ,pos ,@tag-path ,ctxname ,ctxid)
                                        (,edition ,takt ,pos ,@tag-path ,ctxid)
                                        (,edition ,takt ,pos ,@tag-path ,ctxname)
+                                       (,edition ,takt ,pos ,@tag-path)
                                        (,edition ,takt ,pos ,@tag)
                                        ))
                                   `(
                                      (,edition ,takt ,pos ,@tag-path ,ctxname)
+                                     (,edition ,takt ,pos ,@tag-path)
                                      (,edition ,takt ,pos ,@tag)
                                      )
                                   )))
@@ -523,7 +525,7 @@
     (string-or-symbol? integer? frac-or-mom? list? music-or-contextmod?)
     "Add modification to edition @ measure moment"
     (if (fraction? pos)(set! pos (ly:make-moment (car pos)(cdr pos))))
-    (add-edmod edition takt pos (create-music-path #f path) mod)
+    (add-edmod parser edition takt pos (create-music-path #f path) mod)
     (make-music 'SequentialMusic 'void #t))
   )
 
@@ -548,7 +550,7 @@
            (if (fraction? pos)(set! pos (fraction->moment pos)))
            (if (rational? pos)
                (set! pos (ly:make-moment (numerator pos)(denominator pos))))
-           (add-edmod edition takt pos path mod)
+           (add-edmod parser edition takt pos path mod)
            )) mposl)
       )))
 
