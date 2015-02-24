@@ -1,6 +1,6 @@
 %%%% This file is part of lalily, an extension to lilypond <http://www.lilypond.org/>.
 %%%%
-%%%% Copyright (C) 2011--2012 Jan-Peter Voigt <jp.voigt@gmx.de>
+%%%% Copyright (C) 2011--2015 Jan-Peter Voigt <jp.voigt@gmx.de>
 %%%%
 %%%% lalily is free software: you can redistribute it and/or modify
 %%%% it under the terms of the GNU General Public License as published by
@@ -145,14 +145,6 @@
                       ))
                  ) lalilyConfig))
 
-% look for lalily templates
-\includeOncePattern "." "^templates\.?.*\.ly$" % once?
-% look for local templates
-\includeOnceIfExists "lalily-templates.ly" % once?
-
-% look for editions
-\includeOnceIfExists "lalily-edition.ly" % once?
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Std layout
 
@@ -173,4 +165,13 @@
 
 #(let ((gss (get-registry-val '(lalily paper global-staff-size))))
    (if (and (do-layout parser) (number? gss)) (set-global-staff-size gss)))
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% look for lalily templates
+\includeOncePattern "." "^templates\.?.*\.ly$" % once?
+% look for local templates
+\includeOnceIfExists "lalily-templates.ly" % once?
+
+% look for editions
+\includeOnceIfExists "lalily-edition.ly" % once?
 
