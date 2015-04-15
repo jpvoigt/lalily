@@ -385,13 +385,14 @@
 ;; barcodes
 (define-markup-command (qr-code layout props str size idn)(string? number? boolean?)
   (let ((tmp (format "~A-~2A.eps" (strftime "%Y%m%d%H%M%S" (localtime (current-time))) (random 100)))
-        (qr-stencil (interpret-markup layout props (markup #:with-color red #:filled-box (cons 0 size) (cons 0 size) 0.7))))
+        (qr-stencil (interpret-markup layout props (markup #:with-color red #:filled-box (cons 0 size) (cons 0 size) 0.7)))
+        (quali (chain-assoc-get 'qr-quality props "L")))
     (if (symbol? str)(let ((tmp (chain-assoc-get str props #f)))
                        (if tmp (set! str tmp))))
     (system (format (if idn
-                        "echo \"~A\" | idn --quiet | qrencode -o - -m 0 | convert PNG:- BMP:- | potrace -a -1 -o \"~A\""
-                        "echo \"~A\" | qrencode -o - -m 0 | convert PNG:- BMP:- | potrace -a -1 -o \"~A\"")
-              str tmp))
+                        "echo \"~A\" | idn --quiet | qrencode -o - -m 0 -l ~A | convert PNG:- BMP:- | potrace -a -1 -o \"~A\""
+                        "echo \"~A\" | qrencode -o - -m 0 -l ~A | convert PNG:- BMP:- | potrace -a -1 -o \"~A\"")
+              str quali tmp))
     (set! qr-stencil (eps-file->stencil X size tmp))
     (system (format "rm -v \"~A\"" tmp))
     qr-stencil
