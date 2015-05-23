@@ -83,3 +83,13 @@
          $(if (ly:context-mod? mods) mods #{ \with {} #})
        } \getMusic {} #'()
      #}))
+
+\registerTemplate lalily.Lyrics
+#(define-music-function (parser location piece options)(list? list?)
+   (let ((mods (assoc-get 'context-mods options #f #f))
+         (lname (assoc-get 'context-name options (format "~A" piece) #f)))
+     #{
+       \new Lyrics = $lname \with{
+         $(if (ly:context-mod? mods) mods #{ \with {} #})
+       } { \getMusicDeep {} #'init-lyrics \getMusic #'() }
+     #}))
