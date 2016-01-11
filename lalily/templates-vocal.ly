@@ -258,7 +258,7 @@ create one staff with one vocal voice and associated lyrics.
 #(let ((choir 0))
    (define (get-choir) (set! choir (+ choir 1)) (format "choir~A" choir))
    (define-music-function (parser location piece options)(list? list?)
-     (let ((groupmod (ly:assoc-get 'groupmod options #f #f))
+     (let ((groupmod (ly:assoc-get 'group-mods options (ly:assoc-get 'groupmod options #f #f)))
            (prefix (ly:assoc-get 'prefix options (get-choir) #f))
            (staffs (ly:assoc-get 'staffs options lalily_vocal_group_default #f))
            (staff-mods (ly:assoc-get 'staff-mods options #f #f))
