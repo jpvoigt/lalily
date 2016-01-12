@@ -262,6 +262,7 @@ create one staff with one vocal voice and associated lyrics.
            (prefix (ly:assoc-get 'prefix options (get-choir) #f))
            (staffs (ly:assoc-get 'staffs options lalily_vocal_group_default #f))
            (staff-mods (ly:assoc-get 'staff-mods options #f #f))
+           (spanbar (ly:assoc-get 'spanbar options #f))
            (mensur (ly:assoc-get 'mensur options #f))
            (verses (ly:assoc-get 'verses options #f))
            (repeats (ly:assoc-get 'repeats options #f))
@@ -271,7 +272,7 @@ create one staff with one vocal voice and associated lyrics.
          \new StaffGroup \with {
            $(if (ly:context-mod? groupmod) groupmod)
            \consists \editionEngraver $piece
-           \override BarLine.allow-span-bar = $(if mensur #t #f )
+           \override BarLine.allow-span-bar = $(if (or spanbar mensur) #t #f )
            \override BarLine.transparent = $(if mensur #t #f )
          } $(make-music 'SimultaneousMusic 'elements
               (map (lambda (staff)
