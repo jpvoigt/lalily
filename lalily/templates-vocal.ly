@@ -144,16 +144,17 @@ create one staff with one vocal voice and associated lyrics.
 
 \registerTemplate lalily.vocal.lyrics
 #(define-music-function (parser location piece options)(list? list?)
-   (let ((v (ly:assoc-get 'verse options '() #f))
+   (let* ((v (ly:assoc-get 'verse options '() #f))
          (rr (ly:assoc-get 'repeats options #f #f))
          (lyric-mods (assoc-get 'lyric-mods options #f #f))
-         (voc (ly:assoc-get 'lyric-voice options "sop" #f)))
+         (voc (ly:assoc-get 'lyric-voice options "sop" #f))
+         (lyric-name (ly:assoc-get 'lyric-name options voc #f)))
      ;(ly:message "-> ~A" options)
      (if (list? rr)
          (make-music 'SimultaneousMusic 'elements
            (map (lambda (r)
                   #{
-                    \keepWithTag $r \new Lyrics \with {
+                    \keepWithTag $r \new Lyrics = $(format "~A-~A" lyric-name r) \with {
                       $(if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #})
                       $(let ((lyric-mods (assoc-get (glue-symbol `(lyric-mods ,v) "-") options #f #f)))
                          (if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #}))
@@ -161,7 +162,7 @@ create one staff with one vocal voice and associated lyrics.
                     } \lyricsto $voc { \getMusic #`(lyrics ,@v) }
                   #}) rr))
          #{
-           \new Lyrics \with {
+           \new Lyrics = $lyric-name \with {
              $(if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #})
              $(let ((lyric-mods (assoc-get (glue-symbol `(lyric-mods ,@v) "-") options #f #f)))
                 (if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #}))

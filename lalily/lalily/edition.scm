@@ -489,11 +489,15 @@
 
   (set! display-edition (lambda () (tree-display edition-tree
                                      '(pathsep . " ")
-                                     `(vformat . ,(lambda (p) (let ((m (if (pair? p) (cdr p) p)))
-                                                                (if (and (pair? m)(ly:moment? (cdr m)))
-                                                                    (format "(~A . ~A)" (car m)(moment->string (cdr m)))
-                                                                    (format "~A" m))
-                                                                )))
+                                     `(vformat . ,(lambda (p)
+                                                    (let* ((m (if (pair? p) (cdr p) p))
+                                                           (ctx (if (pair? p) (object-property (car p) 'context) #f))
+                                                           (ctxid (if (ly:context? ctx) (ly:context-id ctx) "")))
+
+                                                      (if (and (pair? m)(ly:moment? (cdr m)))
+                                                          (format "\"~A\" (~A . ~A)" ctxid (car m)(moment->string (cdr m)))
+                                                          (format "\"~A\" ~A" ctxid m))
+                                                      )))
                                      )))
   (set! display-mods
         (lambda ()
