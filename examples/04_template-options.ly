@@ -1,6 +1,6 @@
 %%%% This file is part of lalily, an extension to lilypond <http://www.lilypond.org/>.
 %%%%
-%%%% Copyright (C) 2011--2013 Jan-Peter Voigt <jp.voigt@gmx.de>
+%%%% Copyright (C) 2011--2016 Jan-Peter Voigt <jp.voigt@gmx.de>
 %%%%
 %%%% lalily is free software: you can redistribute it and/or modify
 %%%% it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.18.0"
+\version "2.19.32"
 % include "lalily.ly" from folder above
 \include "../lalily.ly"
 % include "templates-satb.ly" with template definition and music
@@ -31,7 +31,7 @@
 
 % create a template for a SATB StaffGroup
 \registerTemplate lalily.demo.choral.satb
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((staffs (assoc-get 'staffs options '())))
      #{
        \new StaffGroup \with {

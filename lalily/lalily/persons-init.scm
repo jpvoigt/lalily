@@ -114,7 +114,7 @@
                                 (set-default-header piece (string->symbol (format "~Alife" act)) (person-life person))
                                 ) (ly:input-warning location "unknown person '~A' (~A)" key act))
                            (if (markup? mup)
-                               (set-default-header parser location piece act mup))
+                               (set-default-header piece act mup))
                            ))
                         ((pair? key)
                          (let ((mup (assoc-get act mups (get-registry-val `(lalily person mup ,act)) #f)))

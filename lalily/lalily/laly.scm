@@ -30,10 +30,6 @@
       (ly:warning "~A not a symbol!" name)))
 
 (define-public (extent-size ext diff) (cons (- (car ext) diff) (+ (cdr ext) diff) ))
-(define-public (info-message location format . args)
-  (if (ly:input-location? location)
-      (apply ly:input-message location format args)
-      (apply ly:message format args)))
 
 (define-public (location-extract-path location)
   (let* ((loc (car (ly:input-file-line-char-column location)))
@@ -84,10 +80,10 @@
     (set-registry-val '(lalily runtime loaded) reg)))
 
 (define-public includeFolder
-  (define-void-function (parser location options)(list?)
+  (define-void-function (options)(list?)
     (let* ((relative (assoc-get 'relative options #f))
            (idir (assoc-get 'directory options "."))
-           (dirname (if relative (string-append (location-extract-path location) idir) (normalize-path-string idir)))
+           (dirname (if relative (string-append (location-extract-path (*location*)) idir) (normalize-path-string idir)))
            (ionce (assoc-get 'once options #t))
            (pattern (assoc-get 'pattern options "^.*\\.ly$")))
       (if (not (eq? #\. (string-ref dirname 0))) (set! dirname (normalize-path-string dirname)))
@@ -110,8 +106,8 @@
       )))
 
 (define-public includePattern
-  (define-void-function (parser location idir pattern)(string? string?)
-    (let ((dirname (string-append (location-extract-path location) idir)))
+  (define-void-function (idir pattern)(string? string?)
+    (let ((dirname (string-append (location-extract-path (*location*)) idir)))
 
       (if (or (= (string-length dirname) 0)
               (not (eq? #\/ (string-ref dirname (- (string-length dirname) 1)))))
@@ -169,10 +165,10 @@
          (mkp (if (defined? make-name) (primitive-eval make-name) #f)))
     (if mup (set-registry-val lalily:registry-parser-defs
               `(,@(get-registry-val lalily:registry-parser-defs '()) (,mup-name . ,mup)))
-        (info-message location "WARNING: '~A' not found!" mup-name))
+        (ly:input-warning (*location*) "'~A' not found!" mup-name))
     (if mkp (set-registry-val lalily:registry-parser-defs
               `(,@(get-registry-val lalily:registry-parser-defs '()) (,make-name . ,mkp)))
-        (if (lalily:verbose)(info-message location "WARNING: '~A' not found!" make-name)))
+        (if (lalily:verbose)(ly:input-warning (*location*) "'~A' not found!" make-name)))
     ))
 (define-public lalilyMarkup
   (define-scheme-function (name)(string?)
@@ -221,9 +217,9 @@
         (filter (lambda (p) (and (pair? p)(not (equal? (car p) opt)))) l))
       )))
 
-(define-public (get-a-tree parser location name path)
+(define-public (get-a-tree name path)
   (if (string? name) (set! name (string->symbol name)))
-  (let ((opts (ly:parser-lookup parser name)))
+  (let ((opts (ly:parser-lookup name)))
     (define (getval ol op)
       (let ((sym (car op)))
         (cond
@@ -274,7 +270,7 @@
            (proc `(,@path ,key) val))
        )) tree)
   )
-(define (rem-a-tree parser location name sympath)
+(define (rem-a-tree name sympath)
   (if (string? name) (set! name (string->symbol name)))
   (let ((opts (ly:parser-lookup parser name)))
     (define (remval ol op)
@@ -295,32 +291,32 @@
 
 (define-public clratree clralist)
 (define-public getatree
-  (define-scheme-function (parser location name sympath)(string-or-symbol? list?)
-    (get-a-tree parser location name sympath)))
+  (define-scheme-function (name sympath)(string-or-symbol? list?)
+    (get-a-tree name sympath)))
 (define-public addatree
-  (define-void-function (parser location name sympath val)(string-or-symbol? list? scheme?)
-    (add-a-tree parser location name sympath val
+  (define-void-function (name sympath val)(string-or-symbol? list? scheme?)
+    (add-a-tree name sympath val
       (lambda (l sym val)
         (append (filter (lambda (p) (not (and (pair? p)(equal? (car p) sym)))) l)
           (list (cons sym val)))))))
 (define-public repatree
-  (define-void-function (parser location name sympath val)(string-or-symbol? list? scheme?)
-    (add-a-tree parser location name sympath val assoc-replace!)
-      ))
+  (define-void-function (name sympath val)(string-or-symbol? list? scheme?)
+    (add-a-tree name sympath val assoc-replace!)
+    ))
 (define-public setatree
-  (define-void-function (parser location name sympath val)(string-or-symbol? list? scheme?)
-    (add-a-tree parser location name sympath val
+  (define-void-function (name sympath val)(string-or-symbol? list? scheme?)
+    (add-a-tree name sympath val
       (lambda (l sym val) (assoc-set! l sym val)))))
 (define-public rematree
-  (define-void-function (parser location name sympath)(string-or-symbol? list?)
-    (rem-a-tree parser location name sympath)))
+  (define-void-function (name sympath)(string-or-symbol? list?)
+    (rem-a-tree name sympath)))
 
 (define-public setatreeall
-   (define-void-function (parser location name opts)(symbol? list?)
-     (let ((opts (if (and (= 1 (length opts)) (symbol? (car opts))) (ly:parser-lookup parser (car opts)) opts)))
-       (walk-a-tree '() opts
-         (lambda (path val) (add-a-tree parser location name path val assoc-replace!)))
-       )))
+  (define-void-function (name opts)(symbol? list?)
+    (let ((opts (if (and (= 1 (length opts)) (symbol? (car opts))) (ly:parser-lookup parser (car opts)) opts)))
+      (walk-a-tree '() opts
+        (lambda (path val) (add-a-tree name path val assoc-replace!)))
+      )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; styled table of contents

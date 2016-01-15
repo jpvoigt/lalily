@@ -336,8 +336,8 @@
   (define-void-function (piece field value)((list? '()) string-or-symbol? scheme?)
     (let ((cmf (get-music-folder)))
       (if (string? field) (set! field (string->symbol field)))
-      (set-default-header create-music-path #f piece) field value)
-    (set-music-folder! cmf)))
+      (set-default-header (create-music-path #f piece) field value)
+      (set-music-folder! cmf))))
 (define-public removeHeader
   (define-void-function (piece field)((list? '()) string-or-symbol?)
     (let ((cmf (get-music-folder)))
