@@ -122,7 +122,7 @@
 
 (define-public (editions) #f)
 (define-public (set-editions! ed) #f)
-(define-public (add-edmod parser edition takt pos path mod) #f)
+(define-public (add-edmod edition takt pos path mod) #f)
 (define-public (edition-engraver tag-path) #f)
 (define-public (walk-edition-engravers proc) #f)
 (define-public (display-mods) #f)
@@ -139,7 +139,7 @@
   (set! editions (lambda () (if (list? edition-list) edition-list '())))
   (set! set-editions! (lambda (eds) (if (list? eds) (set! edition-list eds) (ly:error "list expected: ~A" eds))))
   (set! add-edmod
-        (lambda (parser edition takt pos path modm)
+        (lambda (edition takt pos path modm)
           (let* ((edition (if (string? edition) (string->symbol edition) edition))
                  (path `(,edition ,takt ,pos ,@path))
                  (mods (tree-get mod-tree path)))
@@ -200,7 +200,7 @@
                       ((or
                         (eq? 'OttavaMusic (ly:music-property m 'name))
                         )
-                       (set! mods `(,@mods ,(context-mod-from-music parser m)))
+                       (set! mods `(,@mods ,(context-mod-from-music m)))
                        #t
                        )
                       ((or
@@ -439,24 +439,23 @@
                               (if (eq? 'Score (ly:context-name context))
                                   (let* ((takt (ly:context-property context 'currentBarNumber))
                                          (pos (ly:context-property context 'measurePosition))
-                                         (parser (ly:assoc-get 'parser props #f #f)))
+                                         )
                                     (ly:message "(~A) finalize ~A (~A ~A)"
                                       (glue-list (editions) ", ")
                                       (glue-list tag "/")
                                       takt (if (ly:moment? pos) (moment->string pos) pos))
-                                    (if parser
-                                        (let* ((outname (ly:parser-output-name parser))
-                                               (logfile (format "~A.edition.log" outname)))
-                                          (ly:message "writing '~A' ..." logfile)
-                                          (with-output-to-file logfile
-                                            (lambda()
-                                              (display-edition)
-                                              (display "<--- mods --->")(newline)
-                                              (display-mods)
-                                              ))
+                                    (let* ((outname (ly:parser-output-name (*parser*)))
+                                           (logfile (format "~A.edition.log" outname)))
+                                      (ly:message "writing '~A' ..." logfile)
+                                      (with-output-to-file logfile
+                                        (lambda()
+                                          (display-edition)
+                                          (display "<--- mods --->")(newline)
+                                          (display-mods)
                                           ))
-                                    (set! context-count (tree-create 'context))
-                                    ))))
+                                      ))
+                                  (set! context-count (tree-create 'context))
+                                  )))
                            )
                       `(
                          (initialize . ,initialize)
@@ -468,7 +467,8 @@
                          (process-music . ,process-music)
                          (finalize . ,finalize)
                          ))))
-            eng)))
+            eng))
+        )
   (set! walk-edition-engravers
         (lambda (proc)
           (tree-walk edition-tree '() ; walk all
@@ -525,13 +525,12 @@
 (define (frac-or-mom? v) (or (fraction? v)(ly:moment? v)))
 (define (music-or-contextmod? v) (or (ly:music? v)(ly:context-mod? v)))
 (define-public editionMod
-  (define-music-function (parser location edition takt pos path mod)
+  (define-void-function (edition takt pos path mod)
     (string-or-symbol? integer? frac-or-mom? list? music-or-contextmod?)
     "Add modification to edition @ measure moment"
     (if (fraction? pos)(set! pos (ly:make-moment (car pos)(cdr pos))))
-    (add-edmod parser edition takt pos (create-music-path #f path) mod)
-    (make-music 'SequentialMusic 'void #t))
-  )
+    (add-edmod edition takt pos (create-music-path #f path) mod)
+    ))
 
 (define (memom? v)
   (and (pair? v)(integer? (car v))
@@ -542,7 +541,7 @@
 (use-modules (srfi srfi-1))
 (define (limemom? v)(and (list? v)(every memom? v)))
 (define-public editionModList
-  (define-void-function (parser location edition path mod mposl)
+  (define-void-function (edition path mod mposl)
     (string-or-symbol? list? music-or-contextmod? limemom?)
     "Add modification to edition at all positions in mposl"
     (let ((path (create-music-path #f path)))
@@ -554,14 +553,14 @@
            (if (fraction? pos)(set! pos (fraction->moment pos)))
            (if (rational? pos)
                (set! pos (ly:make-moment (numerator pos)(denominator pos))))
-           (add-edmod parser edition takt pos path mod)
+           (add-edmod edition takt pos path mod)
            )) mposl)
       )))
 
 (define (list-or-boolean? v) (or (boolean? v)(list? v)(procedure? v)))
 (define-public editionEngraver
-  (define-scheme-function (parser location tag)(list-or-boolean?)
-    (edition-engraver tag `(parser . ,parser))))
+  (define-scheme-function (tag)(list-or-boolean?)
+    (edition-engraver tag)))
 
 ;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -730,7 +729,7 @@
 
 ; activate edition
 (define-public addEdition
-  (define-music-function (parser location edition)(string-or-symbol?)
+  (define-music-function (edition)(string-or-symbol?)
     "Add edition to edition-list.
 Every edition from the global edition-list will be listened for by the edition-engraver."
     (if (string? edition) (set! edition (string->symbol edition)))
@@ -740,7 +739,7 @@ Every edition from the global edition-list will be listened for by the edition-e
 
 ; deactivate edition
 (define-public removeEdition
-  (define-music-function (parser location edition)(string-or-symbol?)
+  (define-music-function (edition)(string-or-symbol?)
     "Remove edition from edition-list.
 Every edition from the global edition-list will be listened for by the edition-engraver."
     (if (string? edition) (set! edition (string->symbol edition)))
@@ -750,7 +749,7 @@ Every edition from the global edition-list will be listened for by the edition-e
 
 ; set editions
 (define-public setEditions
-  (define-void-function (parser location editions)(list?)
+  (define-void-function (editions)(list?)
     "Set edition-list to editions.
 Every edition from the global edition-list will be listened for by the edition-engraver.
 This will override the previously set list."
@@ -783,7 +782,7 @@ This will override the previously set list."
 ;;; music functions
 
 (define-public text
-  (define-music-function (parser location tweaks opts txt)((list? '()) (list? '()) markup?)
+  (define-music-function (tweaks opts txt)((list? '()) (list? '()) markup?)
     (let ((m (make-music 'TextScriptEvent 'text txt)))
       (for-each (lambda (p)
                   (if (pair? p)
@@ -795,9 +794,8 @@ This will override the previously set list."
       (if (> (length tweaks) 0) (ly:music-set-property! m 'tweaks tweaks))
       m)))
 (define-public todo
-  (define-music-function (parser location tweaks opts title txt)((list? '()) (list? '()) markup? markup?)
-    (let ((txta (ly:music-function-extract text))
-          (defopts `((style . TBD)(annotation . ,(make-anno 'TODO title txt))())))
-      (txta parser location tweaks (assoc-set-all! defopts opts) title)
+  (define-music-function (tweaks opts title txt)((list? '()) (list? '()) markup? markup?)
+    (let ((defopts `((style . TBD)(annotation . ,(make-anno 'TODO title txt))())))
+      (text tweaks (assoc-set-all! defopts opts) title)
       )))
 

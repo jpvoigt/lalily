@@ -149,16 +149,16 @@
 (re-export lalily-test-location?)
 (define-public bookpartAdd
   (define-void-function (parser location bookpart)(ly:book?)
-    (let ((book (ly:parser-lookup parser '$current-book)))
+    (let ((book (ly:parser-lookup '$current-book)))
       ;(set-book-headers! bookpart (assoc-get 'header (get-music-folder-options location) '()))
       (if book
           (ly:book-add-bookpart! book bookpart)
-          (collect-bookpart-for-book parser bookpart)
+          (collect-bookpart-for-book bookpart)
           ))))
 (define-public bookpartIf
   (define-void-function (parser location proc bookpart)((procedure? lalily-test-location?) ly:book?)
     (if (proc parser location)
-        ((ly:music-function-extract bookpartAdd) parser location bookpart)
+        (bookpartAdd bookpart)
         )))
 
 (define-public (set-book-headers! book header)
