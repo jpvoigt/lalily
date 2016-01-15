@@ -29,7 +29,7 @@
     (log-music-folder)))
 
 (define-public (write-lalily-log-file parser . options)
-  (let ((logfile (format "~A~A.log" (ly:parser-output-name parser) (ly:assoc-get 'suffix options ".lalily" #f))))
+  (let ((logfile (format "~A~A.log" (ly:parser-output-name (*parser*)) (ly:assoc-get 'suffix options ".lalily" #f))))
     (if (not (equal? logfile
                      (get-registry-val '(lalily runtime logfile-written))))
         (ly:message "writing '~A' ..." logfile))

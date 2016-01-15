@@ -72,14 +72,14 @@
     ret
     ))
 
-(define-public (la:parser-include-file parser file once)
+(define-public (la:parser-include-file file once)
   (let ((reg (get-registry-val '(lalily runtime loaded)))
         (file-path (normalize-path-string (ly:find-file file))))
     (if (not (list? reg)) (set! reg '()))
     (if (or (not once) (not (member file-path reg)))
         (begin
          (if (lalily:verbose) (ly:message "include '~A'" file))
-         (ly:parser-include-string parser (format "\\include \"~A\"\n" file))
+         (ly:parser-include-string (format "\\include \"~A\"\n" file))
          (if once (set! reg `(,@reg ,file-path)))))
     (set-registry-val '(lalily runtime loaded) reg)))
 
@@ -132,8 +132,8 @@
                     ))
       )))
 (define-public includeOncePattern
-  (define-void-function (parser location idir pattern)(string? string?)
-    (let ((dirname (string-append (location-extract-path location) idir)))
+  (define-void-function (idir pattern)(string? string?)
+    (let ((dirname (string-append (location-extract-path (*location*)) idir)))
 
       (if (not (eq? #\. (string-ref dirname 0))) (set! dirname (normalize-path-string dirname)))
       (if (or (= (string-length dirname) 0)
@@ -147,7 +147,7 @@
                     (while (not (eof-object? entry))
                       (if (regexp-match? (string-match pattern entry))
                           (let ((file (string-append dirname entry)))
-                            (la:parser-include-file parser file #t)))
+                            (la:parser-include-file file #t)))
                       (set! entry (readdir dir))
                       )
                     (closedir dir)
@@ -162,7 +162,7 @@
 
 
 ; register markup for re-instantiation
-(define-public (lalily-markup parser location name)
+(define-public (lalily-markup name)
   (let* ((mup-name (string->symbol (format "~A-markup" name)))
          (make-name (string->symbol (format "make-~A" mup-name)))
          (mup (if (defined? mup-name) (primitive-eval mup-name) #f))
@@ -175,15 +175,15 @@
         (if (lalily:verbose)(info-message location "WARNING: '~A' not found!" make-name)))
     ))
 (define-public lalilyMarkup
-  (define-scheme-function (parser location name)(string?)
-    (lalily-markup parser location name)))
+  (define-scheme-function (name)(string?)
+    (lalily-markup name)))
 
 
 (define-public clralist
-  (define-void-function (parser location alst)
+  (define-void-function (alst)
     (string-or-symbol?)
     (if (string? alst)(set! alst (string->symbol alst)))
-    (ly:parser-define! parser alst (list))
+    (ly:parser-define! alst (list))
     ))
 (define-public setalist
   (define-void-function (parser location alst opt val)
@@ -243,7 +243,7 @@
         )))
 (define (add-a-tree parser location name sympath val assoc-set-append)
   (if (string? name) (set! name (string->symbol name)))
-  (let ((opts (ly:parser-lookup parser name)))
+  (let ((opts (ly:parser-lookup name)))
     (define (setval ol op)
       (let ((sym (car op))
             (ol (if (list? ol) ol (begin (ly:input-warning location "deleting '~A'" ol) '()))))
@@ -262,7 +262,7 @@
               )
             )))
     (set! opts (setval opts sympath))
-    (ly:parser-define! parser name opts)
+    (ly:parser-define! name opts)
     ))
 (define (walk-a-tree path tree proc)
   (for-each

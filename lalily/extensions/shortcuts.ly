@@ -27,26 +27,26 @@
 }
 
 % unspanned "cresc/decr" dynamics
-\parserDefineScheme #'acresc
+\parserDefine #'acresc
 #(make-dynamic-script (markup #:normal-text #:style 'dynamic "cresc."))
-\parserDefineScheme #'adecr
+\parserDefine #'adecr
 #(make-dynamic-script (markup #:normal-text #:style 'dynamic "decr."))
 
 % \once \override DynamicText.extra-offset
-\parserDefineScheme #'dyneo
+\parserDefine #'dyneo
 #(define-music-function (parser location xy)(number-pair?)
    #{ \once \override DynamicText.extra-offset = $xy #})
 % \once \override DynamicText.X-offset
-\parserDefineScheme #'dynxo
+\parserDefine #'dynxo
 #(define-music-function (parser location x)(number?)
    #{ \once \override DynamicText.X-offset = #$x #})
 
 % empty dynamicText
-\parserDefineScheme #'stopdyn
+\parserDefine #'stopdyn
 #(make-dynamic-script (markup #:hspace 0))
 
 % parenthesized pp
-\parserDefineScheme #'parenPP
+\parserDefine #'parenPP
 #(make-dynamic-script (markup #:concat (#:general-align Y 0 #:normal-text #:larger #:larger #:larger "("
                                          #:hspace 0.35 #:general-align Y 0 #:dynamic "pp" #:general-align Y 0 #:normal-text #:larger #:larger #:larger ")")))
 
@@ -62,7 +62,7 @@
   } \breathe
 }
 % breathing with fermata with X-offset
-\parserDefineScheme #'breathefermoff
+\parserDefine #'breathefermoff
 #(define-music-function (parser location off)(number?)
    #{
      \once \override BreathingSign.X-offset = $off
@@ -85,7 +85,7 @@
 }
 
 % once override DynamicText self-alignemnt and X-offset
-\parserDefineScheme #'grobdyn
+\parserDefine #'grobdyn
 #(define-music-function (parser location align move)(integer? number?)
    #{
      \once \override DynamicText.self-alignment-X = $align
@@ -105,7 +105,7 @@
    #})
 
 % lift fermata
-\parserDefineScheme #'liftFerm
+\parserDefine #'liftFerm
 #(define-music-function (parser location off)(number?)
    #{
      \once \override Script.Y-offset = $off
@@ -114,7 +114,7 @@
 % one space, markup
 \parserDefineMarkup #'msp \markup { " " }
 % left align Lyrics (once)
-\parserDefineScheme #'lyrML
+\parserDefine #'lyrML
 #(define-music-function (parser location offx)(number?)
    #{
      \once \override LyricText.self-alignment-X = #LEFT

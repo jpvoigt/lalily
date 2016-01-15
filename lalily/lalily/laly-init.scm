@@ -20,9 +20,6 @@
 (re-export lalily:verbose)
 (re-export lalily:parser)
 
-(define-public (ly:music-function-exec fun parser location . args)
-  (apply (ly:music-function-extract fun) parser location args))
-
 (define-public applyParser
   (define-void-function (parser location proc)(procedure?)
     (proc parser location)))
@@ -70,24 +67,17 @@
 
 (re-export lalily:save-def)
 (define-public parserDefine
-  (define-music-function (parser location name val)(string-or-symbol? not-null?)
+  (define-void-function (name val)(string-or-symbol? not-null?)
     (if (string? name) (set! name (string->symbol name)))
-    (ly:parser-define! parser name val)
-    (lalily:save-def name val)
-    (make-music 'SequentialMusic 'void #t)))
+    (ly:parser-define! name val)
+    (lalily:save-def name val)))
 
 (define-public parserDefineMusic
-  (define-music-function (parser location name mus)(string-or-symbol? ly:music?)
-    ((ly:music-function-extract parserDefine) parser location name mus)
-    (make-music 'SequentialMusic 'void #t)))
+  (define-void-function (name mus)(string-or-symbol? ly:music?)
+    (parserDefine name mus)))
 (define-public parserDefineMarkup
-  (define-music-function (parser location name mus)(string-or-symbol? markup?)
-    ((ly:music-function-extract parserDefine) parser location name mus)
-    (make-music 'SequentialMusic 'void #t)))
-(define-public parserDefineScheme
-  (define-music-function (parser location name mus)(string-or-symbol? scheme?)
-    ((ly:music-function-extract parserDefine) parser location name mus)
-    (make-music 'SequentialMusic 'void #t)))
+  (define-void-function (name mus)(string-or-symbol? markup?)
+    (parserDefine name mus)))
 
 (re-export lalily-markup)
 (re-export lalilyMarkup)
@@ -129,14 +119,14 @@
     (make-music 'SequentialMusic 'void #t)))
 
 (define-public includeRelative
-  (define-void-function (parser location file)(string?)
-    (let ((filename (string-append (location-extract-path location) file)))
-      (ly:parser-include-string parser (format "\\include \"~A\"\n" filename))
+  (define-void-function (file)(string?)
+    (let ((filename (string-append (location-extract-path (*location*)) file)))
+      (ly:parser-include-string (format "\\include \"~A\"\n" filename))
       )))
 (define-public includeRelIf
   (define-void-function (parser location file proc)(string? procedure?)
     (if (proc parser location)
-        (ly:music-function-exec includeRelative parser location file))
+        (includeRelative file))
     ))
 
 (re-export includePattern)

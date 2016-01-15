@@ -1,6 +1,6 @@
 %%%% This file is part of lalily, an extension to lilypond <http://www.lilypond.org/>.
 %%%%
-%%%% Copyright (C) 2011--2012 Jan-Peter Voigt <jp.voigt@gmx.de>
+%%%% Copyright (C) 2011--2016 Jan-Peter Voigt <jp.voigt@gmx.de>
 %%%%
 %%%% lalily is free software: you can redistribute it and/or modify
 %%%% it under the terms of the GNU General Public License as published by
@@ -15,22 +15,22 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.18.2"
+\version "2.19.32"
 
 % parser-define! ilyStartup to load lalily/bootstrap.ily
 % instant scheme expression ($) to allow nested includes
-$(ly:parser-define! parser 'ilyStartup
+$(ly:parser-define! 'ilyStartup
    (if (defined? 'lalily-startup)
        ; lalily.ily already loaded
-       (define-music-function (parser location)()
+       (define-music-function ()()
          ;(if (lalily:verbose) (ly:message "lalily already included!"))
          (make-music 'SequentialMusic 'void #t ))
        ; include lalily/bootstrap.ily
-       (define-music-function (parser location)()
-         (let* ((locname (car (ly:input-file-line-char-column location)))
+       (define-music-function ()()
+         (let* ((locname (car (ly:input-file-line-char-column (*location*))))
                 (loclen (string-length locname))
                 (iname (string-append (substring locname 0 (- loclen 3)) "/bootstrap.ily")))
-           (ly:parser-include-string parser (format "\\include \"~A\"\n" iname))
+           (ly:parser-include-string (format "\\include \"~A\"\n" iname))
            (make-music 'SequentialMusic 'void #t )))
        ))
 \ilyStartup
@@ -38,7 +38,7 @@ $(ly:parser-define! parser 'ilyStartup
 % write log-file, only if this file is compiled directly
 \executeLocal
 #(lambda ()
-   (write-lalily-log-file parser
+   (write-lalily-log-file
      '(persons . #t)
      '(music . #f)
      '(defaults . #f)
@@ -48,3 +48,4 @@ $(ly:parser-define! parser 'ilyStartup
      '(edition-mods . #f)
      )
    )
+

@@ -1,6 +1,6 @@
 %%%% This file is part of lalily, an extension to lilypond <http://www.lilypond.org/>.
 %%%%
-%%%% Copyright (C) 2011--2015 Jan-Peter Voigt <jp.voigt@gmx.de>
+%%%% Copyright (C) 2011--2016 Jan-Peter Voigt <jp.voigt@gmx.de>
 %%%%
 %%%% lalily is free software: you can redistribute it and/or modify
 %%%% it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
 % This file is included conditionaly by lalily.ly
-\version "2.18.0"
+\version "2.19.32"
 
 #(define-public lalily-startup #t)
 
@@ -37,8 +37,8 @@
 
 % add guile load path relative to this file
 #(define-public addGuilePath
-   (define-music-function (parser location folder)(string?)
-     (let* ((loclist (string-split (car (ly:input-file-line-char-column location)) #\/))
+   (define-music-function (folder)(string?)
+     (let* ((loclist (string-split (car (ly:input-file-line-char-column (*location*))) #\/))
             (path-extra (let ((pl (if (absolutePath? loclist)
                                       loclist (append (listcwd) loclist))))
                           (string-join (reverse (cdr (reverse pl))) "/" 'infix)))
@@ -61,20 +61,20 @@
 #(if (not (defined? 'lalily:init))(load-from-path "lalily/init.scm"))
 
 % "re-import" previously defined values for session based runs like in lilypond-book
-#(set-registry-val lalily:registry-parser parser)
+#(set-registry-val lalily:registry-parser (*parser*))
 #(let ((defs (get-registry-val lalily:registry-parser-defs '())))
-   (for-each (lambda (p)(ly:parser-define! parser (car p )(cdr p))) defs))
+   (for-each (lambda (p)(ly:parser-define! (car p )(cdr p))) defs))
 
 
 % include (once) from lalily folder
-#(define-public lalilyInclude (define-void-function (parser location file)(string?)
-                                (ly:input-message location "lalily include not initialized!")
+#(define-public lalilyInclude (define-void-function (file)(string?)
+                                (ly:input-message (*location*) "lalily include not initialized!")
                                 ))
-#(define-public lalilyIncludeOnce (define-void-function (parser location file)(string?)
-                                    (ly:input-message location "lalily include not initialized!")
+#(define-public lalilyIncludeOnce (define-void-function (file)(string?)
+                                    (ly:input-message (*location*) "lalily include not initialized!")
                                     ))
-#(define-public lalilyIncludeScheme (define-void-function (parser location file)(string?)
-                                      (ly:input-message location "lalily include not initialized!")
+#(define-public lalilyIncludeScheme (define-void-function (file)(string?)
+                                      (ly:input-message (*location*) "lalily include not initialized!")
                                       ))
 
 \execMusic #(lambda (parser location)
@@ -87,21 +87,21 @@
                               (not (eq? (string-ref path-extra (- (string-length path-extra) 1)) #\/)))
                          "/" "") "lalily/"))
                  ;(ly:message "lalily path: ~A" (get-registry-val '(lalily runtime path)))
-                 (set! lalilyInclude (define-void-function (parser location file)(string?)
+                 (set! lalilyInclude (define-void-function (file)(string?)
                                        (let ((file-path (string-append path-extra "" file)))
                                          (set! file-path (normalize-path-string file-path))
                                          (if (file-exists? file-path)
-                                             (la:parser-include-file parser file-path #f)
-                                             (ly:input-message location "WARNING: file '~A' not found" file-path))
+                                             (la:parser-include-file file-path #f)
+                                             (ly:input-message (*location*) "WARNING: file '~A' not found" file-path))
                                          )))
-                 (set! lalilyIncludeOnce (define-void-function (parser location file)(string?)
+                 (set! lalilyIncludeOnce (define-void-function (file)(string?)
                                            (let ((file-path (string-append path-extra "lalily/" file)))
                                              (set! file-path (normalize-path-string file-path))
                                              (if (file-exists? file-path)
-                                                 (la:parser-include-file parser file-path #t)
-                                                 (ly:input-message location "WARNING: file '~A' not found" file-path))
+                                                 (la:parser-include-file (*parser*) file-path #t)
+                                                 (ly:input-message (*location*) "WARNING: file '~A' not found" file-path))
                                              )))
-                 (set! lalilyIncludeScheme (define-void-function (parser location file)(string?)
+                 (set! lalilyIncludeScheme (define-void-function (file)(string?)
                                              (let ((file-path (string-append path-extra "lalily/" file)))
                                                (set! file-path (normalize-path-string file-path))
                                                (if (file-exists? file-path)
@@ -150,7 +150,7 @@
 
 #(define (do-layout parser)
    (and
-    (not (eq? #t (ly:parser-lookup parser 'lalilyNoOutputDef)))
+    (not (eq? #t (ly:parser-lookup 'lalilyNoOutputDef)))
     (not (defined? 'lalily-no-output-def))
     (not (ly:get-option 'lalily-no-output-def))
     ))
@@ -164,7 +164,7 @@
      ret))
 
 #(let ((gss (get-registry-val '(lalily paper global-staff-size))))
-   (if (and (do-layout parser) (number? gss)) (set-global-staff-size gss)))
+   (if (and (do-layout (*parser*)) (number? gss)) (set-global-staff-size gss)))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % look for lalily templates
@@ -175,3 +175,10 @@
 % look for editions
 \includeOnceIfExists "lalily-edition.ly" % once?
 
+
+
+%{
+convert-ly (GNU LilyPond) 2.19.36  convert-ly: Processing `'...
+Applying conversion: 2.19.2, 2.19.7, 2.19.11, 2.19.16, 2.19.22,
+2.19.24, 2.19.28, 2.19.29, 2.19.32
+%}
