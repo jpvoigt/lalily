@@ -56,10 +56,10 @@
 (define-public (display-person-store)(display-persons (get-person-store)))
 
 (define-public registerPerson
-  (define-music-function (parser location sym name life)(string-or-symbol? string? string?)
+  (define-void-function (sym name life)(string-or-symbol? string? string?)
     (if (string? sym) (set! sym (string->symbol sym)))
     (register-person! (get-person-store) sym name life)
-    (make-music 'SequentialMusic 'void #t)))
+    ))
 
 
 (define-public setComposer #f)

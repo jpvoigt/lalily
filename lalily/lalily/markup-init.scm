@@ -231,7 +231,7 @@
 (re-export year-markup)
 (re-export copyright-markup)
 (re-export style-markup)
-(lalily-markup (lalily:parser) #f 'style)
+(lalily-markup 'style)
 
 (re-export qr-code-markup)
 (re-export barcode-markup)
