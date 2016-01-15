@@ -25,10 +25,10 @@
     (let ((title (get-music-folder-header-field 'title)))
       (if (markup? title) (string-append " \"" (markup->string title) "\"") ""))))
 (define-public logMusicFolder
-  (define-void-function (parser location)()
+  (define-void-function ()()
     (log-music-folder)))
 
-(define-public (write-lalily-log-file parser . options)
+(define-public (write-lalily-log-file . options)
   (let ((logfile (format "~A~A.log" (ly:parser-output-name (*parser*)) (ly:assoc-get 'suffix options ".lalily" #f))))
     (if (not (equal? logfile
                      (get-registry-val '(lalily runtime logfile-written))))
@@ -104,43 +104,43 @@
 (re-export display-music-pieces)
 
 (define-public registerMusicLoadCallback
-  (define-void-function (parer location proc)(procedure?)
+  (define-void-function (proc)(procedure?)
     (let ((cbs (get-registry-val lalily:get-music-load-callbacks '())))
       (set-registry-val lalily:get-music-load-callbacks (cons proc cbs))
       )))
 (define-public registerMusicStoreCallback
-  (define-void-function (parer location proc)(procedure?)
+  (define-void-function (proc)(procedure?)
     (let ((cbs (get-registry-val lalily:get-music-store-callbacks '())))
       (set-registry-val lalily:get-music-store-callbacks (cons proc cbs))
       )))
 
 (define-public aGetMusic
-  (define-music-function (parser location path)(list?)
-    (get-music path location)))
+  (define-music-function (path)(list?)
+    (get-music)))
 (define-public aGetMusicDeep
-  (define-music-function (parser location path defm skey)(list? (ly:music? #f) scheme?)
-    (get-music-deep path skey defm location)))
+  (define-music-function (path defm skey)(list? (ly:music? #f) scheme?)
+    (get-music-deep path skey defm)))
 (define-public aPutMusic
-  (define-music-function (parser location path music)(list? ly:music?)
+  (define-music-function (path music)(list? ly:music?)
     (put-music path music)
     (make-music 'SimultaneousMusic 'void #t)))
 (define-public aDelMusic
-  (define-music-function (parser location path)(list?)
+  (define-music-function (path)(list?)
     (put-music path #f)
     (make-music 'SimultaneousMusic 'void #t)))
 (define-public aScratchMusic
-  (define-music-function (parser location path music)(list? ly:music?)
+  (define-music-function (path music)(list? ly:music?)
     (put-music path music)
     music))
 (define-public aSkipMusic
-  (define-music-function (parser location path)(list?)
-    (let* ((music (get-music path location))
+  (define-music-function (path)(list?)
+    (let* ((music (get-music path))
            (m (ly:music-length music)))
       (make-music 'SkipEvent
         'duration (ly:make-duration 0 0 (ly:moment-main-numerator m)(ly:moment-main-denominator m ))))))
 (define-public aRestMusic
-  (define-music-function (parser location path)(list?)
-    (let ((music (get-music music location)))
+  (define-music-function (path)(list?)
+    (let ((music (get-music music)))
       (mmrest-of-length music)
       )))
 
@@ -150,9 +150,8 @@
 (re-export display-templates)
 
 (define-public registerTemplate
-  (define-music-function (parser location name fun)(list? ly:music-function?)
-    (register-template name fun)
-    (make-music 'SequentialMusic 'void #t)))
+  (define-void-function (name fun)(list? ly:music-function?)
+    (register-template name fun)))
 
 (re-export create-template-path)
 (re-export create-music-path)
@@ -161,12 +160,12 @@
 
 (define-public callTemplate
   (define-music-function
-   (parser location tabs name mabs music options)
+   (tabs name mabs music options)
    ((boolean? #f) list? (boolean? #f) list? list?)
-   (call-template (create-template-path tabs name) parser location (create-music-path mabs music) options)))
+   (call-template (create-template-path tabs name) (create-music-path mabs music) options)))
 (define-public stackTemplate
   (define-music-function
-   (parser location tabs name mabs piece options sym vals)
+   (tabs name mabs piece options sym vals)
    ((boolean? #f) list? (boolean? #f) list? list? string-or-symbol? list?)
    (let ((tmpl (create-template-path tabs name))
          (music (create-music-path mabs piece)))
@@ -174,11 +173,11 @@
      (make-music 'SimultaneousMusic
        'elements
        (map (lambda (x)
-              (call-template tmpl parser location music (assoc-set! options sym x))
+              (call-template tmpl music (assoc-set! options sym x))
               ) vals)))))
 (define-public loopTemplate
   (define-music-function
-   (parser location kind tabs name mabs piece options sym vals)
+   (kind tabs name mabs piece options sym vals)
    (symbol? (boolean? #f) list? (boolean? #f) list? list? string-or-symbol? list?)
    (let ((tmpl (create-template-path tabs name))
          (music (create-music-path mabs name)))
@@ -186,7 +185,7 @@
      (make-music kind
        'elements
        (map (lambda (x)
-              (call-template tmpl parser location music (assoc-set! options sym x))
+              (call-template tmpl music (assoc-set! options sym x))
               ) vals)))))
 
 (re-export get-current-music)
@@ -202,49 +201,48 @@
 (re-export display-default-music)
 
 (define-public getCurrentMusic
-  (define-scheme-function (parser location)()
+  (define-scheme-function ()()
     (let ((ret (get-current-music)))
       (if ret ret (get-music-folder)))))
 
 (define-public setDefaultTemplate
-  (define-music-function (parser location piece template options)(list? list? list?)
+  (define-music-function (piece template options)(list? list? list?)
     (begin
      (set-default-template piece template options)
      (make-music 'SequentialMusic 'void #t))))
 (define-public getTemplate
-  (define-scheme-function (parser location)()(get-default-template (get-music-folder) location)))
+  (define-scheme-function ()()
+    (get-default-template (get-music-folder))))
 (define-public setTemplate
-  (define-music-function (parser location tmpl)(list?)
+  (define-music-function (tmpl)(list?)
     (let* ((piece (get-music-folder))
-           (opts (get-default-options piece location))
+           (opts (get-default-options piece))
            )
       (set-default-template piece tmpl opts)
       )
     (make-music 'SequentialMusic 'void #t)))
 (define-public getOptions
-  (define-scheme-function (parser location path)(list?)
-    (get-default-options (create-music-path #f path) location)))
+  (define-scheme-function (path)(list?)
+    (get-default-options (create-music-path #f path))))
 (define-public setOptions
-  (define-music-function (parser location path opts)(list? list?)
+  (define-void-function (path opts)(list? list?)
     (let* ((piece (create-music-path #f path))
            (cmf (get-music-folder))
-           (tmpl (get-default-template piece location))
+           (tmpl (get-default-template piece))
            )
       (set-default-template piece tmpl opts)
       (set-music-folder! cmf)
-      )
-    (make-music 'SequentialMusic 'void #t)))
+      )))
 (define-public addOptions
-  (define-music-function (parser location path opts)(list? list?)
+  (define-void-function (path opts)(list? list?)
     (let* ((piece (create-music-path #f path))
-           (dopts (get-default-options piece location))
+           (dopts (get-default-options piece))
            (cmf (get-music-folder))
-           (tmpl (get-default-template piece location))
+           (tmpl (get-default-template piece))
            )
       (set-default-template piece tmpl (assoc-set-all! dopts opts))
       (set-music-folder! cmf)
-      )
-    (make-music 'SequentialMusic 'void #t)))
+      )))
 
 (define-public optionsInit clratree)
 (define-public optionsGet getatree)
@@ -254,61 +252,61 @@
 (define-public optionsAddAll setatreeall)
 
 (define-public getOption
-  (define-scheme-function (parser location path field default)((list? '()) string-or-symbol? (scheme? #f))
+  (define-scheme-function (path field default)((list? '()) string-or-symbol? (scheme? #f))
     (let* ((piece (create-music-path #f path))
-           (opts (get-default-options piece location))
+           (opts (get-default-options piece))
            )
       (if (string? field) (set! field (string->symbol field)))
       (assoc-get field opts default)
       )))
 (define-public setOption
-  (define-music-function (parser location piece field val)((list? '()) string-or-symbol? scheme?)
+  (define-music-function (piece field val)((list? '()) string-or-symbol? scheme?)
     (let ((cmf (get-music-folder)))
       (if (string? field) (set! field (string->symbol field)))
-      (set-default-option parser location (create-music-path #f piece) field val)
+      (set-default-option parser (create-music-path #f piece) field val)
       (set-music-folder! cmf)
       (make-music 'SequentialMusic 'void #t)
       )))
 (define-public removeOption
-  (define-music-function (parser location piece field)((list? '()) string-or-symbol?)
+  (define-music-function (piece field)((list? '()) string-or-symbol?)
     (let ((cmf (get-music-folder)))
       (if (string? field) (set! field (string->symbol field)))
-      (remove-default-option parser location (create-music-path #f piece) field)
+      (remove-default-option parser (create-music-path #f piece) field)
       (set-music-folder! cmf)
       (make-music 'SequentialMusic 'void #t)
       )))
 
 (define-public aCreateScore
-  (define-music-function (parser location music)(list?)
-    (call-template (get-default-template music location)
-      parser location music (get-default-options music location))))
+  (define-music-function (music)(list?)
+    (call-template (get-default-template music)
+      music (get-default-options music))))
 (define-public createScore
-  (define-music-function (parser location music)(list?)
+  (define-music-function (music)(list?)
     (let ((piece (create-music-path #f music)))
-      (call-template (get-default-template piece location)
-        parser location piece (get-default-options piece location)))))
+      (call-template (get-default-template piece)
+        piece (get-default-options piece)))))
 (define-public createScoreWithOptions
-  (define-music-function (parser location music options)(list? list?)
+  (define-music-function (music options)(list? list?)
     (let ((piece (create-music-path #f music)))
-      (call-template (get-default-template piece location)
-        parser location piece (assoc-set-all! (get-default-options piece location) options)))))
+      (call-template (get-default-template piece)
+        piece (assoc-set-all! (get-default-options piece) options)))))
 
 (define-public getMusicFolder
-  (define-scheme-function (parser location)()
+  (define-scheme-function ()()
     (let ((ret (get-music-folder)))
       (if ret ret (get-music-folder)))))
 (define-public setMusicFolder
-  (define-music-function (parser location path)(list?)
+  (define-music-function (path)(list?)
     (set-music-folder! (create-music-path #t path))
     (make-music 'SequentialMusic 'void #t)))
 
 (define-public changeMusicFolder
-  (define-music-function (parser location path)(list?)
+  (define-music-function (path)(list?)
     (set-music-folder! (create-music-path #f path))
     (make-music 'SequentialMusic 'void #t)))
 
 (define-public musicFolderPath
-  (define-scheme-function (parser location path)(list?)
+  (define-scheme-function (path)(list?)
     (create-music-path #f path)))
 
 
@@ -317,144 +315,139 @@
 (re-export get-music-folder-header-field)
 
 (define-public aSetDefaultHeader
-  (define-music-function (parser location piece field value)(list? string-or-symbol? markup?)
+  (define-music-function (piece field value)(list? string-or-symbol? markup?)
     (begin
      (if (string? field) (set! field (string->symbol field)))
-     (set-default-header parser location piece field value)
+     (set-default-header piece field value)
      (make-music 'SequentialMusic 'void #t)
      )))
-(define (music-folder-header-set! parser location field value)
+(define (music-folder-header-set! field value)
   (begin
-   (set-default-header parser location (get-music-folder) field value)
+   (set-default-header (get-music-folder) field value)
    (make-music 'SequentialMusic 'void #t)
    ))
-(define (music-folder-header-remove! parser location field)
+(define (music-folder-header-remove! field)
   (begin
-   (remove-default-header parser location (get-music-folder) field)
+   (remove-default-header (get-music-folder) field)
    (make-music 'SequentialMusic 'void #t)
    ))
 
-(define-public setDefaultHeader
-  (define-music-function (parser location field value)(symbol? scheme?)
-    (ly:input-message location "using deprecated \\setDefaultHeader")
-    (music-folder-header-set! parser location field value)))
 (define-public setHeader
-  (define-music-function (parser location piece field value)((list? '()) string-or-symbol? scheme?)
+  (define-void-function (piece field value)((list? '()) string-or-symbol? scheme?)
     (let ((cmf (get-music-folder)))
       (if (string? field) (set! field (string->symbol field)))
-      (set-default-header parser location (create-music-path #f piece) field value)
-      (set-music-folder! cmf)
-      (make-music 'SequentialMusic 'void #t))))
+      (set-default-header create-music-path #f piece) field value)
+    (set-music-folder! cmf)))
 (define-public removeHeader
-  (define-music-function (parser location piece field)((list? '()) string-or-symbol?)
+  (define-void-function (piece field)((list? '()) string-or-symbol?)
     (let ((cmf (get-music-folder)))
       (if (string? field) (set! field (string->symbol field)))
-      (remove-default-header parser location (create-music-path #f piece) field)
-      (make-music 'SequentialMusic 'void #t))))
+      (remove-default-header (create-music-path #f piece) field)
+      )))
 
 (define-public getHeader
-  (define-scheme-function (parser location path field default)((list? '()) string-or-symbol? scheme?)
+  (define-scheme-function (path field default)((list? '()) string-or-symbol? scheme?)
     (let ((p (create-music-path #f path)))
       (if (string? field) (set! field (string->symbol field)))
       (get-default-header p field default))))
 (define-public inheritHeader
-  (define-void-function (parser location path field)((list? '(..)) symbol?)
+  (define-void-function (path field)((list? '(..)) symbol?)
     (let ((p (create-music-path #f path)))
       (if (string? field) (set! field (string->symbol field)))
-      (music-folder-header-set! parser location field (get-default-header p field))
+      (music-folder-header-set! field (get-default-header p field))
       )))
 (define-public inheritHeaders
-  (define-void-function (parser location path fields)((list? '(..)) list?)
+  (define-void-function (path fields)((list? '(..)) list?)
     (let ((p (create-music-path #f path)))
       (for-each
        (lambda (field)
          (if (string? field) (set! field (string->symbol field)))
-         (music-folder-header-set! parser location field (get-default-header p field))
+         (music-folder-header-set! field (get-default-header p field))
          ) fields)
       )))
 (define-public inheritAllHeaders
-  (define-void-function (parser location path)(list?)
+  (define-void-function (path)(list?)
     (let* ((p (create-music-path #f path))
-           (head (assoc-get 'header (get-default-options p location) '() #f)))
+           (head (assoc-get 'header (get-default-options p) '() #f)))
       (for-each
        (lambda (p)
-         (music-folder-header-set! parser location (car p) (cdr p))
+         (music-folder-header-set! (car p) (cdr p))
          ) head)
       )))
 
 (define-public setTocLabel
-  (define-music-function (parser location value)(markup?)
-    (music-folder-header-set! parser location 'toc-label value)))
+  (define-music-function (value)(markup?)
+    (music-folder-header-set! 'toc-label value)))
 (define-public setDedication
-  (define-music-function (parser location value)(markup?)
-    (music-folder-header-set! parser location 'dedication value)))
+  (define-music-function (value)(markup?)
+    (music-folder-header-set! 'dedication value)))
 (define-public setSection
-  (define-music-function (parser location value)(markup?)
-    (music-folder-header-set! parser location 'section value)))
+  (define-music-function (value)(markup?)
+    (music-folder-header-set! 'section value)))
 (define-public setTitle
-  (define-music-function (parser location value)(markup?)
-    (music-folder-header-set! parser location 'title value)))
+  (define-music-function (value)(markup?)
+    (music-folder-header-set! 'title value)))
 (define-public setSubTitle
-  (define-music-function (parser location value)(markup?)
-    (music-folder-header-set! parser location 'subtitle value)))
+  (define-music-function (value)(markup?)
+    (music-folder-header-set! 'subtitle value)))
 (define-public setSubSubTitle
-  (define-music-function (parser location value)(markup?)
-    (music-folder-header-set! parser location 'subsubtitle value)))
+  (define-music-function (value)(markup?)
+    (music-folder-header-set! 'subsubtitle value)))
 (define-public setPiece
-  (define-music-function (parser location value)(markup?)
-    (music-folder-header-set! parser location 'piece value)))
+  (define-music-function (value)(markup?)
+    (music-folder-header-set! 'piece value)))
 (define-public setOpus
-  (define-music-function (parser location value)(markup?)
-    (music-folder-header-set! parser location 'opus value)))
+  (define-music-function (value)(markup?)
+    (music-folder-header-set! 'opus value)))
 (define-public setInstrument
-  (define-music-function (parser location value)(markup?)
-    (music-folder-header-set! parser location 'instrument value)))
+  (define-music-function (value)(markup?)
+    (music-folder-header-set! 'instrument value)))
 
 
-(define-public (get-music-folder-options location)
-  (get-default-options (get-music-folder) location))
+(define-public (get-music-folder-options)
+  (get-default-options (get-music-folder)))
 
-(define-public (get-default-paper piece location)
-  (let* ((opts (get-default-options piece location))
+(define-public (get-default-paper piece)
+  (let* ((opts (get-default-options piece))
          (paper (ly:assoc-get 'paper opts #f #f)))
     (if (ly:output-def? paper) paper #{ \paper { } #})))
-(define-public (get-music-folder-paper location)
-  (get-default-paper (get-music-folder) location))
+(define-public (get-music-folder-paper)
+  (get-default-paper (get-music-folder)))
 (define-public setPaper
-  (define-music-function (parser location paper)(ly:output-def?)
+  (define-void-function (paper)(ly:output-def?)
     (let* ((piece (get-music-folder))
-           (tmpl (get-default-template piece location))
-           (opts (get-default-options piece location)))
+           (tmpl (get-default-template piece))
+           (opts (get-default-options piece)))
       (set-default-template piece tmpl (assoc-set! opts 'paper paper))
-      (make-music 'SequentialMusic 'void #t))))
+      )))
 
-(define-public (get-default-layout piece location)
-  (let* ((opts (get-default-options piece location))
+(define-public (get-default-layout piece)
+  (let* ((opts (get-default-options piece))
          (layout (ly:assoc-get 'layout opts #f #f)))
     (if (ly:output-def? layout) layout #{ \layout { } #})))
-(define-public (get-music-folder-layout location)
-  (get-default-layout (get-music-folder) location))
+(define-public (get-music-folder-layout)
+  (get-default-layout (get-music-folder)))
 (define-public setLayout
-  (define-music-function (parser location layout)(ly:output-def?)
+  (define-void-function (layout)(ly:output-def?)
     (let* ((piece (get-music-folder))
-           (tmpl (get-default-template piece location))
-           (opts (get-default-options piece location)))
+           (tmpl (get-default-template piece))
+           (opts (get-default-options piece)))
       (set-default-template piece tmpl (assoc-set! opts 'layout layout))
-      (make-music 'SequentialMusic 'void #t))))
+      )))
 
-(define-public (get-default-midi piece location)
-  (let* ((opts (get-default-options piece location))
+(define-public (get-default-midi piece)
+  (let* ((opts (get-default-options piece))
          (midi (ly:assoc-get 'midi opts #f #f)))
     (if (ly:output-def? midi) midi #{ \midi { } #})))
-(define-public (get-music-folder-midi location)
-  (get-default-midi (get-music-folder) location))
+(define-public (get-music-folder-midi)
+  (get-default-midi (get-music-folder)))
 (define-public setMidi
-  (define-music-function (parser location midi)(ly:output-def?)
+  (define-void-function (midi)(ly:output-def?)
     (let* ((piece (get-music-folder))
-           (tmpl (get-default-template piece location))
-           (opts (get-default-options piece location)))
+           (tmpl (get-default-template piece))
+           (opts (get-default-options piece)))
       (set-default-template piece tmpl (assoc-set! opts 'midi midi))
-      (make-music 'SequentialMusic 'void #t))))
+      )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; music functions
@@ -462,28 +455,28 @@
 ; create a template
 (define-macro (make-template code)
   `(define-music-function
-    (parser location piece options)
+    (piece options)
     (list? list?)
     ,code))
 
 ; get relative
 (define-public getMusic
-  (define-music-function (parser location defm path)((ly:music? #f) list?)
+  (define-music-function (defm path)((ly:music? #f) list?)
     (let ((p (create-music-path #f path)))
       (if defm
-          (if (has-music? p) (get-music p location) defm)
-          (get-music p location)))))
+          (if (has-music? p) (get-music p) defm)
+          (get-music p)))))
 (define-public getMusicIf
-  (define-music-function (parser location proc path)
-    ((procedure? (lambda (p l) (has-music p (ly:make-moment 0 0) l))) list?)
+  (define-music-function (proc path)
+    ((procedure? (lambda (p) (has-music p (ly:make-moment 0 0)))) list?)
     (let ((p (create-music-path #f path)))
-      (if (proc p location) (get-music p location) (make-music 'SimultaneousMusic 'void #t)))))
+      (if (proc p) (get-music p) (make-music 'SimultaneousMusic 'void #t)))))
 (define-public getMusicDeep
-  (define-music-function (parser location defm skey)((ly:music? #f) scheme?)
+  (define-music-function (defm skey)((ly:music? #f) scheme?)
     (let ((p (create-music-path #f '())))
-      (get-music-deep p skey defm location))))
+      (get-music-deep p skey defm))))
 (define-public collectMusic
-  (define-music-function (parser location simul path sym)((boolean? #f) list? scheme?)
+  (define-music-function (simul path sym)((boolean? #f) list? scheme?)
     (let ((pal (cond ((procedure? sym) sym)
                  (else (lambda (p) (append p (list sym))))))
           (pred (lambda (p m) #t)))
@@ -491,47 +484,45 @@
         'elements (collect-music (create-music-path #f path) pal pred))
       )))
 (define-public putMusic
-  (define-music-function (parser location path music)((list? '()) ly:music?)
+  (define-music-function (path music)((list? '()) ly:music?)
     (let ((p (create-music-path #f path)))
       (put-music p music)
       (make-music 'SimultaneousMusic 'void #t))))
 (define-public scratchMusic
-  (define-music-function (parser location path music)(list? ly:music?)
+  (define-music-function (path music)(list? ly:music?)
     (let ((p (create-music-path #f path)))
       (put-music p music)
       music)))
 (define (music-or-list? mol)(or (ly:music? mol)(list? mol)))
 (define-public skipMusic
-  (define-music-function (parser location music)(music-or-list?)
-    (if (list? music)(set! music (get-music (create-music-path #f music) location)))
+  (define-music-function (music)(music-or-list?)
+    (if (list? music)(set! music (get-music (create-music-path #f music))))
     (let ((m (ly:music-length music)))
       (make-music 'SkipEvent
         'duration (ly:make-duration 0 0 (ly:moment-main-numerator m)(ly:moment-main-denominator m))))
     ))
 (define-public restMusic
-  (define-music-function (parser location music)(music-or-list?)
-    (if (list? music)(set! music (get-music (create-music-path #f music) location)))
+  (define-music-function (music)(music-or-list?)
+    (if (list? music)(set! music (get-music (create-music-path #f music))))
     (mmrest-of-length music)
     ))
 
 ; quotes/cues
 (define-public createQuote
-  (define-music-function (parser location path)(list?)
+  (define-void-function (path)(list?)
     (let* ((p (create-music-path #f path)))
-      (track-quote p location)
-      (make-music 'SequentialMusic 'void #t)
+      (track-quote p (*location*))
       )))
 (define-public aCreateQuote
-  (define-music-function (parser location path)(list?)
+  (define-void-function (path)(list?)
     (let* ((p (create-music-path #t path)))
-      (track-quote p location)
-      (make-music 'SequentialMusic 'void #t)
+      (track-quote p (*location*))
       )))
 
 (define-public aCueMusic
-  (define-music-function (parser location path dir mus)(list? integer? ly:music?)
+  (define-music-function (path dir mus)(list? integer? ly:music?)
     (let* ((p (create-music-path #t path)))
-      (track-quote p location)
+      (track-quote p (*location*))
       #{
         \cueDuring $(quote-name p) $dir $mus
       #})))
@@ -540,7 +531,7 @@
         (cuenr 0))
     (define (cue-id) (set! cuenr (+ 1 cuenr)) (format "cue~A" cuenr))
     (define (alignlyrics direction)(if (eq? UP direction) 'alignAboveContext 'alignBelowContext))
-    (define-music-function (parser location path opts dir mus)(list? (list? '()) integer? ly:music?)
+    (define-music-function (path opts dir mus)(list? (list? '()) integer? ly:music?)
       (let ((p (create-music-path #f path))
             (cuename (ly:assoc-get 'cuename opts #f #f))
             (instrname (ly:assoc-get 'instrname opts #f #f))
@@ -572,7 +563,7 @@
                      ))
               )))
         ;(ly:message "cuename: ~A ~A" cuename (strmup? cuename))
-        (track-quote p location)
+        (track-quote p (*location*))
         #{
           <<
             \tag #'cued \new CueVoice = $cueid \with {
@@ -620,41 +611,42 @@
         ))))
 
 (define-public aQuoteMusic
-  (define-music-function (parser location path mus)(list? ly:music?)
+  (define-music-function (path mus)(list? ly:music?)
     (let* ((p (create-music-path #t path)))
-      (track-quote p location)
+      (track-quote p (*location*))
       #{
         \quoteDuring $(quote-name p) $mus
       #})))
 (define-public quoteMusic
-  (define-music-function (parser location path mus)(list? ly:music?)
+  (define-music-function (path mus)(list? ly:music?)
     (let* ((p (create-music-path #f path)))
-      (track-quote p location)
+      (track-quote p (*location*))
       #{
         \quoteDuring $(quote-name p) $mus
       #})))
 
 (define-public addQuotes
-  (define-scheme-function (parser location)()
-    (add-tracked-quotes parser location)))
+  (define-scheme-function ()()
+    (add-tracked-quotes)))
 
 
 (re-export registerPaper)
 (re-export registerLayout)
 (re-export registerMidi)
 (re-export get-paper)
-(define-public getPaper (define-scheme-function (parser location name)(list?)(get-paper name)))
+(define-public getPaper (define-scheme-function (name)(list?)(get-paper name)))
 (re-export get-layout)
-(define-public getLayout (define-scheme-function (parser location name)(list?)(get-layout name)))
+(define-public getLayout (define-scheme-function (name)(list?)(get-layout name)))
 (re-export get-midi)
-(define-public getMidi (define-scheme-function (parser location name)(list?)(get-midi name)))
+(define-public getMidi (define-scheme-function (name)(list?)(get-midi name)))
 
 
 (re-export registerPageTemplate)
 (re-export get-page-template)
 (re-export call-page-template)
-(define-public callPageTemplate (define-scheme-function (parser location name options)(list? list?)
-                                  (call-page-template name parser location options)))
+(define-public callPageTemplate
+  (define-scheme-function (name options)(list? list?)
+    (call-page-template name options)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; markup functions

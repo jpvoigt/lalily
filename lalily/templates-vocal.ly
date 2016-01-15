@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.18.2"
+\version "2.19.32"
 
 #(define lalily-relincl-tmp (ly:get-option 'relative-includes))
 #(ly:set-option 'relative-includes #t)
@@ -27,7 +27,7 @@ init vocal Voice context. Default: \dynamicUp \autoBeamOff
 looks for music named 'init-vocal
 %}
 \registerTemplate lalily.init.Voice.vocal
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((deepdef (assoc-get 'deepdef options #{ \dynamicUp \autoBeamOff #}))
          (deepsym (assoc-get 'deepsym options 'init-vocal))
          (init-opts (assoc-get 'init-opts options '())))
@@ -39,7 +39,7 @@ looks for music named 'init-vocal
 create one staff with one vocal voice and associated lyrics.
 %}
 \registerTemplate lalily.vocal
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((init-opts (assoc-get 'init-opts options '() #f))
          (clef (assoc-get 'clef options #f #f))
          (vocname (assoc-get 'vocname options #f #t))
@@ -62,7 +62,7 @@ create one staff with one vocal voice and associated lyrics.
           ))
      (if (not (string? vocname))
          (let ((tmpname (glue-list piece "-")))
-           (ly:input-warning location "using ~A as vocname!" tmpname)
+           (ly:input-warning (*location*) "using ~A as vocname!" tmpname)
            (set! vocname tmpname)
            ))
      (if (not (string? staffname)) (set! staffname (glue-list piece ":")))
@@ -83,7 +83,7 @@ create one staff with one vocal voice and associated lyrics.
                   (if (procedure? vocname) (set! vocname (vocname (create-music-path #f path) upper)))
                   (if (not (string? vocname))
                       (let ((tmpname (glue-list (create-music-path #f path) "-")))
-                        (ly:input-warning location "using ~A as vocname!" tmpname)
+                        (ly:input-warning (*location*) "using ~A as vocname!" tmpname)
                         (set! vocname tmpname)
                         ))
                   (set! upper (assoc-set-all! options
@@ -125,7 +125,7 @@ create one staff with one vocal voice and associated lyrics.
      #}))
 
 \registerTemplate lalily.vocal.voice
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((voice-mods (assoc-get 'voice-mods options #f #f))
          (vocname (assoc-get 'vocname options #f #t))
          (init-opts (assoc-get 'init-opts options '() #f))
@@ -143,7 +143,7 @@ create one staff with one vocal voice and associated lyrics.
      #}))
 
 \registerTemplate lalily.vocal.lyrics
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let* ((v (ly:assoc-get 'verse options '() #f))
          (rr (ly:assoc-get 'repeats options #f #f))
          (lyric-mods (assoc-get 'lyric-mods options #f #f))
@@ -172,7 +172,7 @@ create one staff with one vocal voice and associated lyrics.
          )))
 
 \registerTemplate lalily.vocal.two
-#(define-music-function (parser location piece opts)(list? list?)
+#(define-music-function (piece opts)(list? list?)
    (let* ((prefix (assoc-get 'prefix opts ""))
           (staff-name (assoc-get 'staffname opts (glue-list piece "-") #f))
           (staff-mods (assoc-get 'staff-mods opts #f #f))
@@ -258,7 +258,7 @@ create one staff with one vocal voice and associated lyrics.
 \registerTemplate lalily.vocal.group
 #(let ((choir 0))
    (define (get-choir) (set! choir (+ choir 1)) (format "choir~A" choir))
-   (define-music-function (parser location piece options)(list? list?)
+   (define-music-function (piece options)(list? list?)
      (let ((groupmod (ly:assoc-get 'group-mods options (ly:assoc-get 'groupmod options #f #f)))
            (prefix (ly:assoc-get 'prefix options (get-choir) #f))
            (staffs (ly:assoc-get 'staffs options lalily_vocal_group_default #f))
@@ -284,7 +284,7 @@ create one staff with one vocal voice and associated lyrics.
                                       ))
                             (upper (assoc-get 'upper (cdr staff) #f #f))
                             (opts (assoc-set-all!
-                                   (get-default-options (create-music-path #f key) location)
+                                   (get-default-options (create-music-path #f key))
                                    `((vocname . ,vocname)(verses . ,verses)(repeats . ,repeats)(lyrics . ,lyrics),@(cdr staff))
                                    ))
                             (instr (ly:assoc-get 'staff opts #f #f))
@@ -314,3 +314,11 @@ create one staff with one vocal voice and associated lyrics.
                        )) staffs))
        #})))
 
+
+
+
+%{
+convert-ly (GNU LilyPond) 2.19.36  convert-ly: Processing `'...
+Applying conversion: 2.19.2, 2.19.7, 2.19.11, 2.19.16, 2.19.22,
+2.19.24, 2.19.28, 2.19.29, 2.19.32
+%}

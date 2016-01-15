@@ -17,7 +17,11 @@
 
 (define-module (lalily store))
 
-(use-modules (lily)(lalily definitions)(lalily lascm)(lalily laly))
+(use-modules
+ (lily)
+ (lalily definitions)
+ (lalily lascm)
+ (lalily laly))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; path substitution
@@ -52,7 +56,7 @@
                       ))) path)
     pemp))
 (define-public registerPath
-  (define-void-function (parser location name path)(string-or-symbol? list?)
+  (define-void-function (name path)(string-or-symbol? list?)
     (let ((name (map-name name)))
       (if (not (eq? #\$ (string-ref name 0)))
           (set! name (string-append "$" name)))
@@ -68,16 +72,16 @@
 ;;; store music in a tree
 
 (define-public (put-music path music) #f)
-(define-public (get-music path location) #f)
-(define-public (has-music path dur location) #f)
-(define-public (load-music path . location) #f)
-(define-public (store-music path . location) #f)
-(define-public (get-music-deep path skey defm location) #f)
+(define-public (get-music path) #f)
+(define-public (has-music path dur) #f)
+(define-public (load-music path) #f)
+(define-public (store-music path) #f)
+(define-public (get-music-deep path skey defm) #f)
 (define-public (collect-music path pred) #f)
-(define-public (get-music-keys path location) #f)
+(define-public (get-music-keys path) #f)
 (define-public (has-music? path) #f)
 (define-public (display-music-pieces) #f)
-(define-public (display-template-ref path location . o) #f)
+(define-public (display-template-ref path . o) #f)
 (define (add-template-ref tmpl) #f)
 (let ((music-tree (tree-create 'music))
       (template-doc (tree-create 'template-doc)))
@@ -108,30 +112,29 @@
                     (let ((m (store-music path music)))
                       (if (ly:music? m) (set! music m)))
                     (tree-set! music-tree path music)))
-  (set! get-music (lambda (path location)
-                    (load-music path location)
+  (set! get-music (lambda (path)
+                    (load-music path)
                     (let ((p (tree-get music-tree path)))
                       (add-template-ref path 'need)
                       (if (ly:music? p) (ly:music-deep-copy p)
                           (begin
-                           (if location (ly:input-message location "unknown music '~A'" (glue-list path "/"))
-                               (ly:message "unknown music '~A'" (glue-list path "/")))
+                           (ly:input-message (*location*) "unknown music '~A'" (glue-list path "/"))
                            (make-music 'SequentialMusic 'void #t))
                           )
                       )))
 
-  (set! has-music (lambda (path dur location)
-                    (load-music path location)
+  (set! has-music (lambda (path dur)
+                    (load-music path)
                     (let* ((bdur (cond
                                   ((ly:moment? dur) dur)
                                   ((ly:music? dur) (ly:music-length dur))
-                                  ((list? dur) (ly:music-length (get-music dur location)))
+                                  ((list? dur) (ly:music-length (get-music dur)))
                                   (else (ly:make-moment 0 0))))
                            (mus (tree-get music-tree path))
                            (mdur (if (ly:music? mus) (ly:music-length mus)(ly:make-moment 0 0))))
                       (ly:moment<? bdur mdur))))
 
-  (set! load-music (lambda (path . location)
+  (set! load-music (lambda (path)
                      (let ((m (tree-get music-tree path))
                            (cbs (get-registry-val lalily:get-music-load-callbacks '())))
                        (define (search cbs)
@@ -157,15 +160,15 @@
                         music
                         )))
 
-  (set! get-music-deep (lambda (path skey defm location)
+  (set! get-music-deep (lambda (path skey defm)
                          (let ((p (tree-get-from-path music-tree path skey #f)))
                            (add-template-ref (list skey) (if (ly:music? defm) 'deep-optional 'deep))
                            (if (ly:music? p) (ly:music-deep-copy p)
                                (if (ly:music? defm)
                                    defm
                                    (begin
-                                    (if location (ly:input-message location "unknown music '~A' on path '~A'" skey (glue-list path "/"))
-                                        (ly:message "unknown music '~A' on path '~A'" skey (glue-list path "/")))
+                                    (ly:input-message (*location*)
+                                      "unknown music '~A' on path '~A'" skey (glue-list path "/"))
                                     (make-music 'SequentialMusic 'void #t)))
                                )
                            )))
@@ -181,7 +184,7 @@
                               ))
                           (col path '() '())
                           )))
-  (set! get-music-keys (lambda (path location)
+  (set! get-music-keys (lambda (path)
                          (let ((ret (tree-get-keys music-tree path)))
                            (if (list? ret) (reverse ret) '())
                            )))
@@ -216,13 +219,13 @@
 
 (define-macro (make-template code)
   `(define-music-function
-    (parser location piece options)
+    (piece options)
     (list? list?)
     ,code))
 
 (define-public (register-template name music) #f)
 (define-public (get-template name) #f)
-(define-public (call-template name parser location piece options) #f)
+(define-public (call-template name piece options) #f)
 (define-public (display-templates) #f)
 
 (define-public (get-current-music) #f)
@@ -231,8 +234,8 @@
 (define-public (display-template-stack) #f)
 
 (let* ((templ-tree (tree-create 'template))
-       (empty-function (define-music-function (parser location piece options)(list? list?)
-                         (get-music piece location)
+       (empty-function (define-music-function (piece options)(list? list?)
+                         (get-music piece)
                          ))
        (call-music-stack (stack-create))
        (call-template-stack (stack-create))
@@ -240,22 +243,21 @@
        )
   (set! register-template (lambda (name fun)
                             (tree-set! templ-tree name fun) ))
-  (set! get-template (lambda (name location)
+  (set! get-template (lambda (name)
                        (let* ((f (tree-get templ-tree name))
-                              (error (lambda () (if location
-                                                    (ly:input-message location "unknown template '~A'" name)
-                                                    (ly:message "unknown template '~A'" name)))))
+                              (error (lambda () (ly:input-message (*location*) "unknown template '~A'" name)
+                                       (ly:message "unknown template '~A'" name))))
                          (if (not (ly:music-function? f))(set! f
                                                                (begin (error) empty-function)))
                          f)))
-  (set! call-template (lambda (name parser location piece options)
-                        (let ((tmpl (get-template name location)))
+  (set! call-template (lambda (name piece options)
+                        (let ((tmpl (get-template name)))
                           (add-template-ref name 'template)
                           (if (ly:music-function? tmpl)
                               (let ((mus #f))
                                 (push call-template-stack name)
                                 (push call-music-stack piece)
-                                (set! mus ((ly:music-function-extract tmpl) parser location piece options))
+                                (set! mus (tmpl piece options))
                                 (pop call-music-stack)
                                 (pop call-template-stack)
                                 mus)
@@ -306,8 +308,8 @@
             )) '() ))
     ))
 
-(define-public musicPath (define-scheme-function (parser location path)(list?)(create-music-path #f path)))
-(define-public templatePath (define-scheme-function (parser location path)(list?)(create-template-path #f path)))
+(define-public musicPath (define-scheme-function (path)(list?)(create-music-path #f path)))
+(define-public templatePath (define-scheme-function (path)(list?)(create-template-path #f path)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; store music options
@@ -317,9 +319,9 @@
 (define-public (set-music-folder! piece) #f)
 
 (define-public (set-default-template piece tmpl options) #f)
-(define-public (get-default-template piece location) #f)
-(define-public (get-default-options piece location) #f)
-(define-public (get-default-options-cumul piece location) #f)
+(define-public (get-default-template piece) #f)
+(define-public (get-default-options piece) #f)
+(define-public (get-default-options-cumul piece) #f)
 
 (define-public (display-default-music) #f)
 
@@ -330,13 +332,13 @@
   (set! set-default-template (lambda (piece tmpl options)
                                (set! current-piece piece)
                                (tree-set! templates piece (cons tmpl options))))
-  (set! get-default-template (lambda (piece location)
+  (set! get-default-template (lambda (piece)
                                (let ((p (tree-get templates piece)))
                                  (if (pair? p) (car p) '(NOTFOUND)))))
-  (set! get-default-options (lambda (piece location)
+  (set! get-default-options (lambda (piece)
                               (let ((p (tree-get templates piece)))
                                 (if (pair? p) (cdr p) '()))))
-  (set! get-default-options-cumul (lambda (piece location)
+  (set! get-default-options-cumul (lambda (piece)
                                     (let ((oplist (tree-collect templates piece (stack-create)))
                                           (opts '()))
                                       (for-each (lambda (p)
@@ -355,29 +357,29 @@
                                                                        (format "[~A]\n~A" (glue-list (car v) "/") (format-alist (cdr v))))) )))
   )
 
-(define-public (set-default-option parser location piece field value)
-  (let ((tmpl (get-default-template piece location))
-        (opts (get-default-options piece location)))
+(define-public (set-default-option piece field value)
+  (let ((tmpl (get-default-template piece))
+        (opts (get-default-options piece)))
     (set-default-template piece tmpl (assoc-set! opts field value))
     ))
-(define-public (remove-default-option parser location piece field)
-  (let ((tmpl (get-default-template piece location))
-        (opts (get-default-options piece location)))
+(define-public (remove-default-option piece field)
+  (let ((tmpl (get-default-template piece))
+        (opts (get-default-options piece)))
     (set-default-template piece tmpl (assoc-remove! opts field))
     ))
 
 
-(define-public (set-default-header parser location piece field value)
-  (let* ((tmpl (get-default-template piece location))
-         (opts (get-default-options piece location))
+(define-public (set-default-header piece field value)
+  (let* ((tmpl (get-default-template piece))
+         (opts (get-default-options piece))
          (header (ly:assoc-get 'header opts '() #f)))
     (set! header (assoc-set! header field value))
     (set! opts (assoc-set! opts 'header header))
     (set-default-template piece tmpl opts)
     ))
-(define-public (remove-default-header parser location piece field)
-  (let* ((tmpl (get-default-template piece location))
-         (opts (get-default-options piece location))
+(define-public (remove-default-header piece field)
+  (let* ((tmpl (get-default-template piece))
+         (opts (get-default-options piece))
          (header (ly:assoc-get 'header opts '() #f)))
     (set! header (assoc-remove! header field))
     (set! opts (assoc-set! opts 'header header))
@@ -387,7 +389,7 @@
 (define-public (get-default-header name field . default)
   (let* ((def (if (>= (length default) 1) (car default) #f))
          (hopts (if (> (length default) 1) (cdr default) '()))
-         (opts (if (ly:assoc-get 'inherit hopts) (get-default-options-cumul name #f) (get-default-options name #f)))
+         (opts (if (ly:assoc-get 'inherit hopts) (get-default-options-cumul name #f) (get-default-options name)))
          (header (ly:assoc-get 'header opts '() #f)))
     (define (getv fl)
       (let ((ret (if (> (length fl) 0) (assoc-get (car fl) header #f #f) def)))
@@ -407,33 +409,41 @@
 (define-public (track-quote path location) #f)
 (define-public (is-quote path) #f)
 (define-public (display-quotes) #f)
-(define-public (add-tracked-quotes parser location) #f)
+(define-public (add-tracked-quotes) #f)
 (let ((quotes (tree-create 'quotes)))
-  (set! track-quote (lambda (path location) (let ((loclst (tree-get quotes path)))
-                                              (tree-set! quotes path (if (list? loclst) (append loclst (list location)) (list location))))))
+  (set! track-quote
+        (lambda (path location)
+          (let ((loclst (tree-get quotes path)))
+            (tree-set! quotes path (if (list? loclst) (append loclst (list location)) (list location))))))
   (set! is-quote (lambda (path) (and (list? (tree-get quotes path)) (> (length (tree-get quotes path))))))
-  (set! add-tracked-quotes (lambda (parser location)
-                             (tree-walk quotes '()
-                               (lambda (path key val)
-                                 (let ((quey (quote-name path))
-                                       (mus (get-music path (car val))))
-                                   (if (quotable-music mus)
-                                       (begin
-                                        (if (lalily:verbose) (ly:message "add-quotable ~A" quey))
-                                        (add-quotable parser quey
-                                          (music-filter
-                                           (lambda (event)
-                                             (let ( (eventname (ly:music-property  event 'name))
-                                                    (ret #t) )
-                                               (for-each (lambda (n) (set! ret (and ret (not (eq? eventname n)))))
-                                                 '())
-                                               ret
-                                               ))
-                                           mus))
-                                        ) ))) ) ))
-  (set! display-quotes (lambda () (tree-display quotes `(vformat . ,(lambda (loclst)
-                                                                      (glue-list (map (lambda (loc) (let ((lp (ly:input-file-line-char-column loc)))
-                                                                                                      (format "~A ~A:~A" (car lp)(cadr lp)(caddr lp) ))) loclst) ", "))) )))
+  (set! add-tracked-quotes
+        (lambda ()
+          (tree-walk quotes '()
+            (lambda (path key val)
+              (let ((quey (quote-name path))
+                    (mus (get-music path (car val))))
+                (if (quotable-music mus)
+                    (begin
+                     (if (lalily:verbose) (ly:message "add-quotable ~A" quey))
+                     (add-quotable parser quey
+                       (music-filter
+                        (lambda (event)
+                          (let ( (eventname (ly:music-property  event 'name))
+                                 (ret #t) )
+                            (for-each (lambda (n) (set! ret (and ret (not (eq? eventname n)))))
+                              '())
+                            ret
+                            ))
+                        mus))
+                     ) ))) ) ))
+  (set! display-quotes (lambda ()
+                         (tree-display quotes
+                           `(vformat . ,(lambda (loclst)
+                                          (glue-list (map
+                                                      (lambda (loc)
+                                                        (let ((lp (ly:input-file-line-char-column loc)))
+                                                          (format "~A ~A:~A" (car lp)(cadr lp)(caddr lp) )))
+                                                      loclst) ", "))) )))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -452,9 +462,8 @@
                       (if (> (length cl) 0) (car cl) (ly:make-output-def) ))))
   (set! display-paper-defs (lambda () (tree-display paper-tree `(vformat . ,(lambda (pap) "*")) )))
   )
-(define-public registerPaper (define-music-function (parser location name paper)(list? ly:output-def?)
-                               (register-paper name paper)
-                               (make-music 'SequentialMusic 'void #t)))
+(define-public registerPaper (define-void-function (name paper)(list? ly:output-def?)
+                               (register-paper name paper)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; store layout defs
@@ -470,9 +479,8 @@
                      (tree-get layout-tree name)))
   (set! display-layout-defs (lambda () (tree-display layout-tree `(vformat . ,(lambda (pap) "*")) )))
   )
-(define-public registerLayout (define-music-function (parser location name layout)(list? ly:output-def?)
-                                (register-layout name layout)
-                                (make-music 'SequentialMusic 'void #t)))
+(define-public registerLayout (define-void-function (name layout)(list? ly:output-def?)
+                                (register-layout name layout)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; store midi defs
@@ -488,16 +496,15 @@
                    (tree-get midi-tree name)))
   (set! display-midi-defs (lambda () (tree-display midi-tree `(vformat . ,(lambda (pap) "*")) )))
   )
-(define-public registerMidi (define-music-function (parser location name midi)(list? ly:output-def?)
-                              (register-midi name midi)
-                              (make-music 'SequentialMusic 'void #t)))
+(define-public registerMidi (define-void-function (name midi)(list? ly:output-def?)
+                              (register-midi name midi)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; store page templates
 
 (define-public (register-page-template name scfunc) #f)
 (define-public (get-page-template name) #f)
-(define-public (call-page-template name parser location options) #f)
+(define-public (call-page-template name options) #f)
 (define-public (display-page-templates) #f)
 
 (let ((page-template-tree (tree-create 'page-template)))
@@ -505,18 +512,17 @@
                                  (tree-set! page-template-tree name page-template)))
   (set! get-page-template (lambda (name)
                             (tree-get page-template-tree name)))
-  (set! call-page-template (lambda (name parser location options)
+  (set! call-page-template (lambda (name options)
                              (let ((tmpl (get-page-template name)))
                                (if (ly:music-function? tmpl)
                                    (let ((bookpart #f))
-                                     (set! bookpart ((ly:music-function-extract tmpl) parser location options))
+                                     (set! bookpart (tmpl options))
                                      (if ly:book? bookpart #{ \bookpart { } #} )
                                      )
                                    #{ \bookpart { } #})
                                )))
   (set! display-page-templates (lambda () (tree-display page-template-tree `(vformat . ,(lambda (pap) "*")) )))
   )
-(define-public registerPageTemplate (define-music-function (parser location name page-template)(list? ly:music-function?)
-                                      (register-page-template name page-template)
-                                      (make-music 'SequentialMusic 'void #t)))
+(define-public registerPageTemplate (define-void-function (name page-template)(list? ly:music-function?)
+                                      (register-page-template name page-template)))
 
