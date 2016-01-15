@@ -1,6 +1,6 @@
 %%%% This file is part of lalily, an extension to lilypond <http://www.lilypond.org/>.
 %%%%
-%%%% Copyright (C) 2011--2013 Jan-Peter Voigt <jp.voigt@gmx.de>
+%%%% Copyright (C) 2011--2016 Jan-Peter Voigt <jp.voigt@gmx.de>
 %%%%
 %%%% lalily is free software: you can redistribute it and/or modify
 %%%% it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.18.0"
+\version "2.19.32"
 % include "lalily.ly" from folder above
 \include "../lalily.ly"
 
@@ -39,7 +39,7 @@
 % create and register a template for a choral staff with lyrics
 \registerTemplate lalily.demo.choral.staff
 % a template in lalily sontext is a music function with two parameters of kind [list?]
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    ; piece contains the current music folder
    ; options contain options passed to this template
    (let* ((instrname (ly:assoc-get 'instrname options "Voc?" #f))
@@ -74,7 +74,7 @@
            }
            % search for "meta-track" in the music directory tree
            % (the argument has predicate scheme?, so we have to make it a symbol here)
-           \getMusicDeep #'meta
+           \getMusicDeep {} #'meta
          >>
          % create Lyrics context with name 'lyricname'
          \new Lyrics = $lyricname \with {
@@ -82,13 +82,13 @@
            \consists \editionEngraver $piece
          }
          % assign Lyrics to Voice $voicename and get music/lyrics from path lyrics in the current directory
-         \lyricsto $voicename \lyricmode { \getMusic lyrics }
+         \lyricsto $voicename { \lyricmode { \getMusic lyrics } }
        >>
      #}))
 
 % create a template for a SATB StaffGroup
 \registerTemplate lalily.demo.choral.satb
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    #{
      \new StaffGroup \with {
        % disable SpanBar like in ChoirStaff, but leave the possibility to display it with
@@ -112,7 +112,7 @@
        \setatree opts shortname "A"
        \callTemplate #'(.. staff) alt $opts
        \setatree opts clef "G_8"
-       \setatree opts instrname "Tenoro"
+       \setatree opts instrname "Tenore"
        \setatree opts shortname "T"
        \callTemplate #'(.. staff) ten $opts
        \setatree opts clef "bass"
@@ -202,4 +202,5 @@
 % To check, if this is the case, the current outputname is compared to the current file name.
 % If the outputname is changed, this may not work!
 \lalilyTest
+
 
