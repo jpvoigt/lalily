@@ -472,7 +472,7 @@
     (let ((p (create-music-path #f path)))
       (if (proc p) (get-music p) (make-music 'SimultaneousMusic 'void #t)))))
 (define-public getMusicDeep
-  (define-music-function (defm skey)((ly:music? #f) scheme?)
+  (define-music-function (defm skey)((ly:music? #f) symbol?)
     (let ((p (create-music-path #f '())))
       (get-music-deep p skey defm))))
 (define-public collectMusic

@@ -1,4 +1,4 @@
-\version "2.17.29"
+\version "2.19.32"
 
 #(define lalily-relincl-tmp (ly:get-option 'relative-includes))
 #(ly:set-option 'relative-includes #t)
@@ -48,7 +48,7 @@
      ))
 
 \registerTemplate lalily.instrument
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((staff-context (get-option 'staff-context options "Staff"))
          (voice-context (get-option 'voice-context options "Voice"))
          (name (get-option 'name options "instrument"))
@@ -63,7 +63,7 @@
          (staff-mods (get-option 'staff-mods options #f))
          (voice-mods (get-option 'voice-mods options #f))
          (midi-instrument (get-option 'midi-instrument options #f))
-         (meta (get-music-deep piece 'meta #f location))
+         (meta (get-music-deep piece 'meta #f))
          )
      (define (natmus mus) (if natpit (naturalize mus) mus))
      (if (string? clef)
@@ -115,7 +115,7 @@
      #}))
 
 \registerTemplate lalily.instrument.group
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((groupmod (ly:assoc-get 'groupmod options #f #f))
          (staffs (ly:assoc-get 'staffs options '() #f)))
      #{
@@ -124,7 +124,7 @@
        } $(make-music 'SimultaneousMusic 'elements
             (map (lambda (staff)
                    (let* ((key (assoc-get 'music (cdr staff) (list (car staff))))
-                          (opts (assoc-set-all! (get-default-options (create-music-path #f key) location) (cdr staff)))
+                          (opts (assoc-set-all! (get-default-options (create-music-path #f key)) (cdr staff)))
                           (instr (ly:assoc-get 'instrument opts #f #f))
                           (templ (cond
                                   ((symbol? instr) `(.. ,instr))
@@ -143,45 +143,45 @@
 %%% woodwind
 
 \registerTemplate lalily.instrument.oboe
-#(define-music-function (parser location piece options)(list? list?)
-   (call-template (create-template-path #f '(..)) parser location piece
+#(define-music-function (piece options)(list? list?)
+   (call-template (create-template-path #f '(..)) piece
      (assoc-set-all! options `((name . "oboe")
                                (midi-instrument . "oboe")
                                ))))
 
 \registerTemplate lalily.instrument.english-horn
-#(define-music-function (parser location piece options)(list? list?)
-   (call-template (create-template-path #f '(..)) parser location piece
+#(define-music-function (piece options)(list? list?)
+   (call-template (create-template-path #f '(..)) piece
      (assoc-set-all! options `((name . "english-horn")
                                (transposition . ,(ly:make-pitch -1 3 0))
                                (midi-instrument . "english horn")
                                ))))
 
 \registerTemplate lalily.instrument.sax.sop
-#(define-music-function (parser location piece options)(list? list?)
-   (call-template (create-template-path #f '(.. ..)) parser location piece
+#(define-music-function (piece options)(list? list?)
+   (call-template (create-template-path #f '(.. ..)) piece
      (assoc-set-all! options `((name . "saxsop")
                                (transposition . ,(ly:make-pitch -1 6 -1/2)) ; b
                                (midi-instrument . "soprano sax")
                                ))))
 \registerTemplate lalily.instrument.sax.alt
-#(define-music-function (parser location piece options)(list? list?)
-   (call-template (create-template-path #f '(.. ..)) parser location piece
+#(define-music-function (piece options)(list? list?)
+   (call-template (create-template-path #f '(.. ..)) piece
      (assoc-set-all! options `((name . "saxalt")
                                (transposition . ,(ly:make-pitch -1 2 -1/2)) ; ees
                                (midi-instrument . "alto sax")
                                ))))
 
 \registerTemplate lalily.instrument.sax.ten
-#(define-music-function (parser location piece options)(list? list?)
-   (call-template (create-template-path #f '(.. ..)) parser location piece
+#(define-music-function (piece options)(list? list?)
+   (call-template (create-template-path #f '(.. ..)) piece
      (assoc-set-all! options `((name . "saxten")
                                (transposition . ,(ly:make-pitch -2 6 -1/2)) ; b
                                (midi-instrument . "tenor sax")
                                ))))
 \registerTemplate lalily.instrument.sax.bar
-#(define-music-function (parser location piece options)(list? list?)
-   (call-template (create-template-path #f '(.. ..)) parser location piece
+#(define-music-function (piece options)(list? list?)
+   (call-template (create-template-path #f '(.. ..)) piece
      (assoc-set-all! options `((name . "saxbar")
                                (transposition . ,(ly:make-pitch -2 2 -1/2)) ; ees
                                (midi-instrument . "baritone sax")
@@ -192,8 +192,8 @@
 %%% brass
 
 \registerTemplate lalily.instrument.trumpet
-#(define-music-function (parser location piece options)(list? list?)
-   (call-template (create-template-path #f '(..)) parser location piece
+#(define-music-function (piece options)(list? list?)
+   (call-template (create-template-path #f '(..)) piece
      (assoc-set-all! options `((default .
                                  ((name . "trumpet")
                                   (transposition . ,(ly:make-pitch -1 6 -1/2))
@@ -202,8 +202,8 @@
                                   )))
        )))
 \registerTemplate lalily.instrument.trombone
-#(define-music-function (parser location piece options)(list? list?)
-   (call-template (create-template-path #f '(..)) parser location piece
+#(define-music-function (piece options)(list? list?)
+   (call-template (create-template-path #f '(..)) piece
      (assoc-set-all! options '((default .
                                  ((name . "trombone")
                                   (midi-instrument . "trombone")
@@ -211,8 +211,8 @@
                                   )))
        )))
 \registerTemplate lalily.instrument.tuba
-#(define-music-function (parser location piece options)(list? list?)
-   (call-template (create-template-path #f '(..)) parser location piece
+#(define-music-function (piece options)(list? list?)
+   (call-template (create-template-path #f '(..)) piece
      (assoc-set-all! options '((default .
                                  ((name . "tuba")
                                   (midi-instrument . "tuba")
@@ -224,25 +224,24 @@
 %%% string
 
 \registerTemplate lalily.instrument.violin
-#(define-music-function (parser location piece options)(list? list?)
-   (call-template (create-template-path #f '(..)) parser location piece
+#(define-music-function (piece options)(list? list?)
+   (call-template (create-template-path #f '(..)) piece
      (assoc-set-all! options '((name . "violin")
                                (midi-instrument . "violin")
                                ))))
 
 \registerTemplate lalily.instrument.viola
-#(define-music-function (parser location piece options)(list? list?)
-   (call-template (create-template-path #f '(..)) parser location piece
+#(define-music-function (piece options)(list? list?)
+   (call-template (create-template-path #f '(..)) piece
      (assoc-set-all! options '((name . "viola")
                                (midi-instrument . "viola")
                                (clef . "alto")
                                ))))
 \registerTemplate lalily.instrument.cello
-#(define-music-function (parser location piece options)(list? list?)
-   (call-template (create-template-path #f '(..)) parser location piece
+#(define-music-function (piece options)(list? list?)
+   (call-template (create-template-path #f '(..)) piece
      (assoc-set-all! options '((name . "cello")
                                (midi-instrument . "cello")
                                (clef . "bass")
                                ))))
-
 

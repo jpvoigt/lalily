@@ -137,8 +137,12 @@ create one staff with one vocal voice and associated lyrics.
          $(if (ly:context-mod? voice-mods) voice-mods #{ \with {} #})
          $(if (not (eq? 'Voice voice-context)) #{ \with { \consists \editionEngraver #piece } #})
        } <<
-         \getMusicDeep #'meta
-         { \callTemplate ##t lalily.init.Voice.vocal #'() #init-opts $(if (string? clef) #{ \clef $clef #}) $init-voice \getMusic music }
+         \getMusicDeep meta
+         {
+           \callTemplate ##t lalily.init.Voice.vocal #'() #init-opts
+           $(if (string? clef) #{ \clef $clef #})
+           $init-voice \getMusic music
+         }
        >>
      #}))
 
