@@ -19,45 +19,40 @@
 
 (re-export lalily:verbose)
 
-(define-public applyParser
-  (define-void-function (parser location proc)(procedure?)
-    (proc parser location)))
-
-
 (re-export location-extract-path)
 (define-public (file-path location rel)
   (let ((dir (location-extract-path location)))
     (normalize-path-string (string-append dir rel))))
 (define-public filePath
-  (define-scheme-function (parser location rel)(string?)
-    (file-path location rel)))
+  (define-scheme-function (rel)(string?)
+    (file-path (*location*) rel)))
 
 
 (re-export extent-size)
 (re-export info-message)
 (define (return-music val)(if (ly:music? val) val (make-music 'SequentialMusic 'void #t)))
 (define-public displayMessage
-  (define-music-function (parser location format val)(string? scheme?)
+  (define-music-function (format val)(string? scheme?)
     (ly:message format val)
     (return-music val)))
 (define-public inputMessage
-  (define-music-function (parser location format val)(string? scheme?)
-    (ly:input-message location format val)
+  (define-music-function (format val)(string? scheme?)
+    (ly:input-message (*location*) format val)
     (return-music val)))
 (define-public displayObject
-  (define-music-function (parser location val)(scheme?)
+  (define-music-function (val)(scheme?)
     (display val)
     (return-music val)))
 (define-public displayLine
-  (define-music-function (parser location val)(scheme?)
+  (define-music-function (val)(scheme?)
     (display val)(newline)
     (return-music val)))
 (define-public writeObject
-  (define-music-function (parser location val)(scheme?)
+  (define-music-function (val)(scheme?)
     (write val)
     (return-music val)))
 (define-public writeLine
-  (define-music-function (parser location val)(scheme?)
+  (define-music-function (val)(scheme?)
     (write-line val)
     (return-music val)))
 
@@ -92,13 +87,12 @@
 (re-export rematree)
 
 ; do something anywhere
-(define-public exec (define-music-function (parser location mus)(scheme?)
-                      (make-music 'SequentialMusic 'void #t)))
+(define-public exec (define-void-function (mus)(scheme?)))
 
 ; execute music-lambda(parser location)
 (define-public execMusic
-  (define-music-function (parser location proc)(procedure?)
-    (let ((mus (proc parser location)))
+  (define-music-function (proc)(procedure?)
+    (let ((mus (proc (*parser*) (*location*))))
       (cond ((ly:music? mus) mus)
         (else (make-music 'SequentialMusic 'void #t)))
       )))
@@ -106,16 +100,16 @@
 (re-export la:parser-include-file)
 
 (define-public includeOnceIfExists
-  (define-music-function (parser location file)(string?)
+  (define-void-function (file)(string?)
     (if (file-exists? file)
-        (la:parser-include-file parser file #t))
-    (make-music 'SequentialMusic 'void #t)))
+        (la:parser-include-file file #t))
+    ))
 
 (define-public includeIfAbsent
-  (define-music-function (parser location sym file)(symbol? string?)
+  (define-void-function (sym file)(symbol? string?)
     (if (not (defined? sym))
-        (ly:parser-include-string parser (format "\\include \"~A\"\n" file)))
-    (make-music 'SequentialMusic 'void #t)))
+        (ly:parser-include-string (format "\\include \"~A\"\n" file)))
+    ))
 
 (define-public includeRelative
   (define-void-function (file)(string?)
@@ -131,23 +125,23 @@
 (re-export includePattern)
 (re-export includeOncePattern)
 (define-public includeLocal
-  (define-music-function (parser location file)(string?)
-    (let ((outname (format "~A.ly" (ly:parser-output-name parser)))
+  (define-void-function (file)(string?)
+    (let ((outname (format "~A.ly" (ly:parser-output-name (*parser*))))
           (locname (car (ly:input-file-line-char-column location))))
       (if (or (string=? outname locname) (string-suffix? outname locname))
-          (ly:parser-include-string parser (format "\\include \"~A\"\n" file)))
-      (make-music 'SequentialMusic 'void #t))))
+          (ly:parser-include-string (format "\\include \"~A\"\n" file)))
+      )))
 (define-public executeLocal
-  (define-music-function (parser location fn)(procedure?)
-    (let ((outname (format "~A.ly" (ly:parser-output-name parser)))
-          (locname (car (ly:input-file-line-char-column location))))
+  (define-void-function (fn)(procedure?)
+    (let ((outname (format "~A.ly" (ly:parser-output-name (*parser*))))
+          (locname (car (ly:input-file-line-char-column (*location*)))))
       (if (or (string=? outname locname)(string-suffix? outname locname))
           (fn))
-      (make-music 'SequentialMusic 'void #t))))
+      )))
 
 (re-export lalily-test-location?)
 (define-public bookpartAdd
-  (define-void-function (parser location bookpart)(ly:book?)
+  (define-void-function (bookpart)(ly:book?)
     (let ((book (ly:parser-lookup '$current-book)))
       ;(set-book-headers! bookpart (assoc-get 'header (get-music-folder-options location) '()))
       (if book
@@ -155,7 +149,8 @@
           (collect-bookpart-for-book bookpart)
           ))))
 (define-public bookpartIf
-  (define-void-function (parser location proc bookpart)((procedure? lalily-test-location?) ly:book?)
+  (define-void-function (proc bookpart)
+    ((procedure? lalily-test-location?) ly:book?)
     (if (proc parser location)
         (bookpartAdd bookpart)
         )))
@@ -163,8 +158,8 @@
 (define-public (set-book-headers! book header)
   (let ((bookhead (ly:book-header book)))
     (if (or (not bookhead)(list? bookhead))(begin (set! bookhead (make-module)) (ly:book-set-header! book bookhead)))
-    (if (not (list? header)) (set! header (assoc-get 'header (get-music-folder-options
-                                                              (if (ly:input-location? header) header #f)) '())))
+    (if (not (list? header))
+        (set! header (assoc-get 'header (get-music-folder-options) '())))
     (for-each (lambda (p)
                 (if (pair? p)
                     (let ((key (car p))

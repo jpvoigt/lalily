@@ -263,7 +263,7 @@
   (define-music-function (piece field val)((list? '()) string-or-symbol? scheme?)
     (let ((cmf (get-music-folder)))
       (if (string? field) (set! field (string->symbol field)))
-      (set-default-option parser (create-music-path #f piece) field val)
+      (set-default-option (create-music-path #f piece) field val)
       (set-music-folder! cmf)
       (make-music 'SequentialMusic 'void #t)
       )))
