@@ -1,6 +1,6 @@
 ;;;; This file is part of lalily, an extension to lilypond <http://www.lilypond.org/>.
 ;;;;
-;;;; Copyright (C) 2011--2012 Jan-Peter Voigt <jp.voigt@gmx.de>
+;;;; Copyright (C) 2011--2016 Jan-Peter Voigt <jp.voigt@gmx.de>
 ;;;;
 ;;;; lalily is free software: you can redistribute it and/or modify
 ;;;; it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 (use-modules (ice-9 regex)(srfi srfi-1)(lily)(lalily lascm)(lalily definitions))
 
 (define-public (lalily:verbose)(get-registry-val lalily:registry-verbose))
-(define-public (lalily:parser)(get-registry-val lalily:registry-parser))
 
 (define-public (lalily:save-def name val)
   (if (string? name) (set! name (string->symbol name)))
@@ -84,7 +83,7 @@
     (set-registry-val '(lalily runtime loaded) reg)))
 
 (define-public includeFolder
-  (define-void-function (parser location options)(list?)
+  (define-void-function (options)(list?)
     (let* ((relative (assoc-get 'relative options #f))
            (idir (assoc-get 'directory options "."))
            (dirname (if relative (string-append (location-extract-path location) idir) (normalize-path-string idir)))
@@ -102,7 +101,7 @@
                     (while (not (eof-object? entry))
                       (if (regexp-match? (string-match pattern entry))
                           (let ((file (string-append dirname entry)))
-                            (la:parser-include-file parser file ionce)))
+                            (la:parser-include-file file ionce)))
                       (set! entry (readdir dir))
                       )
                     (closedir dir)
@@ -110,7 +109,7 @@
       )))
 
 (define-public includePattern
-  (define-void-function (parser location idir pattern)(string? string?)
+  (define-void-function (idir pattern)(string? string?)
     (let ((dirname (string-append (location-extract-path location) idir)))
 
       (if (or (= (string-length dirname) 0)
@@ -124,8 +123,7 @@
                     (while (not (eof-object? entry))
                       (if (regexp-match? (string-match pattern entry))
                           (let ((file (string-append dirname entry)))
-                            (ly:parser-include-string parser
-                              (format "\\include \"~A\"\n" file))))
+                            (ly:parser-include-string (format "\\include \"~A\"\n" file))))
                       (set! entry (readdir dir))
                       )
                     (closedir dir)
