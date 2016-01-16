@@ -184,11 +184,11 @@
     (ly:parser-define! alst (list))
     ))
 (define-public setalist
-  (define-void-function (parser location alst opt val)
+  (define-void-function (alst opt val)
     (string-or-symbol? string-or-symbol? scheme?)
     (if (string? alst)(set! alst (string->symbol alst)))
     (if (string? opt)(set! opt (string->symbol opt)))
-    (let ((l (ly:parser-lookup parser alst))
+    (let ((l (ly:parser-lookup alst))
           (setv #t))
       (set! l (map (lambda (p)
                      (if (and (pair? p) (equal? (car p) opt))
@@ -198,24 +198,24 @@
                          p
                          )) l))
       (if setv (set! l (append l (list (cons opt val)))))
-      (ly:parser-define! parser alst l)
+      (ly:parser-define! alst l)
       )))
 (define-public addalist
-  (define-void-function (parser location alst opt val)
+  (define-void-function (alst opt val)
     (string-or-symbol? string-or-symbol? scheme?)
     (if (string? alst)(set! alst (string->symbol alst)))
     (if (string? opt)(set! opt (string->symbol opt)))
-    (let ((l (ly:parser-lookup parser alst)))
+    (let ((l (ly:parser-lookup alst)))
       (set! l (filter (lambda (p) (and (pair? p)(not (equal? (car p) opt)))) l))
-      (ly:parser-define! parser alst (append l (list (cons opt val))))
+      (ly:parser-define! alst (append l (list (cons opt val))))
       )))
 (define-public remalist
-  (define-void-function (parser location alst opt)
+  (define-void-function (alst opt)
     (string-or-symbol? string-or-symbol?)
     (if (string? alst)(set! alst (string->symbol alst)))
     (if (string? opt)(set! opt (string->symbol opt)))
-    (let ((l (ly:parser-lookup parser alst)))
-      (ly:parser-define! parser alst
+    (let ((l (ly:parser-lookup alst)))
+      (ly:parser-define! alst
         (filter (lambda (p) (and (pair? p)(not (equal? (car p) opt)))) l))
       )))
 
@@ -288,7 +288,7 @@
             )
         ))
     (set! opts (remval opts sympath))
-    (ly:parser-define! parser name opts)
+    (ly:parser-define! name opts)
     ))
 
 (define-public clratree clralist)
@@ -315,7 +315,9 @@
 
 (define-public setatreeall
    (define-void-function (name opts)(symbol? list?)
-     (let ((opts (if (and (= 1 (length opts)) (symbol? (car opts))) (ly:parser-lookup parser (car opts)) opts)))
+     (let ((opts (if (and (= 1 (length opts))
+                          (symbol? (car opts)))
+                     (ly:parser-lookup (car opts)) opts)))
        (walk-a-tree '() opts
          (lambda (path val) (add-a-tree name path val assoc-replace!)))
        )))
