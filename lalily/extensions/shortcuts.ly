@@ -1,6 +1,6 @@
 %%%% This file is part of lalily, an extension to lilypond <http://www.lilypond.org/>.
 %%%%
-%%%% Copyright (C) 2011--2012 Jan-Peter Voigt <jp.voigt@gmx.de>
+%%%% Copyright (C) 2011--2016 Jan-Peter Voigt <jp.voigt@gmx.de>
 %%%%
 %%%% lalily is free software: you can redistribute it and/or modify
 %%%% it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.17.29"
+\version "2.19.32"
 
 #(define lalily-relincl-tmp (ly:get-option 'relative-includes))
 #(ly:set-option 'relative-includes #t)
@@ -34,11 +34,11 @@
 
 % \once \override DynamicText.extra-offset
 \parserDefine #'dyneo
-#(define-music-function (parser location xy)(number-pair?)
+#(define-music-function (xy)(number-pair?)
    #{ \once \override DynamicText.extra-offset = $xy #})
 % \once \override DynamicText.X-offset
 \parserDefine #'dynxo
-#(define-music-function (parser location x)(number?)
+#(define-music-function (x)(number?)
    #{ \once \override DynamicText.X-offset = #$x #})
 
 % empty dynamicText
@@ -63,7 +63,7 @@
 }
 % breathing with fermata with X-offset
 \parserDefine #'breathefermoff
-#(define-music-function (parser location off)(number?)
+#(define-music-function (off)(number?)
    #{
      \once \override BreathingSign.X-offset = $off
      \breatheferm
@@ -86,7 +86,7 @@
 
 % once override DynamicText self-alignemnt and X-offset
 \parserDefine #'grobdyn
-#(define-music-function (parser location align move)(integer? number?)
+#(define-music-function (align move)(integer? number?)
    #{
      \once \override DynamicText.self-alignment-X = $align
      \once \override DynamicText.X-offset =
@@ -97,7 +97,7 @@
 
 % like grobdyn, using one number pair instead of two arguments
 \parserDefine #'moveDyn
-#(define-music-function (parser location mov)(number-pair?)
+#(define-music-function (mov)(number-pair?)
    #{
      \once \override DynamicText.self-alignment-X = $(car mov)
      \once \override DynamicText.X-offset =
@@ -106,7 +106,7 @@
 
 % lift fermata
 \parserDefine #'liftFerm
-#(define-music-function (parser location off)(number?)
+#(define-music-function (off)(number?)
    #{
      \once \override Script.Y-offset = $off
    #})
@@ -115,7 +115,7 @@
 \parserDefineMarkup #'msp \markup { " " }
 % left align Lyrics (once)
 \parserDefine #'lyrML
-#(define-music-function (parser location offx)(number?)
+#(define-music-function (offx)(number?)
    #{
      \once \override LyricText.self-alignment-X = #LEFT
      \once \override LyricText.X-offset = $offx
@@ -123,7 +123,7 @@
 
 %
 \parserDefine #'lyreop
-#(define-music-function (parser location mov mus)(number-pair? ly:music?)
+#(define-music-function (mov mus)(number-pair? ly:music?)
    #{ {
      \override LyricText.extra-offset = $mov
      \override LyricHyphen.extra-offset = $mov
@@ -140,7 +140,7 @@
 }
 
 \parserDefine #'T
-#(define-music-function (parser location frac tsd music)
+#(define-music-function (frac tsd music)
    ((fraction? '(2 . 3)) ly:duration? ly:music?)
    #{
      \once \set tupletSpannerDuration = $(ly:duration-length tsd)
@@ -152,7 +152,7 @@
 %%% cue
 
 \parserDefine #'cueName
-#(define-music-function (parser location name dir align xoff yoff)(string? integer? integer? number? number?)
+#(define-music-function (name dir align xoff yoff)(string? integer? integer? number? number?)
    #{
      \once \override TextScript.direction = $dir
      \once \override TextScript.self-alignment-X = $align
@@ -160,12 +160,12 @@
      s1*0-\markup \fontsize #-4 { $name }
    #})
 \parserDefine #'cueNameUp
-#(define-music-function (parser location name)(string?)
+#(define-music-function (name)(string?)
    #{
      \cueName $name #UP #LEFT #0 #0
    #})
 \parserDefine #'cueNameDown
-#(define-music-function (parser location name)(string?)
+#(define-music-function (name)(string?)
    #{
      \cueName $name #DOWN #LEFT #0 #0
    #})
@@ -228,7 +228,7 @@
 % mehrere (historische) Notenköpfe in eins
 \parserDefine hmul
 #(let ((pred (lambda (v) (and (list? v)(every number? v)))))
-   (define-music-function (parser location pos)(pred)
+   (define-music-function (pos)(pred)
      (let ((hl (list #{ \markup { \musicglyph #"noteheads.s2" } #}))
            (oy 0)(dx 0))
        (for-each (lambda (y)
@@ -251,7 +251,7 @@
   { \musicglyph #"noteheads.s2" \musicglyph #"noteheads.s2" \musicglyph #"noteheads.s2" }
 }
 \parserDefine remstem
-#(define-music-function (parser location mus)(ly:music?)
+#(define-music-function (mus)(ly:music?)
    #{
      \override Stem.stencil = ##f
      $mus
@@ -266,4 +266,11 @@ version information available (required by /usr/bin/python) convert-ly
 (GNU LilyPond) 2.17.96  convert-ly: »« wird verarbeitet... Anwenden
 der Umwandlung: 2.17.0, 2.17.4, 2.17.5, 2.17.6, 2.17.11, 2.17.14,
 2.17.15, 2.17.18, 2.17.19, 2.17.20, 2.17.25, 2.17.27, 2.17.29
+%}
+
+
+%{
+convert-ly (GNU LilyPond) 2.19.36  convert-ly: Processing `'...
+Applying conversion: 2.17.97, 2.18.0, 2.19.2, 2.19.7, 2.19.11,
+2.19.16, 2.19.22, 2.19.24, 2.19.28, 2.19.29, 2.19.32
 %}

@@ -1,6 +1,6 @@
 %%%% This file is part of lalily, an extension to lilypond <http://www.lilypond.org/>.
 %%%%
-%%%% Copyright (C) 2011--2012 Jan-Peter Voigt <jp.voigt@gmx.de>
+%%%% Copyright (C) 2011--2016 Jan-Peter Voigt <jp.voigt@gmx.de>
 %%%%
 %%%% lalily is free software: you can redistribute it and/or modify
 %%%% it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.17.29"
+\version "2.19.32"
 
 #(define lalily-relincl-tmp (ly:get-option 'relative-includes))
 #(ly:set-option 'relative-includes #t)
@@ -27,7 +27,7 @@
                    (and (ly:music? m)
                         (eq? 'SequentialMusic (ly:music-property m 'name))
                         (list? (ly:music-property m 'elements))))))
-   (define-music-function (parser location pat mus)(seqpred? seqpred?)
+   (define-music-function (pat mus)(seqpred? seqpred?)
      (let ((pl '()))
        (for-each
         (lambda (m) (cond
@@ -64,7 +64,7 @@
 
 % engraver builder
 \parserDefine timeSigChangeEngraver
-#(define-scheme-function (parser location proc)(procedure?)
+#(define-scheme-function (proc)(procedure?)
    (lambda (context)
      (let ((last-fraction #f)) ; remember last time-sig-fraction in this context
        `(
@@ -92,4 +92,11 @@ version information available (required by /usr/bin/python) convert-ly
 (GNU LilyPond) 2.17.96  convert-ly: »« wird verarbeitet... Anwenden
 der Umwandlung: 2.17.0, 2.17.4, 2.17.5, 2.17.6, 2.17.11, 2.17.14,
 2.17.15, 2.17.18, 2.17.19, 2.17.20, 2.17.25, 2.17.27, 2.17.29
+%}
+
+
+%{
+convert-ly (GNU LilyPond) 2.19.36  convert-ly: Processing `'...
+Applying conversion: 2.17.97, 2.18.0, 2.19.2, 2.19.7, 2.19.11,
+2.19.16, 2.19.22, 2.19.24, 2.19.28, 2.19.29, 2.19.32
 %}

@@ -1,7 +1,7 @@
-\version "2.17.29"
+\version "2.19.32"
 %%%% This file is part of lalily, an extension to lilypond <http://www.lilypond.org/>.
 %%%%
-%%%% Copyright (C) 2011--2013 Jan-Peter Voigt <jp.voigt@gmx.de>
+%%%% Copyright (C) 2011--2016 Jan-Peter Voigt <jp.voigt@gmx.de>
 %%%%
 %%%% lalily is free software: you can redistribute it and/or modify
 %%%% it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
         )
        ))
 \parserDefine shY
-#(define-scheme-function (parser location dy)(shy-type?)
+#(define-scheme-function (dy)(shy-type?)
    (let ((mod-fun (lambda (m) (cond ((number-pair? m)
                                      (let ((dy (car m))(dz (cdr m)))
                                        `((0 . ,dy)(0 . ,(+ dy dz))(0 . ,(+ dy dz))(0 . ,dy))
@@ -41,7 +41,7 @@
                                 ((number? m)
                                  `((0 . 0)(0 . ,m)(0 . ,m)(0 . 0))
                                  )
-                                (else (ly:input-warning location "type??? ~A ~A ~A" m grob dy) '((0 . 0)(0 . 0)(0 . 0)(0 . 0)))
+                                (else (ly:input-warning (*location*) "type??? ~A ~A ~A" m grob dy) '((0 . 0)(0 . 0)(0 . 0)(0 . 0)))
                                 )
                     )))
      (if (list? dy)
@@ -50,12 +50,12 @@
          )
      ))
 \parserDefine shy
-#(define-music-function (parser location dy grob)(shy-type? symbol-list-or-music?)
+#(define-music-function (dy grob)(shy-type? symbol-list-or-music?)
    #{ \shape \shY #dy $grob #})
 
 #(define (nol? v) (or (number? v)(and (list v)(every number? v))))
 \parserDefine stretchX
-#(define-scheme-function (parser location xf)(nol?)
+#(define-scheme-function (xf)(nol?)
    (if (list? xf)
        (map (lambda (x)
               (if (> xf 0)
@@ -71,7 +71,7 @@
 
 #(define (nop? v) (or (number? v)(and (list? v)(every (lambda (y) (or (number? y)(number-pair? y))) v))))
 \parserDefine stretchXY
-#(define-scheme-function (parser location xf yf)(nol? nop?)
+#(define-scheme-function (xf yf)(nol? nop?)
    (if (not (list? xf)) (set! xf (list xf)))
    (if (not (list? yf)) (set! yf (list yf)))
    (map (lambda (x y)
@@ -83,3 +83,10 @@
                 )
             )) xf yf)
    )
+
+
+%{
+convert-ly (GNU LilyPond) 2.19.36  convert-ly: Processing `'...
+Applying conversion: 2.17.97, 2.18.0, 2.19.2, 2.19.7, 2.19.11,
+2.19.16, 2.19.22, 2.19.24, 2.19.28, 2.19.29, 2.19.32
+%}

@@ -1,6 +1,6 @@
-\version "2.17.29"
-%% version 24/04/2012
-%% for lilypond 2.16 or higher
+\version "2.19.32"
+%% version 17.01.2016
+%% for lilypond 2.19.32 or higher
 
 %% some utility functions
 #(define (name-of music)
@@ -271,12 +271,12 @@ res))
         ((1) (relativize (car seq-list)))
         (else (relativize (clean-music (make-sequential-music seq-list))))))))
 
-changePitch = #(define-music-function (parser location pattern newnotes)
+changePitch = #(define-music-function (pattern newnotes)
                                                           (ly:music? ly:music?)
 "Change each notes in `pattern by the notes (or rests) given in `newnotes.
 If count of events doesn't match, pattern is duplicated repeatedly or truncate."
 (let* ((expand-q (lambda (music) (expand-repeat-chords!
-			    (cons 'rhythmic-event (ly:parser-lookup parser '$chord-repeat-events))
+			    (cons 'rhythmic-event (ly:parser-lookup '$chord-repeat-events))
 			    music)))
        (pattern (expand-q pattern))
        (newnotes (expand-q newnotes)))
@@ -286,7 +286,7 @@ If count of events doesn't match, pattern is duplicated repeatedly or truncate."
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% enhancement functions, working with \changePitch pattern newnotes
 
-samePitch = #(define-music-function (parser location music) (ly:music?)
+samePitch = #(define-music-function (music) (ly:music?)
 "Inside the `pattern parameter of the \\changePitch function, you can group
 some notes by calling this function. All grouped notes will have the same pitch,
 according to the current note of the `newnotes parameter of \\changePitch."
@@ -317,12 +317,12 @@ according to the current note of the `newnotes parameter of \\changePitch."
            (delq cPSamePitch (ly:music-property last-note 'tags)))))
   music))
 
-absolute = #(define-music-function (parser location music) (ly:music?)
+absolute = #(define-music-function (music) (ly:music?)
 "Make `music unrelativable. To use inside a \\samePitch function in relative
 mode."
 (make-music 'UnrelativableMusic 'element music))
 
-insert = #(define-music-function (parser location music) (ly:music?)
+insert = #(define-music-function (music) (ly:music?)
 "Using this function inside the `newnotes parameter of the \\changePitch
 function, allow you to insert and remplace by `music, all music between one note
 and his following, in the `pattern parameter of \\changePitch, ."
@@ -343,12 +343,12 @@ and his following, in the `pattern parameter of \\changePitch, ."
   ((= n 1) music)
   (else (make-music 'Music 'void #t))))
 
-nCopy = #(define-music-function (parser location n music)(integer? ly:music?)
+nCopy = #(define-music-function (n music)(integer? ly:music?)
 (n-copy n music))
 
 %% same effect as { \repeat unfold n s } but \nSkip works inside the `newnotes
 %% parameter of \changePitch.
-nSkip = #(define-music-function (parser location n)(integer?)
+nSkip = #(define-music-function (n)(integer?)
 "Return \\skip \\skip \\skip ... n times."
 #{
   \nCopy #n s
@@ -361,4 +361,11 @@ version information available (required by /usr/bin/python) convert-ly
 (GNU LilyPond) 2.17.96  convert-ly: »« wird verarbeitet... Anwenden
 der Umwandlung: 2.17.0, 2.17.4, 2.17.5, 2.17.6, 2.17.11, 2.17.14,
 2.17.15, 2.17.18, 2.17.19, 2.17.20, 2.17.25, 2.17.27, 2.17.29
+%}
+
+
+%{
+convert-ly (GNU LilyPond) 2.19.36  convert-ly: Processing `'...
+Applying conversion: 2.17.97, 2.18.0, 2.19.2, 2.19.7, 2.19.11,
+2.19.16, 2.19.22, 2.19.24, 2.19.28, 2.19.29, 2.19.32
 %}
