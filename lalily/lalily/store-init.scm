@@ -271,7 +271,7 @@
   (define-music-function (piece field)((list? '()) string-or-symbol?)
     (let ((cmf (get-music-folder)))
       (if (string? field) (set! field (string->symbol field)))
-      (remove-default-option parser (create-music-path #f piece) field)
+      (remove-default-option (create-music-path #f piece) field)
       (set-music-folder! cmf)
       (make-music 'SequentialMusic 'void #t)
       )))
