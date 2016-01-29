@@ -17,7 +17,7 @@
 
 %%%% ATTENTION: these templates are here only for backward compatibility and will be removed in the future!
 
-\version "2.18.0"
+\version "2.19.32"
 
 #(define lalily-relincl-tmp (ly:get-option 'relative-includes))
 #(ly:set-option 'relative-includes #t)
@@ -28,7 +28,7 @@
 %%% utilities
 
 \parserDefine getLyrics
-#(define-music-function (parser location path)(list?)
+#(define-music-function (path)(list?)
    #{
      \deprecateTemplate
      % LineBreakEvent in Lyrics disturbs line-breaks in music
@@ -39,7 +39,7 @@
 %%% global voice
 
 \registerTemplate #'(Voice)
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((init (assoc-get 'init options #f)))
      #{
        \deprecateTemplate
@@ -47,7 +47,7 @@
      #}))
 
 \registerTemplate #'(Lyrics)
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((init (assoc-get 'init options #f)))
      #{
        \deprecateTemplate
@@ -55,7 +55,7 @@
      #}))
 
 \registerTemplate #'(global voice)
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let* ((localsym (assoc-get 'localsym options '(global) #f))
           (deepsym (assoc-get 'deepsym options 'global-voice #f))
           (deepm #{ \getMusicDeep { \dynamicUp \autoBeamOff } #deepsym #}))
@@ -68,7 +68,7 @@
 %%% lead-sheet template
 
 \registerTemplate #'(lead-sheet lyrics)
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((lyric (ly:assoc-get 'lyric options (cons 'A #f) #f))
          (rr (ly:assoc-get 'repeats options #f #f))
          (stanza (ly:assoc-get 'stanza options #t #f))
@@ -101,7 +101,7 @@
      ))
 
 \registerTemplate #'(lead-sheet)
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((staff-mods (assoc-get 'staff-mods options #f)))
      #{
        \deprecateTemplate
@@ -111,28 +111,28 @@
            \consists \editionEngraver $piece
            $(if (ly:context-mod? staff-mods) staff-mods)
          } \new Voice = "melody" <<
-           \getMusicDeep #'meta
+           \getMusicDeep {} #'meta
            { \callTemplate #'(/ global voice) #'() #'() \getMusic #'(melody) }
          >>
          \stackTemplate ##f #'(lyrics) ##f #'(lyrics) $(assoc-set! options 'voice "melody")
          #'lyric $(let ((st 0))
                     (map
                      (lambda (v) (begin (set! st (+ 1 st))(cons v (format "~A." st))))
-                     (ly:assoc-get 'verses options (get-music-keys (create-music-path #f '(lyrics)) location))))
+                     (ly:assoc-get 'verses options (get-music-keys (create-music-path #f '(lyrics)) (*location*)))))
        >>
      #}))
 
 %%% lied-zeile
 
 \registerTemplate #'(lied zeile)
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    #{
      \deprecateTemplate
      <<
        \new Staff \with {
          \consists \editionEngraver $piece
        } \new Voice = "melodie" <<
-         \getMusicDeep #'meta
+         \getMusicDeep {} #'meta
          { \autoBeamOff \dynamicUp \getMusic #'(noten) }
        >>
        \new Lyrics \with {
@@ -144,8 +144,8 @@
 %%% EKG Lied
 
 \registerTemplate #'(EKG)
-#(define-music-function (parser location piece options)(list? list?)
-   (let ((verses (ly:assoc-get 'verses options (get-music-keys (create-music-path #f '(text)) location) '(1)))
+#(define-music-function (piece options)(list? list?)
+   (let ((verses (ly:assoc-get 'verses options (get-music-keys (create-music-path #f '(text)) (*location*)) '(1)))
          (repeats (ly:assoc-get 'repeats options #f #f)))
      #{
        \deprecateTemplate
@@ -153,7 +153,7 @@
          \new Staff \with {
            \consists \editionEngraver $piece
          } \new Voice = "melodie" <<
-           { \getMusic { \numericTimeSignature } #'(global) \getMusicDeep #'meta }
+           { \getMusic { \numericTimeSignature } #'(global) \getMusicDeep {} #'meta }
            { \callTemplate #'(/ global voice) #'() #'() \getMusic #'(melodie) }
          >>
          $(make-music 'SimultaneousMusic
@@ -181,7 +181,7 @@
 %%% Choral group
 
 \registerTemplate #'(choral group staff lyrics)
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((v (ly:assoc-get 'verse options '() #f))
          (rr (ly:assoc-get 'repeats options #f #f))
          (voc (ly:assoc-get 'lyric-voice options "sop" #f)))
@@ -204,7 +204,7 @@
 #(let* ((i 0)
         (inc (lambda () (set! i (+ i 1)) i)))
    (register-template '(choral group staff)
-     (define-music-function (parser location piece options)(list? list?)
+     (define-music-function (piece options)(list? list?)
        (if (not (list? piece))(set! piece (list piece)))
        (let* ((staff (ly:assoc-get 'staff options '() #f))
               (prefix (ly:assoc-get 'prefix options "" #f))
@@ -233,7 +233,7 @@
                instrumentName = $inst
                shortInstrumentName = $sinst
              } \new Voice = $vocpname <<
-               { \mergeRestsOn \clef $clef \getMusicDeep #'meta }
+               { \mergeRestsOn \clef $clef \getMusicDeep {} #'meta }
                { \callTemplate #'(/ global voice) #'() #'() \getMusic $vocpath }
              >>
              \stackTemplate ##f #'(lyrics) ##t $piece $options
@@ -248,7 +248,7 @@
      ))
 % standard is SATB
 \registerTemplate #'(choral group)
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (if (not (list? piece))(set! piece (list piece)))
    (let ((staffs (ly:assoc-get 'staffs options '((sop . ((inst . "S")))
                                                  (alt . ((inst . "A")))
@@ -277,13 +277,13 @@
 %%% Choral lied group
 
 \registerTemplate #'(choral lied staff)
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let* ((staff (ly:assoc-get 'staff options '((inst . "S")(voc . sop)) #f))
           (inst (ly:assoc-get 'inst staff "X" #f))
           (voc (ly:assoc-get 'voc staff 'voc #f))
           (vocs (symbol->string voc))
           (clef (ly:assoc-get 'clef staff "G" #f))
-          (vv (ly:assoc-get 'verses options (get-music-keys (create-music-path #f '(text)) location) #f)))
+          (vv (ly:assoc-get 'verses options (get-music-keys (create-music-path #f '(text)) (*location*)) #f)))
      #{
        \deprecateTemplate
        <<
@@ -291,14 +291,14 @@
            \consists \editionEngraver \musicPath $`(noten ,voc)
            instrumentName = $inst
          } \new Voice = $vocs <<
-           { \mergeRestsOn \clef $clef \getMusicDeep #'meta }
+           { \mergeRestsOn \clef $clef \getMusicDeep {} #'meta }
            { \callTemplate #'(/ global voice) #'() #'() \getMusic $`(noten ,voc) }
          >>
          \stackTemplate ##f #'(lyrics) ##f #'() $(assoc-set-all! options `((lyric-voice . ,vocs))) #'verse $vv
        >>
      #}))
 \registerTemplate #'(choral lied staff lyrics)
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((v (ly:assoc-get 'verse options 'A #f))
          (rr (ly:assoc-get 'repeats options #f #f))
          (voc (ly:assoc-get 'lyric-voice options "sop" #f)))
@@ -320,7 +320,7 @@
 
 %%% SATB 4 Systeme
 \registerTemplate #'(choral lied satb4)
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((staffs (ly:assoc-get 'staffs options '(
                                                   ((voc . sop)(inst . "S"))
                                                   ((voc . alt)(inst . "A"))
@@ -335,11 +335,11 @@
 
 %%% SATB 2 Systeme
 \registerTemplate #'(choral lied satb2)
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((sa-clef (assoc-get 'sa-clef options "G"))
          (tb-clef (assoc-get 'tb-clef options "bass"))
          (vocs (assoc-get 'lyric-voice options "sop"))
-         (vv (assoc-get 'verses options (get-music-keys (create-music-path #f '(text)) location))))
+         (vv (assoc-get 'verses options (get-music-keys (create-music-path #f '(text))))))
      #{
        \deprecateTemplate
        \new StaffGroup \with {
@@ -350,7 +350,7 @@
          } <<
            \new Voice = "sop" { \callTemplate #'(/ global voice) #'() #'() \voiceOne \getMusic #'(noten sop) }
            \new Voice = "alt" { \callTemplate #'(/ global voice) #'() #'() \voiceTwo \getMusic #'(noten alt) }
-           { \mergeRestsOn \clef #sa-clef \getMusicDeep #'meta }
+           { \mergeRestsOn \clef #sa-clef \getMusicDeep {} #'meta }
          >>
          \stackTemplate ##f #'(.. staff lyrics) ##f #'() $(assoc-set! options 'lyric-voice vocs) #'verse $vv
          \new Staff = "TB" \with {
@@ -358,15 +358,15 @@
          } <<
            \new Voice = "ten" { \callTemplate #'(/ global voice) #'() #'() \voiceOne \getMusic #'(noten ten) }
            \new Voice = "bas" { \callTemplate #'(/ global voice) #'() #'() \voiceTwo \getMusic #'(noten bas) }
-           { \mergeRestsOn \clef #tb-clef \getMusicDeep #'meta }
+           { \mergeRestsOn \clef #tb-clef \getMusicDeep {} #'meta }
          >>
        >>
      #}))
 
 \registerTemplate #'(choral lied satb2b)
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((vocs (assoc-get 'lyric-voice-bass options "bas"))
-         (vv (ly:assoc-get 'verses options (get-music-keys (create-music-path #f '(text)) location) #f)))
+         (vv (ly:assoc-get 'verses options (get-music-keys (create-music-path #f '(text)) (*location*)) #f)))
      #{
        \deprecateTemplate
        <<
@@ -379,7 +379,7 @@
 %%% Piano
 
 \registerTemplate #'(piano)
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((mods (assoc-get 'context-mods options #f #f)))
      #{
        \deprecateTemplate
@@ -390,7 +390,7 @@
          \new Staff = "right" \with {
            \consists \editionEngraver \musicPath #'(right)
          } <<
-           \keepWithTag #'piano-right \getMusicDeep #'meta
+           \keepWithTag #'piano-right \getMusicDeep {} #'meta
            \keepWithTag #'piano-right { \getMusic {} #'(global) \getMusic #'(right) }
          >>
          \new Dynamics \with {
@@ -400,7 +400,7 @@
          \new Staff = "left" \with {
            \consists \editionEngraver \musicPath #'(left)
          } <<
-           \keepWithTag #'piano-left \getMusicDeep #'meta
+           \keepWithTag #'piano-left \getMusicDeep {} #'meta
            \keepWithTag #'piano-left { \getMusic {} #'(global) \clef $(ly:assoc-get 'piano-left-clef options "bass" #f) \getMusic #'(left) }
          >>
          \new Dynamics \with {
@@ -411,3 +411,10 @@
      #}))
 
 
+
+
+%{
+convert-ly (GNU LilyPond) 2.19.36  convert-ly: Processing `'...
+Applying conversion: 2.19.2, 2.19.7, 2.19.11, 2.19.16, 2.19.22,
+2.19.24, 2.19.28, 2.19.29, 2.19.32
+%}

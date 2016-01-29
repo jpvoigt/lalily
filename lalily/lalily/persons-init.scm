@@ -31,7 +31,7 @@
   (let ((p (get-person (get-person-store) key)))
     (if (person? p)(person-name p) #f)))
 (define-public getPersonName
-  (define-scheme-function (parser location key)(string-or-symbol?)
+  (define-scheme-function (key)(string-or-symbol?)
     (if (string? key) (set! key (string->symbol key)))
     (let ((p (get-person (get-person-store) key)))
       (if (person? p)(person-name p)
@@ -42,7 +42,7 @@
   (let ((p (get-person (get-person-store) key)))
     (if (person? p)(person-life p) #f)))
 (define-public getPersonLife
-  (define-scheme-function (parser location key)(string-or-symbol?)
+  (define-scheme-function (key)(string-or-symbol?)
     (if (string? key) (set! key (string->symbol key)))
     (let ((p (get-person (get-person-store) key)))
       (if (person? p)(person-life p)
@@ -65,7 +65,7 @@
 (define-public setComposer #f)
 (define-public setPoet #f)
 (define-public setArranger #f)
-(let* ((mups `((composer . ,(markup #:on-the-fly diff-composer 
+(let* ((mups `((composer . ,(markup #:on-the-fly diff-composer
                               (make-execMarkup-markup (lambda (layout props)
                                                         (let ((composerpre (chain-assoc-get 'header:composerpre props
                                                                              (if (or (chain-assoc-get 'header:arranger props #f) (chain-assoc-get 'header:poet props #f))
@@ -103,8 +103,8 @@
                                                          ""))))
                          ))
                ))
-       (set-person! (lambda (parser location piece act key)
-                      (cond ((markup? key)(set-default-header parser location piece act key))
+       (set-person! (lambda (piece act key)
+                      (cond ((markup? key)(set-default-header piece act key))
                         ((symbol? key)
                          (let ((person (get-person (get-person-store) key))
                                (mup (get-registry-val `(lalily person mup ,act) (assoc-get act mups #f #f))))
@@ -127,30 +127,30 @@
                         (else (ly:input-message location "unknown person-element: (~A) ~A" act key)))
                       ))
        (symorpair? (lambda (v) (or (markup? v)(symbol? v)(and (pair? v)(markup? (car v))(markup? (cdr v)))))))
-  (set! setComposer (define-music-function (parser location key)(symorpair?)
-                      (set-person! parser location (get-music-folder) 'composer key)
-                      (make-music 'SequentialMusic 'void #t)))
-  (set! setPoet (define-music-function (parser location key)(symorpair?)
-                  (set-person! parser location (get-music-folder) 'poet key)
-                  (make-music 'SequentialMusic 'void #t)))
-  (set! setArranger (define-music-function (parser location key)(symorpair?)
-                      (set-person! parser location (get-music-folder) 'arranger key)
-                      (make-music 'SequentialMusic 'void #t)))
+  (set! setComposer
+        (define-void-function (key)(symorpair?)
+          (set-person! (get-music-folder) 'composer key)))
+  (set! setPoet
+        (define-void-function (key)(symorpair?)
+          (set-person! (get-music-folder) 'poet key)))
+  (set! setArranger
+        (define-void-function (key)(symorpair?)
+          (set-person! (get-music-folder) 'arranger key)))
   )
 
 (define-markup-command (personName layout props key)(string-or-symbol?)
-   (if (string? key) (set! key (string->symbol key)))
-   (let ((p (get-person (get-person-store) key)))
-     (interpret-markup layout props
-       (if (person? p)(person-name p)
-           (begin (ly:input-warning location "unknown person '~A'" key)
-             (format "?~A" key))
-           ))))
+  (if (string? key) (set! key (string->symbol key)))
+  (let ((p (get-person (get-person-store) key)))
+    (interpret-markup layout props
+      (if (person? p)(person-name p)
+          (begin (ly:input-warning location "unknown person '~A'" key)
+            (format "?~A" key))
+          ))))
 (define-markup-command (personLife layout props key)(string-or-symbol?)
-   (if (string? key) (set! key (string->symbol key)))
-   (let ((p (get-person (get-person-store) key)))
-     (interpret-markup layout props
-       (if (person? p)(person-life p)
-           (begin (ly:input-warning location "unknown person '~A'" key)
-             (format "?~A" key))
-           ))))
+  (if (string? key) (set! key (string->symbol key)))
+  (let ((p (get-person (get-person-store) key)))
+    (interpret-markup layout props
+      (if (person? p)(person-life p)
+          (begin (ly:input-warning location "unknown person '~A'" key)
+            (format "?~A" key))
+          ))))
