@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.17.29"
+\version "2.19.32"
 %%% this file is included by lalily.ily and won't compile itself
 
 \paper {
@@ -44,4 +44,11 @@ version information available (required by /usr/bin/python) convert-ly
 (GNU LilyPond) 2.17.96  convert-ly: »« wird verarbeitet... Anwenden
 der Umwandlung: 2.17.0, 2.17.4, 2.17.5, 2.17.6, 2.17.11, 2.17.14,
 2.17.15, 2.17.18, 2.17.19, 2.17.20, 2.17.25, 2.17.27, 2.17.29
+%}
+
+
+%{
+convert-ly (GNU LilyPond) 2.19.37  convert-ly: Processing `'...
+Applying conversion: 2.17.97, 2.18.0, 2.19.2, 2.19.7, 2.19.11,
+2.19.16, 2.19.22, 2.19.24, 2.19.28, 2.19.29, 2.19.32
 %}
