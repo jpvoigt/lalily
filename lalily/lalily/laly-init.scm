@@ -117,8 +117,8 @@
       (ly:parser-include-string (format "\\include \"~A\"\n" filename))
       )))
 (define-public includeRelIf
-  (define-void-function (parser location file proc)(string? procedure?)
-    (if (proc parser location)
+  (define-void-function (file proc)(string? procedure?)
+    (if (proc (*parser*) (*location*))
         (includeRelative file))
     ))
 
@@ -151,7 +151,7 @@
 (define-public bookpartIf
   (define-void-function (proc bookpart)
     ((procedure? lalily-test-location?) ly:book?)
-    (if (proc parser location)
+    (if (proc (*parser*) (*location*))
         (bookpartAdd bookpart)
         )))
 
@@ -179,17 +179,17 @@
     ))
 
 (define-public setGlobalStaffSize
-  (define-void-function (parser location size)(number?)
+  (define-void-function (size)(number?)
     (set-registry-val lalily:paper:global-staff-size size)
     (set-global-staff-size size)))
 (define-public setLocalStaffSize
-  (define-void-function (parser location size)(number?)
-    (if ((get-registry-val lalily:test-predicate lalily-test-location?) parser location)
-        (ly:music-function-exec setGlobalStaffSize parser location size)
+  (define-void-function (size)(number?)
+    (if ((get-registry-val lalily:test-predicate lalily-test-location?) (*parser*) (*location*))
+        (ly:music-function-exec setGlobalStaffSize size)
         )))
 
 (define-public midiTempo
-  (define-music-function (parser location frac)(fraction?)
+  (define-music-function (frac)(fraction?)
     (make-music 'ContextSpeccedMusic
       'context-type 'Score
       'element (make-music
@@ -204,16 +204,16 @@
 (re-export set-toc-section!)
 (re-export get-toc-section)
 (define-public setTocSection
-  (define-music-function (parser location text) (markup?)
+  (define-music-function (text) (markup?)
     (set-toc-section! text)(make-music 'SequentialMusic 'void #t)))
 (define-public tocItem
-  (define-music-function (parser location text) (markup?)
+  (define-music-function (text) (markup?)
     (add-toc-item! 'tocItemMarkup (markup text #:hspace 1))))
 (define-public tocCollection
-  (define-music-function (parser location text) (markup?)
+  (define-music-function (text) (markup?)
     (add-toc-item! 'tocCollMarkup (markup text #:hspace 1))))
 (define-public tocPart
-  (define-music-function (parser location text) (markup?)
+  (define-music-function (text) (markup?)
     (begin
      (if (get-toc-section) (add-toc-item! 'tocCollMarkup (markup (get-toc-section) #:hspace 1)))
      (set-toc-section! #f)
@@ -324,7 +324,7 @@
 ;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (define-public taktMeta
-  (define-music-function (parser location frac beat-structure count)(fraction? (list? '()) integer?)
+  (define-music-function (frac beat-structure count)(fraction? (list? '()) integer?)
     (let ((nom (car frac))
           (den (cdr frac)))
       (make-music
@@ -341,7 +341,7 @@
          (ly:make-duration (ly:intlog2 den) 0 (* nom count) 1)))))))
 
 (define-public taktSkip
-  (define-music-function (parser location frac count)(fraction? integer?)
+  (define-music-function (frac count)(fraction? integer?)
     (let ((nom (car frac))
           (den (cdr frac)))
       (make-music
@@ -350,7 +350,7 @@
        (ly:make-duration (ly:intlog2 den) 0 (* nom count) 1)))))
 
 (define-public taktRest
-  (define-music-function (parser location frac count)(fraction? integer?)
+  (define-music-function (frac count)(fraction? integer?)
     (let ((nom (car frac))
           (den (cdr frac)))
       (make-music
@@ -360,7 +360,7 @@
 
 (define-public inPartial
   (define-music-function
-   (parser location pos mus)
+   (pos mus)
    (fraction? ly:music?)
    #{
      \set Score.measurePosition = $(ly:make-moment (- (car pos)) (cdr pos))
@@ -369,7 +369,7 @@
    ))
 
 (define-public filterMusic
-  (define-music-function (parser location events music) (list? ly:music?)
+  (define-music-function (events music) (list? ly:music?)
     (let ((filterEvent (lambda (event)
                          (let ( (eventname (ly:music-property  event 'name))
                                 (ret #t) )
@@ -380,7 +380,7 @@
       )))
 
 (define-public anno
-  (define-music-function (parser location style text)(symbol? string?)
+  (define-music-function (style text)(symbol? string?)
     (make-music 'TextScriptEvent 'text (markup #:style style text))
     ))
 
@@ -403,11 +403,11 @@
 (setstyle 'warning (markup #:bold #:larger #:with-color red #:fromproperty 'style:text))
 
 (define-public artic
-  (define-music-function (parser location dir sym text)((number? 1) (symbol? 'artic) markup?)
+  (define-music-function (dir sym text)((number? 1) (symbol? 'artic) markup?)
     (make-music 'TextScriptEvent 'direction dir 'text
       (markup #:line (#:style sym text)))))
 (define-public dedic
-  (define-music-function (parser location dir text)((number? 1) markup?)
+  (define-music-function (dir text)((number? 1) markup?)
     (make-music 'TextScriptEvent 'direction dir 'text
       (markup #:line (#:style 'dedic text)))))
 
@@ -422,7 +422,7 @@
           (ly:stencil-scale (proc grob) sx sy))
         proc)))
 (define-public createScaleStencil
-  (define-scheme-function (parser location fac proc)(number-pair? procedure?)
+  (define-scheme-function (fac proc)(number-pair? procedure?)
     (create-scale-stencil fac proc)))
 
 (define-public (make-stencil-rboxer thickness padding callback)
@@ -438,7 +438,7 @@
   \mark \markup { \musicglyph #"scripts.ufermata" }
   #})
 (define-public markDaX
-  (define-music-function (parser location eo text)((number-pair? '(0 . 0)) markup?)
+  (define-music-function (eo text)((number-pair? '(0 . 0)) markup?)
     #{
       \once \override Score.RehearsalMark #'break-visibility = ##(#t #t #f)
       \once \override Score.RehearsalMark #'self-alignment-X = #RIGHT
@@ -447,7 +447,7 @@
       \mark \markup { \small \italic $text }
     #}))
 (define-public markFine
-  (define-music-function (parser location eo)(number-pair?)
+  (define-music-function (eo)(number-pair?)
     #{
       \once \override Score.RehearsalMark #'break-visibility = ##(#t #t #f)
       \once \override Score.RehearsalMark #'self-alignment-X = #RIGHT
@@ -456,7 +456,7 @@
       \mark \markup { \small \italic "fine." }
     #}))
 (define-public markDCFine
-  (define-music-function (parser location eo)(number-pair?)
+  (define-music-function (eo)(number-pair?)
     #{
       \once \override Score.RehearsalMark #'break-visibility = ##(#t #t #f)
       \once \override Score.RehearsalMark #'self-alignment-X = #RIGHT
@@ -465,7 +465,7 @@
       \mark \markup { \small \italic "d.c. al fine" }
     #}))
 (define-public markDaCapo
-  (define-music-function (parser location eo)(number-pair?)
+  (define-music-function (eo)(number-pair?)
     #{
       \once \override Score.RehearsalMark #'break-visibility = ##(#t #t #f)
       \once \override Score.RehearsalMark #'self-alignment-X = #RIGHT
