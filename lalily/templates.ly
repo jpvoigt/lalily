@@ -118,7 +118,7 @@
          #'lyric $(let ((st 0))
                     (map
                      (lambda (v) (begin (set! st (+ 1 st))(cons v (format "~A." st))))
-                     (ly:assoc-get 'verses options (get-music-keys (create-music-path #f '(lyrics)) (*location*)))))
+                     (ly:assoc-get 'verses options (get-music-keys (create-music-path #f '(lyrics))))))
        >>
      #}))
 
@@ -145,7 +145,7 @@
 
 \registerTemplate #'(EKG)
 #(define-music-function (piece options)(list? list?)
-   (let ((verses (ly:assoc-get 'verses options (get-music-keys (create-music-path #f '(text)) (*location*)) '(1)))
+   (let ((verses (ly:assoc-get 'verses options (get-music-keys (create-music-path #f '(text))) '(1)))
          (repeats (ly:assoc-get 'repeats options #f #f)))
      #{
        \deprecateTemplate
@@ -283,7 +283,7 @@
           (voc (ly:assoc-get 'voc staff 'voc #f))
           (vocs (symbol->string voc))
           (clef (ly:assoc-get 'clef staff "G" #f))
-          (vv (ly:assoc-get 'verses options (get-music-keys (create-music-path #f '(text)) (*location*)) #f)))
+          (vv (ly:assoc-get 'verses options (get-music-keys (create-music-path #f '(text))) #f)))
      #{
        \deprecateTemplate
        <<
@@ -366,7 +366,7 @@
 \registerTemplate #'(choral lied satb2b)
 #(define-music-function (piece options)(list? list?)
    (let ((vocs (assoc-get 'lyric-voice-bass options "bas"))
-         (vv (ly:assoc-get 'verses options (get-music-keys (create-music-path #f '(text)) (*location*)) #f)))
+         (vv (ly:assoc-get 'verses options (get-music-keys (create-music-path #f '(text))) #f)))
      #{
        \deprecateTemplate
        <<

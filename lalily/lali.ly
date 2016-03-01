@@ -152,7 +152,7 @@
                     (lambda (k) (create-music-path #f (list k)))
                     (if (and (list? keys)(> (length keys) 0))
                         keys
-                        (let* ((keys (get-music-keys p #f))
+                        (let* ((keys (get-music-keys p))
                                (kformat (lambda (k) (if (number? k) (format "~5,'0d" k)(format "~A" k))))
                                (sfun (lambda (k1 k2) (string<? (kformat k1) (kformat k2)))))
                           (sort keys sfun)) )))
@@ -269,7 +269,7 @@
                     (lambda (k) (create-music-path #f (list k)))
                     (if (and (list? keys)(> (length keys) 0))
                         keys
-                        (let* ((keys (get-music-keys p #f))
+                        (let* ((keys (get-music-keys p))
                                (kformat (lambda (k) (if (number? k) (format "~5,'0d" k)(format "~A" k))))
                                (sfun (lambda (k1 k2) (string<? (kformat k1) (kformat k2)))))
                           (sort keys sfun)) )))
