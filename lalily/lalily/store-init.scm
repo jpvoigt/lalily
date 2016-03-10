@@ -250,6 +250,16 @@
 (define-public optionsAdd addatree)
 (define-public optionsRemove rematree)
 (define-public optionsAddAll setatreeall)
+(define-public optionsInitWith
+  (define-scheme-function (name opts)(symbol? list?)
+    (ly:parser-define! name (list))
+    (let ((opts (if (and (= 1 (length opts))
+                         (symbol? (car opts)))
+                    (ly:parser-lookup (car opts)) opts)))
+      ((@@ (lalily laly) walk-a-tree) '() opts
+        (lambda (path val) ((@@ (lalily laly) add-a-tree) name path val assoc-replace!)))
+      )))
+
 
 (define-public getOption
   (define-scheme-function (path field default)((list? '()) string-or-symbol? (scheme? #f))
