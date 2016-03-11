@@ -141,7 +141,7 @@
   (set! add-edmod
         (lambda (edition takt pos path modm)
           (let* ((edition (if (string? edition) (string->symbol edition) edition))
-                 (path `(,edition ,takt ,pos ,@path))
+                 (path `(,@path ,takt ,pos ,edition))
                  (mods (tree-get mod-tree path)))
             (if (not (list? mods)) (set! mods '()))
             (cond
@@ -241,6 +241,7 @@
                            (measurepos (ly:make-moment 0 1))
                            (ctxid (ly:context-id context))
                            (ctxname (ly:context-name context))
+                           (context-mods #f)
 
                            ; TODO get-paths -> collect from all paths
                            (get-paths
@@ -248,19 +249,26 @@
                               (if (and (string? ctxid)(> (string-length ctxid) 0))
                                   (let ((ctxid (string->symbol ctxid)))
                                     `(
-                                       (,edition ,takt ,pos ,@tag-path ,ctxname ,ctxid)
-                                       (,edition ,takt ,pos ,@tag-path ,ctxid)
-                                       (,edition ,takt ,pos ,@tag-path ,ctxname)
-                                       (,edition ,takt ,pos ,@tag-path)
-                                       (,edition ,takt ,pos ,@tag)
+                                       (,@tag-path ,ctxname ,ctxid ,takt ,pos ,edition)
+                                       (,@tag-path ,ctxid ,takt ,pos ,edition)
+                                       (,@tag-path ,ctxname ,takt ,pos ,edition)
+                                       (,@tag-path ,takt ,pos ,edition)
+                                       (,@tag ,takt ,pos ,edition)
                                        ))
                                   `(
-                                     (,edition ,takt ,pos ,@tag-path ,ctxname)
-                                     (,edition ,takt ,pos ,@tag-path)
-                                     (,edition ,takt ,pos ,@tag)
+                                     (,@tag-path ,ctxname ,takt ,pos ,edition)
+                                     (,@tag-path ,takt ,pos ,edition)
+                                     (,@tag ,takt ,pos ,edition)
                                      )
                                   )))
-
+                           (get-mods
+                            (lambda ()
+                              (let* (;(moment (ly:context-current-moment context))
+                                      (measure (ly:context-property context 'currentBarNumber))
+                                      (measurePos (ly:context-property context 'measurePosition))
+                                      (current-mods (tree-get context-mods (list measure measurePos))))
+                                (if (list? current-mods) current-mods '())
+                                )))
                            (initialize
                             (lambda (trans)
                               (if (procedure? tag-path) (set! tag-path (tag-path)))
@@ -308,6 +316,32 @@
                                 (set-object-property! eng 'path path)
                                 (set-object-property! eng 'tag-path-idx ccid)
 
+                                (set! context-mods (tree-create (glue-symbol path "/")))
+                                (for-each
+                                 (lambda (context-edition-sid)
+                                   (ly:message "~A" context-edition-sid)
+                                   (let ((mtree (tree-get-tree mod-tree context-edition-sid)))
+                                     (if (tree? mtree)
+                                         (tree-walk mtree '()
+                                           (lambda (path k val)
+                                             (let ((plen (length path)))
+                                               (if (and (= plen 3)(list? val)
+                                                        (integer? (list-ref path 0))
+                                                        (member (list-ref path 2) edition-list))
+                                                   (let* ((subpath (list (list-ref path 0)(list-ref path 1)))
+                                                          (submods (tree-get context-mods subpath)))
+                                                     (tree-set! context-mods subpath
+                                                       (if (list? submods) (append submods val) val))
+                                                     ))))
+                                           ))))
+                                 `((,@tag-path ,ctxname)
+                                   ,@(if ctxid `(
+                                                  (,@tag-path ,ctxid)
+                                                  (,@tag-path ,ctxname ,ctxid)
+                                                  ) '())
+                                   (,@tag-path ,ctxname ,(string->symbol (base26 ccid)))
+                                   )
+                                 )
                                 ; (if (lalily:verbose) (ly:message "looking for editions in ~A" (glue-list path "/")))
                                 )))
                            ; paper column interface
