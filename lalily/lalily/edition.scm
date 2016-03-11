@@ -1,3 +1,4 @@
+;;;; -*- master: ../../examples/03_editionEngraver.ly;
 ;;;; This file is part of lalily, an extension to lilypond <http://www.lilypond.org/>.
 ;;;;
 ;;;; Copyright (C) 2011--2015 Jan-Peter Voigt <jp.voigt@gmx.de>
@@ -339,39 +340,33 @@
                                                   (,@tag-path ,ctxid)
                                                   (,@tag-path ,ctxname ,ctxid)
                                                   ) '())
-                                   (,@tag-path ,ctxname ,(string->symbol (base26 ccid)))
+                                   ,path
                                    )
                                  )
-                                ; (if (lalily:verbose) (ly:message "looking for editions in ~A" (glue-list path "/")))
+                                (if (lalily:verbose) (ly:message "looking for editions in ~A" (glue-list path "/")))
                                 )))
                            ; paper column interface
                            (paper-column-interface
                             (lambda (engraver grob source-engraver)
-                              (let ((takt (ly:context-property context 'currentBarNumber))
-                                    (pos (ly:context-property context 'measurePosition)))
-                                (if (eq? #t (ly:grob-property grob 'non-musical))
-                                    (for-each
-                                     (lambda (edition)
-                                       (for-each
-                                        (lambda (path)
-                                          (let ((mods (tree-get mod-tree path)))
-                                            (if (list? mods)
-                                                (for-each
-                                                 (lambda (mod)
-                                                   (cond
-                                                    ((and (ly:music? mod) (eq? 'LineBreakEvent (ly:music-property mod 'name)))
-                                                     (set! (ly:grob-property grob 'line-break-permission) (ly:music-property mod 'break-permission)))
-                                                    ((and (ly:music? mod) (eq? 'PageBreakEvent (ly:music-property mod 'name)))
-                                                     (set! (ly:grob-property grob 'page-break-permission) (ly:music-property mod 'break-permission)))
-                                                    ((and (ly:music? mod) (eq? 'PageTurnEvent (ly:music-property mod 'name)))
-                                                     (set! (ly:grob-property grob 'page-turn-permission) (ly:music-property mod 'break-permission)))
-                                                    ((and (ly:music? mod) (eq? 'ApplyOutputEvent (ly:music-property mod 'name)))
-                                                     (let ((proc (ly:music-property mod 'procedure)))
-                                                       (proc grob context context)
-                                                       ))
-                                                    )) mods))))
-                                        (get-paths edition takt pos))) (editions)))
-                                )))
+                              (if (eq? #t (ly:grob-property grob 'non-musical))
+                                  (let ((mods (get-mods)))
+                                    (if (list? mods)
+                                        (for-each
+                                         (lambda (mod)
+                                           (cond
+                                            ((and (ly:music? mod) (eq? 'LineBreakEvent (ly:music-property mod 'name)))
+                                             (set! (ly:grob-property grob 'line-break-permission) (ly:music-property mod 'break-permission)))
+                                            ((and (ly:music? mod) (eq? 'PageBreakEvent (ly:music-property mod 'name)))
+                                             (set! (ly:grob-property grob 'page-break-permission) (ly:music-property mod 'break-permission)))
+                                            ((and (ly:music? mod) (eq? 'PageTurnEvent (ly:music-property mod 'name)))
+                                             (set! (ly:grob-property grob 'page-turn-permission) (ly:music-property mod 'break-permission)))
+                                            ((and (ly:music? mod) (eq? 'ApplyOutputEvent (ly:music-property mod 'name)))
+                                             (let ((proc (ly:music-property mod 'procedure)))
+                                               (proc grob context context)
+                                               ))
+                                            )) mods)))
+                                  )))
+
                            (start-translation-timestep
                             (lambda (trans . recall) ; recall from process-music
                               (let ((takt (ly:context-property context 'currentBarNumber))
