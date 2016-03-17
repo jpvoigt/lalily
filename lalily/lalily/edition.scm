@@ -355,11 +355,20 @@
                                          (lambda (mod)
                                            (cond
                                             ((and (ly:music? mod) (eq? 'LineBreakEvent (ly:music-property mod 'name)))
-                                             (set! (ly:grob-property grob 'line-break-permission) (ly:music-property mod 'break-permission)))
+                                             (let ((break-permission (ly:music-property mod 'break-permission)))
+                                               (set! (ly:grob-property grob 'line-break-permission)
+                                                     (if (symbol? break-permission) break-permission 'forbid))
+                                               ))
                                             ((and (ly:music? mod) (eq? 'PageBreakEvent (ly:music-property mod 'name)))
-                                             (set! (ly:grob-property grob 'page-break-permission) (ly:music-property mod 'break-permission)))
+                                             (let ((break-permission (ly:music-property mod 'break-permission)))
+                                               (set! (ly:grob-property grob 'page-break-permission)
+                                                     (if (symbol? break-permission) break-permission 'forbid))
+                                               ))
                                             ((and (ly:music? mod) (eq? 'PageTurnEvent (ly:music-property mod 'name)))
-                                             (set! (ly:grob-property grob 'page-turn-permission) (ly:music-property mod 'break-permission)))
+                                             (let ((break-permission (ly:music-property mod 'break-permission)))
+                                               (set! (ly:grob-property grob 'page-turn-permission)
+                                                     (if (symbol? break-permission) break-permission 'forbid))
+                                               ))
                                             ((and (ly:music? mod) (eq? 'ApplyOutputEvent (ly:music-property mod 'name)))
                                              (let ((proc (ly:music-property mod 'procedure)))
                                                (proc grob context context)
@@ -452,7 +461,7 @@
                                           ))
                                        mods)))
                                 )))
-                           
+
                            (finalize
                             (lambda (trans)
                               (if (eq? 'Score (ly:context-name context))

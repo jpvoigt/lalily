@@ -61,6 +61,7 @@
 % inserting some senseless breaks
 \editionMod demo 10 0/4 Score \break
 \editionMod demo 17 0/4 Score \pageBreak
+\editionMod demo 20 0/4 Score \break
 
 % moving a System ... this doesn't make sense that much, but it shows, how it works
 \editionMod demo 10 0/4 Score
