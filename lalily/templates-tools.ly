@@ -48,8 +48,7 @@
 % create a pair from a string
 \parserDefine PairS
 #(define-scheme-function (parser location s p)((char? #\|) string?)
-   (ly:music-function-exec Pair parser location
-     (string-split p s)))
+   (Pair (string-split p s)))
 
 % give a template warning
 \parserDefine deprecateTemplate

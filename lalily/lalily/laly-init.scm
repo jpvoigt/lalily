@@ -185,7 +185,7 @@
 (define-public setLocalStaffSize
   (define-void-function (size)(number?)
     (if ((get-registry-val lalily:test-predicate lalily-test-location?) (*parser*) (*location*))
-        (ly:music-function-exec setGlobalStaffSize size)
+        (setGlobalStaffSize size)
         )))
 
 (define-public midiTempo
