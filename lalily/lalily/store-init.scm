@@ -244,14 +244,28 @@
       (set-music-folder! cmf)
       )))
 
+(define (atree-deep-copy val)
+   (cond
+    ((list? val) (map atree-deep-copy val))
+    ((pair? val) (cons (atree-deep-copy (car val))(atree-deep-copy (cdr val))))
+    ((ly:music? val)(ly:music-deep-copy val))
+    (else val)
+    ))
+
 (define-public optionsInit clratree)
 (define-public optionsGet getatree)
-(define-public optionsSet setatree)
-(define-public optionsAdd addatree)
+(define-public optionsSet
+    (define-void-function
+   (name sympath val)(string-or-symbol? list? scheme?)
+   (setatree name sympath (atree-deep-copy val))))
+(define-public optionsAdd
+  (define-void-function
+   (name sympath val)(string-or-symbol? list? scheme?)
+   (addatree name sympath (atree-deep-copy val))))
 (define-public optionsRemove rematree)
 (define-public optionsAddAll setatreeall)
 (define-public optionsInitWith
-  (define-scheme-function (name opts)(symbol? list?)
+  (define-void-function (name opts)(symbol? list?)
     (ly:parser-define! name (list))
     (let ((opts (if (and (= 1 (length opts))
                          (symbol? (car opts)))
