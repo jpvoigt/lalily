@@ -437,42 +437,28 @@
   \once \override Score.RehearsalMark #'break-visibility = ##(#t #t #f)
   \mark \markup { \musicglyph #"scripts.ufermata" }
   #})
+(setstyle 'lalily:markDaX #{ \markup { \small \italic \fromproperty #'style:text } #})
 (define-public markDaX
-  (define-music-function (eo text)((number-pair? '(0 . 0)) markup?)
+  (define-music-function (eo text)((number-pair? #f) markup?)
     #{
       \once \override Score.RehearsalMark #'break-visibility = ##(#t #t #f)
       \once \override Score.RehearsalMark #'self-alignment-X = #RIGHT
       \once \override Score.RehearsalMark #'direction = #DOWN
-      \once \override Score.RehearsalMark #'extra-offset = #eo
-      \mark \markup { \small \italic $text }
+      $(if (number-pair? eo) #{ \once \override Score.RehearsalMark #'extra-offset = #eo #})
+      \mark \markup { \style #'lalily:markDaX $text }
     #}))
 (define-public markFine
   (define-music-function (eo)(number-pair?)
-    #{
-      \once \override Score.RehearsalMark #'break-visibility = ##(#t #t #f)
-      \once \override Score.RehearsalMark #'self-alignment-X = #RIGHT
-      \once \override Score.RehearsalMark #'direction = #DOWN
-      \once \override Score.RehearsalMark #'extra-offset = #eo
-      \mark \markup { \small \italic "fine." }
-    #}))
+    (markDaX "fine.")
+    ))
 (define-public markDCFine
   (define-music-function (eo)(number-pair?)
-    #{
-      \once \override Score.RehearsalMark #'break-visibility = ##(#t #t #f)
-      \once \override Score.RehearsalMark #'self-alignment-X = #RIGHT
-      \once \override Score.RehearsalMark #'direction = #DOWN
-      \once \override Score.RehearsalMark #'extra-offset = $eo
-      \mark \markup { \small \italic "d.c. al fine" }
-    #}))
+    (markDaX "d.c. al fine")
+    ))
 (define-public markDaCapo
   (define-music-function (eo)(number-pair?)
-    #{
-      \once \override Score.RehearsalMark #'break-visibility = ##(#t #t #f)
-      \once \override Score.RehearsalMark #'self-alignment-X = #RIGHT
-      \once \override Score.RehearsalMark #'direction = #DOWN
-      \once \override Score.RehearsalMark #'extra-offset = $eo
-      \mark \markup { \small \italic "da capo" }
-    #}))
+    (markDaX "da capo")
+    ))
 
 (define-public fullMelisma #{ \set melismaBusyProperties = #'(melismaBusy slurMelismaBusy tieMelismaBusy beamMelismaBusy) #})
 (define-public slurMelisma #{ \set melismaBusyProperties = #'(melismaBusy slurMelismaBusy tieMelismaBusy) #})
