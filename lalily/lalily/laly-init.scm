@@ -323,8 +323,9 @@
 
 ;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+(define (list-not-integer? v)(and (list? v)(not (integer? (car v)))))
 (define-public taktMeta
-  (define-music-function (frac beat-structure count)(fraction? (list? '()) integer?)
+  (define-music-function (frac beat-structure count)(fraction? (list-not-integer? '()) integer?)
     (let ((nom (car frac))
           (den (cdr frac)))
       (make-music
