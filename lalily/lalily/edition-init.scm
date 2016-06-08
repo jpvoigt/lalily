@@ -32,6 +32,50 @@
 (re-export addEdition)
 ; deactivate edition
 (re-export removeEdition)
+
+
+(define-public startModList
+  (define-void-function (lid edition-target edition-context-id proc)(symbol? symbol? list? procedure?)
+    (optionsInit lid)
+    (ly:parser-define! 'current-modlist lid)
+    (ly:parser-define! 'current-modproc `((proc . ,proc)
+                                          (edition-target . ,edition-target)
+                                          (edition-context-id . ,edition-context-id)))
+    ))
+(define-public addModList
+  (let ((frac-or-mom? (@@ (lalily edition) frac-or-mom?)))
+    (define-void-function (takt pos mod)
+      (integer? frac-or-mom? scheme?)
+      (if (and (defined? 'current-modlist)(symbol? current-modlist))
+          (optionsAdd current-modlist (list (cons takt pos)) mod)
+          (ly:input-warning (*location*) "no modlist started?")
+          ))))
+(define-public finishModList
+  (define-void-function ()()
+    (if (and (defined? 'current-modlist)
+             (symbol? current-modlist)
+             (defined? 'current-modproc)
+             (list? current-modproc)
+             (symbol? (assoc-get 'edition-target current-modproc))
+             (list? (assoc-get 'edition-context-id current-modproc))
+             (procedure? (assoc-get 'proc current-modproc))
+             )
+        (let ((lst (ly:parser-lookup current-modlist))
+              (edition-target (assoc-get 'edition-target current-modproc))
+              (edition-id (assoc-get 'edition-context-id current-modproc))
+              (proc (assoc-get 'proc current-modproc)))
+          (for-each (lambda (p)
+                      (if (pair? p)
+                          (let ((mod (proc (cdr p))))
+                            (editionMod edition-target (caar p) (cdar p) edition-id mod)
+                            )))
+            lst))
+        (ly:input-warning (*location*) "no modlist started?")
+        )))
+
+
+
+
 ; create ISMN string with publisher number and title number
 (re-export create-ismn)
 
@@ -70,7 +114,8 @@
     \override #'(hilite-color . (0.95 0.95 0.95)) \hilite \fill-line { \line { \fromproperty #'anno:index - Takt \fromproperty #'anno:position : \fromproperty #'anno:title } \null }
     \justify { \fromproperty #'anno:text }
     \vspace #0.5
-  } } #})
+  }
+  } #})
 
 
 (define-markup-list-command (annolist layout props)()
