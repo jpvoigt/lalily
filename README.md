@@ -10,6 +10,10 @@ or for example in frescobaldi add the path under preferences->lilypond-settings.
 
 to load lalily.
 
+*This version depends on lilypond >2.19.32.*
+
+*The functionality of lalily shall be reimplemented as modules for the new architecture of [openlilylib](https://github.com/openlilylib). The first one is the [edition-engraver](https://github.com/openlilylib/edition-engraver).*
+
 folders and files
 -----------------
 
