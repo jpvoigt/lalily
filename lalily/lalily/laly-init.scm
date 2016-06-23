@@ -409,7 +409,7 @@
       (markup #:line (#:style sym text)))))
 (define-public dedic
   (define-music-function (dir text)((number? 1) markup?)
-    (make-music 'TextScriptEvent 'direction dir 'text
+    (make-music 'TextScriptEvent 'direction dir 'dedic (string->symbol (markup->string text)) 'text
       (markup #:line (#:style 'dedic text)))))
 
 ;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
