@@ -421,11 +421,11 @@
           (tree-walk quotes '()
             (lambda (path key val)
               (let ((quey (quote-name path))
-                    (mus (get-music path (car val))))
+                    (mus (get-music path))) ; (car val))))
                 (if (quotable-music mus)
                     (begin
                      (if (lalily:verbose) (ly:message "add-quotable ~A" quey))
-                     (add-quotable parser quey
+                     (add-quotable quey
                        (music-filter
                         (lambda (event)
                           (let ( (eventname (ly:music-property  event 'name))

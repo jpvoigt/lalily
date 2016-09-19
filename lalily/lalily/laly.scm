@@ -110,7 +110,7 @@
 
 (define-public includePattern
   (define-void-function (idir pattern)(string? string?)
-    (let ((dirname (string-append (location-extract-path location) idir)))
+    (let ((dirname (string-append (location-extract-path (*location*)) idir)))
 
       (if (or (= (string-length dirname) 0)
               (not (eq? #\/ (string-ref dirname (- (string-length dirname) 1)))))
