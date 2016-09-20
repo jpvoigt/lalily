@@ -127,7 +127,7 @@
 (define-public includeLocal
   (define-void-function (file)(string?)
     (let ((outname (format "~A.ly" (ly:parser-output-name (*parser*))))
-          (locname (car (ly:input-file-line-char-column location))))
+          (locname (car (ly:input-file-line-char-column (*location*)))))
       (if (or (string=? outname locname) (string-suffix? outname locname))
           (ly:parser-include-string (format "\\include \"~A\"\n" file)))
       )))
