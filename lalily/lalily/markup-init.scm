@@ -174,7 +174,7 @@
           (let ((stil (interpret-markup layout props (car args)))
                 (extent-size (lambda (ex) (- (cdr ex)(car ex)))))
                (if (or (> (extent-size (ly:stencil-extent stil X)) 0)
-                       (> (extent-size (ly:stencil-extent stil Y)) 0)) (make-box-markup (car args)) (car args)))))
+                       (> (extent-size (ly:stencil-extent stil Y)) 0)) (make-rounded-box-markup (car args)) (car args)))))
 
 (define-markup-command (epspage layout props file)(string?)
   (let* ((prop-line-width (chain-assoc-get 'line-width props #f))
