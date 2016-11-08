@@ -194,30 +194,33 @@
 \registerTemplate lalily.instrument.trumpet
 #(define-music-function (piece options)(list? list?)
    (call-template (create-template-path #f '(..)) piece
-     (assoc-set-all! options `((default .
-                                 ((name . "trumpet")
-                                  (transposition . ,(ly:make-pitch -1 6 -1/2))
-                                  (midi-instrument . "trumpet")
-                                  (output-concert-pitch . #f)
-                                  )))
+     (assoc-set-all! `((default .
+                         ((name . "trumpet")
+                          (transposition . ,(ly:make-pitch -1 6 -1/2))
+                          (midi-instrument . "trumpet")
+                          (output-concert-pitch . #f)
+                          )))
+       options
        )))
 \registerTemplate lalily.instrument.trombone
 #(define-music-function (piece options)(list? list?)
    (call-template (create-template-path #f '(..)) piece
-     (assoc-set-all! options '((default .
-                                 ((name . "trombone")
-                                  (midi-instrument . "trombone")
-                                  (clef . "bass")
-                                  )))
+     (assoc-set-all! '((default .
+                         ((name . "trombone")
+                          (midi-instrument . "trombone")
+                          (clef . "bass")
+                          )))
+       options
        )))
 \registerTemplate lalily.instrument.tuba
 #(define-music-function (piece options)(list? list?)
    (call-template (create-template-path #f '(..)) piece
-     (assoc-set-all! options '((default .
-                                 ((name . "tuba")
-                                  (midi-instrument . "tuba")
-                                  (clef . "bass")
-                                  )))
+     (assoc-set-all! '((default .
+                         ((name . "tuba")
+                          (midi-instrument . "tuba")
+                          (clef . "bass")
+                          )))
+       options
        )))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -226,22 +229,25 @@
 \registerTemplate lalily.instrument.violin
 #(define-music-function (piece options)(list? list?)
    (call-template (create-template-path #f '(..)) piece
-     (assoc-set-all! options '((name . "violin")
-                               (midi-instrument . "violin")
-                               ))))
+     (assoc-set-all! '((name . "violin")
+                       (midi-instrument . "violin")
+                       ) options)
+     ))
 
 \registerTemplate lalily.instrument.viola
 #(define-music-function (piece options)(list? list?)
    (call-template (create-template-path #f '(..)) piece
-     (assoc-set-all! options '((name . "viola")
-                               (midi-instrument . "viola")
-                               (clef . "alto")
-                               ))))
+     (assoc-set-all! '((name . "viola")
+                       (midi-instrument . "viola")
+                       (clef . "alto")
+                       ) options)
+     ))
 \registerTemplate lalily.instrument.cello
 #(define-music-function (piece options)(list? list?)
    (call-template (create-template-path #f '(..)) piece
-     (assoc-set-all! options '((name . "cello")
-                               (midi-instrument . "cello")
-                               (clef . "bass")
-                               ))))
+     (assoc-set-all! '((name . "cello")
+                       (midi-instrument . "cello")
+                       (clef . "bass")
+                       ) options)
+     ))
 
