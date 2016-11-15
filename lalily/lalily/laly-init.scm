@@ -369,14 +369,24 @@
    #}
    ))
 
+(define (list-or-proc? v)(or (list? v)(procedure? v)))
 (define-public filterMusic
-  (define-music-function (events music) (list? ly:music?)
-    (let ((filterEvent (lambda (event)
-                         (let ( (eventname (ly:music-property  event 'name))
-                                (ret #t) )
-                           (for-each (lambda (n) (set! ret (and ret (not (eq? eventname n))))) events)
-                           ret
-                           )) ))
+  (define-music-function (events music) (list-or-proc? ly:music?)
+    (let ((filterEvent
+           (if (procedure? events)
+               events
+               (lambda (event)
+                 (let ( (eventname (ly:music-property  event 'name))
+                        (ret #t) )
+                   (define (not-filtered events)
+                     (if (> (length events) 0)
+                         (if (eq? eventname (car events))
+                             #f
+                             (not-filtered (cdr events)))
+                         #t))
+                   (not-filtered events)
+                   ))
+               )))
       (music-filter filterEvent music)
       )))
 
