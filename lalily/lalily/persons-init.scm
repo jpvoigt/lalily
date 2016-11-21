@@ -112,7 +112,7 @@
                                (begin
                                 (set-default-header piece (string->symbol (format "~Aname" act)) (person-name person))
                                 (set-default-header piece (string->symbol (format "~Alife" act)) (person-life person))
-                                ) (ly:input-warning location "unknown person '~A' (~A)" key act))
+                                ) (ly:input-warning (*location*) "unknown person '~A' (~A)" key act))
                            (if (markup? mup)
                                (set-default-header piece act mup))
                            ))
