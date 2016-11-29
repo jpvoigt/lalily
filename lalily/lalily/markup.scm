@@ -205,7 +205,7 @@
          (pad (/ (- line-width stil-width) (if (> (length widths) 1) (- (length widths) 1) 2)))
          (th (ly:output-def-lookup layout 'line-thickness))
          )
-    
+
     (if (< pad 0)
         (let ((xs (/ line-width stil-width)))
           (set! stils (map (lambda (stil) (ly:stencil-scale stil xs 1)) stils))
@@ -214,7 +214,7 @@
     (if (chain-assoc-get 'draw-marker props #f #f)
         (set! stils
               (map (lambda (st)
-              (ly:stencil-add (make-line-stencil .1 0 0 0 1) st)) stils)))
+                     (ly:stencil-add (make-line-stencil .1 0 0 0 1) st)) stils)))
     (if (chain-assoc-get 'draw-line props #f #f)
         (if (> (length stils) 1)
 
@@ -296,10 +296,14 @@
 (define-markup-command (style layout props symbol markup)(symbol? markup?)
   (interpret-markup layout (cons (list (cons 'style:text markup)) props) (getstyle symbol)))
 
-(register-markup-producer style-markup (lambda (layout props args)
-                                         (let* ((sym (car args))
-                                                (arg (cdr args)))
-                                           (markup #:override `(style:text . ,arg) (getstyle sym)))))
+(register-markup-producer style-markup
+  (lambda (layout props args)
+    (let* ((sym (car args))
+           (arg (cdr args)))
+      (markup #:override `(style:text . ,arg) (getstyle sym)))))
+
+(define-markup-command (with-props layout props env mup)(list? markup?)
+  (interpret-markup layout (cons env props) mup))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; a markup-command-independent markup->string function
