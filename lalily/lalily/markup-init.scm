@@ -233,6 +233,8 @@
 (re-export style-markup)
 (lalily-markup 'style)
 
+(re-export with-props-markup)
+
 (re-export qr-code-markup)
 (re-export barcode-markup)
 
