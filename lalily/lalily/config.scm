@@ -17,7 +17,7 @@
 
 (use-modules (lalily definitions))
 
-(set-registry-val lalily:registry-verbose #t)
+(set-registry-val lalily:registry-verbose #f)
 
 (set-registry-val lalily:paper:global-staff-size 16)
 (set-registry-val lalily:paper:default '(lalily default))

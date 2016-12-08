@@ -25,6 +25,8 @@
 (define-public lalily:registry-parser '(lalily runtime parser))
 (define-public lalily:registry-parser-defs '(lalily runtime parser defs))
 
+(define-public lalily:layout:no-auto-load '(lalily layout noAutoLoad))
+
 (define-public lalily:paper:global-staff-size '(lalily paper global-staff-size))
 (define-public lalily:paper:default '(lalily paper default))
 

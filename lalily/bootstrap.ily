@@ -65,6 +65,36 @@
 #(let ((defs (get-registry-val lalily:registry-parser-defs '())))
    (for-each (lambda (p)(ly:parser-define! (car p )(cdr p))) defs))
 
+% look for local config
+applyConfig =
+#(define-void-function (CONFIG config)(symbol? procedure?)
+   (if (and (defined? CONFIG)(list? (eval lalilyConfig (current-module))))
+       (let ((lc (eval lalilyConfig (current-module))))
+         (define (walk-tree tree path)
+           (for-each
+            (lambda (p)
+              (if (pair? p)
+                  (let ((ckey (car p))
+                        (cval (cdr p)))
+                    (if (and (= 0 (length path))(list? ckey))
+                        (begin
+                         (ly:warning "deprecated config: ~A" ckey)
+                         (config ckey cval)
+                         )
+                        (if (and (list? cval)(every pair? cval)(> (length cval) 0))
+                            (walk-tree cval `(,@path ,ckey))
+                            (config `(,@path ,ckey) cval)
+                            )
+                        ))
+                  ))
+            tree))
+         (walk-tree lc '())
+         )))
+registerConfig = #(lambda (ckey cval)
+                    (ly:message "config ~A=~A" ckey cval)
+                    (set-registry-val ckey cval))
+\applyConfig lalilyConfig #registerConfig
+
 
 % include (once) from lalily folder
 #(define-public lalilyInclude (define-void-function (file)(string?)
@@ -135,15 +165,17 @@
 \includeOnceIfExists "lalily-midi.ly" % once?
 
 % look for local config
+\applyConfig lalilyConfig #registerConfig
+%{
 \includeOnceIfExists "lalily-config.ly" %once?
 #(if (and (defined? 'lalilyConfig)(list? lalilyConfig))
      (for-each (lambda (p)
                  (if (and (pair? p)(list? (car p)))
                      (begin
-                      (ly:message "config ~A=~A" (car p )(cdr p))
                       (set-registry-val (car p) (cdr p))
                       ))
                  ) lalilyConfig))
+%}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Std layout
@@ -151,6 +183,7 @@
 #(define (do-layout parser)
    (and
     (not (eq? #t (ly:parser-lookup 'lalilyNoOutputDef)))
+    (not (eq? #t (get-registry-val lalily:layout:no-auto-load)))
     (not (defined? 'lalily-no-output-def))
     (not (ly:get-option 'lalily-no-output-def))
     ))
