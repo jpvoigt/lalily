@@ -68,8 +68,8 @@
 % look for local config
 applyConfig =
 #(define-void-function (CONFIG config)(symbol? procedure?)
-   (if (and (defined? CONFIG)(list? (eval lalilyConfig (current-module))))
-       (let ((lc (eval lalilyConfig (current-module))))
+   (if (and (defined? CONFIG)(list? (eval CONFIG (current-module))))
+       (let ((lc (eval CONFIG (current-module))))
          (define (walk-tree tree path)
            (for-each
             (lambda (p)
@@ -90,10 +90,12 @@ applyConfig =
             tree))
          (walk-tree lc '())
          )))
-registerConfig = #(lambda (ckey cval)
-                    (ly:message "config ~A=~A" ckey cval)
-                    (set-registry-val ckey cval))
-\applyConfig lalilyConfig #registerConfig
+registerConfig =
+#(define-scheme-function (do-log)(boolean?)
+   (lambda (ckey cval)
+     (if do-log (ly:message "config ~A=~A" ckey cval))
+     (set-registry-val ckey cval)))
+\applyConfig lalilyConfig \registerConfig ##t
 
 
 % include (once) from lalily folder
@@ -165,7 +167,7 @@ registerConfig = #(lambda (ckey cval)
 \includeOnceIfExists "lalily-midi.ly" % once?
 
 % look for local config
-\applyConfig lalilyConfig #registerConfig
+\applyConfig lalilyConfig \registerConfig ##f
 %{
 \includeOnceIfExists "lalily-config.ly" %once?
 #(if (and (defined? 'lalilyConfig)(list? lalilyConfig))
