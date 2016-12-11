@@ -139,6 +139,13 @@
                      )) staffs))
      #}))
 
+\registerTemplate lalily.instrument.generic
+#(define-music-function (piece options)(list? list?)
+   (call-template (create-template-path #f '(..)) piece
+     (assoc-set-all! options `((name . "melody")
+                               (midi-instrument . "oboe")
+                               ))))
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% woodwind
 
