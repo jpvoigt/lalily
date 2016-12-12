@@ -227,6 +227,38 @@
                 (add-score post-markup))
                )
              ))
+          ((and (list? (last music))(eq? (car (last music)) 'MARKUPLIST))
+           (let* ((ctx (get-music-folder))
+                  (muslist (cdr (last music)))
+                  (muplist (map
+                            (lambda (music)
+                              (let* (
+                                      (alist (cdr (last music)))
+                                      (stl (ly:assoc-get 'style alist #f #t))
+                                      (mkey (ly:assoc-get 'key alist #f #t))
+                                      (music (append (reverse (cdr (reverse music))) (list mkey)))
+                                      (dopre (ly:assoc-get 'pre-markup alist #f #f))
+                                      (dopost (ly:assoc-get 'post-markup alist #f #f))
+                                      (opts (get-default-options music))
+                                      (header (ly:assoc-get 'header opts))
+                                      (text (ly:assoc-get 'text alist "" #f))
+                                      (pre-markup (if dopre (ly:assoc-get 'pre-markup opts #f #f) #f))
+                                      (post-markup (if dopre (ly:assoc-get 'post-markup opts #f #f) #f))
+                                      )
+                                (if (list? header)
+                                    #{
+                                      \markup {
+                                        \with-props #(map (lambda (p)
+                                                            (cons (string->symbol (format "header:~A" (car p)))
+                                                              (cdr p))) header)
+                                        \style #stl $text
+                                      }
+                                    #}
+                                    #{ \markup \style #stl $text #})
+                                )) muslist)))
+             (add-score muplist)
+             ))
+
           (else (let ((ctx (get-music-folder)))
                   (set-music-folder! music)
                   (doScore options)
