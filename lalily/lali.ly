@@ -230,6 +230,10 @@
           ((and (list? (last music))(eq? (car (last music)) 'MARKUPLIST))
            (let* ((ctx (get-music-folder))
                   (muslist (cdr (last music)))
+                  (list-style (if (not (pair? (car muslist)))
+                                  (let ((sym (car muslist)))
+                                    (set! muslist (cdr muslist))
+                                    sym) #f))
                   (muplist
                    (map
                     (lambda (mus)
@@ -257,7 +261,13 @@
                             #}
                             #{ \markup \style #stl $text #})
                         )) muslist)))
-             (add-score muplist)
+             (if list-style
+                 (add-score
+                  (cond
+                   ((symbol? list-style) (list #{ \markup { \style #list-style \left-column $muplist } #}))
+                   (else (list #{ \markup { \left-column $muplist } #}))
+                   ))
+                 (add-score muplist))
              ))
 
           (else (let ((ctx (get-music-folder)))
