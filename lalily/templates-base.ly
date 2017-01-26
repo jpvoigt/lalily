@@ -54,6 +54,7 @@
    (let* ((elms (assoc-get 'part options (assoc-get 'element options '())))
           (group (assoc-get 'group options #f))
           (group-mods (assoc-get 'group-mods options #f))
+          (remove-tags (assoc-get 'remove-tags options #f))
           (parts (if (> (length elms) 0)
                      (make-music 'SimultaneousMusic 'elements
                        (map
@@ -61,10 +62,14 @@
                           (let* ((opts (cdr p))
                                  (template (assoc-get 'template opts '(generic)))
                                  (path (assoc-get 'music opts (list (car p))))
+                                 (part #{ \callTemplate ##t #template #path #opts #})
                                  )
-                            #{ \callTemplate ##t #template #path #opts #}
+                            (if (and (list? remove-tags)(> (length remove-tags) 0))
+                                (removeWithTag remove-tags part)
+                                part)
                             )) elms))
-                     (make-music 'SimultaneousMusic 'void #t))))
+                     (make-music 'SimultaneousMusic 'void #t)))
+          )
      (if (symbol? group)
          #{
            \new $group \with {
@@ -73,7 +78,8 @@
            } $parts
          #}
          parts
-         )))
+         )
+     ))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Transpose
