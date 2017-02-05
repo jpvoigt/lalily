@@ -579,7 +579,9 @@
           (let ((staff (ly:context-find context 'Staff)))
             (if (ly:context? staff) (set! staffid (ly:context-id staff)))
             ; this engraver does nothing
-            (list)))
+            (make-engraver
+             ((initialize trans) (ly:message "cue in ~A" staffid))
+             )))
         ; engraver to set the lyric alignment
         (define (aligncue context)
           `((initialize .
