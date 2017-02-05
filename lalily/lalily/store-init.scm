@@ -245,17 +245,17 @@
       )))
 
 (define (atree-deep-copy val)
-   (cond
-    ((list? val) (map atree-deep-copy val))
-    ((pair? val) (cons (atree-deep-copy (car val))(atree-deep-copy (cdr val))))
-    ((ly:music? val)(ly:music-deep-copy val))
-    (else val)
-    ))
+  (cond
+   ((list? val) (map atree-deep-copy val))
+   ((pair? val) (cons (atree-deep-copy (car val))(atree-deep-copy (cdr val))))
+   ((ly:music? val)(ly:music-deep-copy val))
+   (else val)
+   ))
 
 (define-public optionsInit clratree)
 (define-public optionsGet getatree)
 (define-public optionsSet
-    (define-void-function
+  (define-void-function
    (name sympath val)(string-or-symbol? list? scheme?)
    (setatree name sympath (atree-deep-copy val))))
 (define-public optionsAdd
@@ -574,14 +574,16 @@
         (define (strmup? v)
           (or (and (string? v)(not (string-null? v)))
               (and (not (string? v))(markup? v))))
-        ; dummy engraver to get the parental staff-id
+        ; get the parental staff-id
         (define (getstaffid context)
           (let ((staff (ly:context-find context 'Staff)))
-            (if (ly:context? staff) (set! staffid (ly:context-id staff)))
-            ; this engraver does nothing
-            (make-engraver
-             ((initialize trans) (ly:message "cue in ~A" staffid))
-             )))
+            (if (ly:context? staff)
+                (let ((cname (ly:context-name staff))
+                      (cid (ly:context-id staff)))
+                  (ly:message "cue in ~A '~A'" cname cid)
+                  (set! staffid (ly:context-id staff))
+                  ))
+            ))
         ; engraver to set the lyric alignment
         (define (aligncue context)
           `((initialize .
@@ -599,7 +601,7 @@
             \tag #'cued \new CueVoice = $cueid \with {
               \consists \editionEngraver ##f
               % get parent staffs context-id
-              \consists #getstaffid
+              \applyContext #getstaffid
               %\consists "Instrument_switch_engraver"
             } {
               $(if (eq? dir UP) #{ \voiceOne #} #{ \voiceTwo #})
