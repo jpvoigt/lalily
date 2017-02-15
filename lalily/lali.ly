@@ -214,9 +214,14 @@
                )
              (add-score #{
                \markuplist {
-                 \with-props #(map (lambda (p)
-                                     (cons (string->symbol (format "header:~A" (car p)))
-                                       (cdr p))) header)
+                 \with-props #(append
+                               (map (lambda (p)
+                                      (cons (string->symbol (format "header:~A" (car p)))
+                                        (cdr p))) header)
+                               (map (lambda (p)
+                                      (cons (string->symbol (format "lalily:~A" (car p)))
+                                        (cdr p))) alist)
+                               )
                  \style #stl $text
                } #})
              (cond ((markup? post-markup)
