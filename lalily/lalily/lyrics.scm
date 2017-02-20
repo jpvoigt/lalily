@@ -107,8 +107,7 @@
                      (display-nl (chain-assoc-get 'display-nl props #f))
                      (make-line (chain-assoc-get 'make-line props make-justify-markup))
                      (stlist (list))
-                     (lyrics (if (list? arg)(get-music (create-music-path mabs arg)
-                                              (chain-assoc-get 'location props)) arg))
+                     (lyrics (if (list? arg)(get-music (create-music-path mabs arg)) arg))
                      )
                  (let*
                   ((append-stanza (lambda (stm)(set! stlist (append stlist (list stm)))))
