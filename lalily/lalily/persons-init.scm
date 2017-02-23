@@ -98,8 +98,8 @@
                                                          (poetlife (chain-assoc-get 'header:poetlife props ""))
                                                          (poem (chain-assoc-get 'header:poem props #f)))
                                                      (if poetname
-                                                         (if poem #{ \markup \line { Text: \override #'(baseline-skip . 2) \left-column { $poetname \smaller \smaller $poetlife } $poem } #}
-                                                             #{ \markup \line { Text: $poetname \smaller \smaller $poetlife } #})
+                                                         (if poem #{ \markup \line { $poetpre \override #'(baseline-skip . 2) \left-column { $poetname \smaller \smaller $poetlife } $poem } #}
+                                                             #{ \markup \line { $poetpre $poetname \smaller \smaller $poetlife } #})
                                                          ""))))
                          ))
                ))
