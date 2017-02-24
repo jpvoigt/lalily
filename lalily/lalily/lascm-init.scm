@@ -45,6 +45,7 @@
 (re-export tree-create)
 (re-export tree?)
 (re-export tree-display)
+(re-export tree->string)
 (re-export tree-set!)
 (re-export tree-merge!)
 (re-export tree-get-tree)

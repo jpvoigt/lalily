@@ -636,7 +636,7 @@
 (export anno-pos)
 ; display annotation
 (define-method (display (a <annotation>) port)
-  (format #t "~A: ~A" (anno-pos a) (markup->string (title a)) port))
+  (format port "~A: ~A" (anno-pos a) (markup->string (title a))))
 
 ; create annotation instance
 (define-public (make-anno cat title text . opts)

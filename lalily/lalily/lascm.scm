@@ -324,7 +324,7 @@ example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"
         (port (ly:assoc-get 'port opt (current-output-port))))
     (tree-walk-branch tree path
       (lambda (path k val)
-        (format #t "[~A] ~A" (key tree) (string-join (map pformat path) pathsep 'infix) port)
+        (format port "[~A] ~A" (key tree) (string-join (map pformat path) pathsep 'infix))
         (if (and dval val) (begin
                             (display ": " port)
                             (display (vformat val) port)

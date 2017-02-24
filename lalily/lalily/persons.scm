@@ -31,7 +31,7 @@
 (define-public (person-create key name life)(make <person> #:key key #:name name #:life life))
 (define-public (person? p)(is-a? p <person>))
 (define-method (display (person <person>) port)
-               (format #t "~A: ~A ~A" (person-key person) (person-name person) (person-life person) port))
+               (format port "~A: ~A ~A" (person-key person) (person-name person) (person-life person)))
 
 (define-class <person-db> ())
 (define-method (register-person! (db <person-db>) sym name life)
