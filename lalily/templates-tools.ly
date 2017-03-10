@@ -74,6 +74,7 @@
        \createScoreWithOptions #path #options
      #}))
 
+% chord mode
 \registerTemplate lalily.chords
 #(define-music-function (parser location piece options)(list? list?)
    (let ((mods (assoc-get 'context-mods options #f #f)))
@@ -83,6 +84,7 @@
        } \getMusic {} #'()
      #}))
 
+% lyrics not tied to another voice
 \registerTemplate lalily.Lyrics
 #(define-music-function (parser location piece options)(list? list?)
    (let ((mods (assoc-get 'context-mods options #f #f))
@@ -92,3 +94,13 @@
          $(if (ly:context-mod? mods) mods #{ \with {} #})
        } { \getMusicDeep {} #'init-lyrics \getMusic #'() }
      #}))
+
+% scale durations
+\registerTemplate lalily.scale-dur
+#(define-music-function (piece options)(list? list?)
+   (let ((path (ly:assoc-get 'path options '(..) #f))
+         (scale (ly:assoc-get 'scale options (cons 1 2) #t)))
+     #{
+       \rebaseMusic $scale \createScore #path
+     #}
+     ))
