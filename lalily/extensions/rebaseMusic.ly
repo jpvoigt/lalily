@@ -1,0 +1,58 @@
+\version "2.19.56"
+
+#(define (ggt a b) (if (= b 0) a (ggt b (modulo a b))))
+#(define (simpFrac f)
+   (let ((t (ggt (car f)(cdr f))))
+     (cons (/ (car f) t) (/ (cdr f) t))
+     ))
+#(define (fracmul f1 f2)
+   (let* ((num1 (car f1))
+          (den1 (cdr f1))
+          (num2 (car f2))
+          (den2 (cdr f2)))
+     (cond
+      ((= num1 1) (cons num2 (* den1 den2)))
+      ((= num2 1) (cons num1 (* den1 den2)))
+
+      ((= den1 1)
+       (let ((f (simpFrac (cons (* num1 num2) den2))))
+         (while (< (car f)(car f1)) (set! f (cons (* 2 (car f))(* 2 (cdr f)))))
+         f))
+      ((= den2 1) (cons (* num1 num2) den1))
+
+      (else (simpFrac (cons (* num1 num2)(* den1 den2))))
+      )
+     ))
+
+rebaseMusic =
+#(define-music-function (frac mus)((fraction? 1/2) ly:music?)
+   (let ((log2 (inexact->exact (/ (log (/ (car frac)(cdr frac))) (log 2))))
+         (scale (cons 1 1)))
+     (if (not (integer? log2))
+         (begin
+          (ly:input-warning (*location*) "unconventional factor ~A" log2)
+          (set! scale frac)
+          (set! log2 0)
+          ))
+     (music-map
+      (lambda (m)
+        (let ((dur (ly:music-property m 'duration)))
+          (cond
+           ((ly:duration? dur)
+            (let ((dlog (- (ly:duration-log dur) log2))
+                  (dots (ly:duration-dot-count dur))
+                  (scale (ly:duration-scale dur)))
+              (ly:music-set-property! m 'duration (ly:make-duration dlog dots scale))
+              ))
+           ((eq? 'TimeSignatureMusic)
+            (let ((num (ly:music-property m 'numerator))
+                  (den (ly:music-property m 'denominator)))
+              (if (and (number? num)(number? den))
+                  (let* ((frac (simpFrac frac))
+                         (sig (fracmul frac (cons num den))))
+                    (ly:music-set-property! m 'numerator (car sig))
+                    (ly:music-set-property! m 'denominator (cdr sig))
+                    ))))
+           )
+          )
+        m) mus)))
