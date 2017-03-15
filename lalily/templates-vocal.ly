@@ -141,7 +141,7 @@ create one staff with one vocal voice and associated lyrics.
          {
            \callTemplate ##t lalily.init.Voice.vocal #'() #init-opts
            $(if (string? clef) #{ \clef $clef #})
-           $init-voice \getMusic music
+           $init-voice $(if (has-music? (get-current-music)) (getMusic '()) (getMusic '(music)))
          }
        >>
      #}))
