@@ -405,6 +405,12 @@
                                               `((pitch-alist . ,(ly:music-property mod 'pitch-alist))
                                                 (tonic . ,(ly:music-property mod 'tonic)))))
                                            )
+                                          ((and (ly:music? mod)(eq? 'ExtenderEvent (ly:music-property mod 'name)))
+                                           (ly:broadcast (ly:context-event-source context)
+                                             (ly:make-stream-event
+                                              (ly:make-event-class 'extender-event)
+                                              (ly:music-mutable-properties mod)))
+                                           )
                                           ((apply-context? mod)
                                            (do-apply context mod))
                                           ((ly:context-mod? mod)

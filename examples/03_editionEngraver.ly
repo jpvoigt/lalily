@@ -55,6 +55,8 @@
 \editionMod demo 2 0/4 Score \override LyricText.color = #green
 \editionMod demo 3 2/4 Score \revert LyricText.color
 
+\editionMod demo 1 2/4 bas.Lyrics #(make-music 'ExtenderEvent)
+
 % accessing parent context so stanza is set in all lyrics inside this StaffGroup
 \editionMod demo 9 0/4 bas.Lyrics \set StaffGroup.stanza = "St."
 
