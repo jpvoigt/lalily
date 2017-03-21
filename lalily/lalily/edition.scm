@@ -212,10 +212,10 @@
                         (eq? 'ApplyOutputEvent (ly:music-property m 'name))
                         (eq? 'MarkEvent (ly:music-property m 'name))
                         (eq? 'KeyChangeEvent (ly:music-property m 'name))
-
-                        (eq? 'PartCombineForceEvent (ly:music-property m 'name))
                         (eq? 'ExtenderEvent (ly:music-property m 'name))
                         (eq? 'HyphenEvent (ly:music-property m 'name))
+
+                        (eq? 'PartCombineForceEvent (ly:music-property m 'name))
                         )
                        (set! mods `(,@mods ,m))
                        #t
@@ -409,6 +409,12 @@
                                            (ly:broadcast (ly:context-event-source context)
                                              (ly:make-stream-event
                                               (ly:make-event-class 'extender-event)
+                                              (ly:music-mutable-properties mod)))
+                                           )
+                                          ((and (ly:music? mod)(eq? 'HyphenEvent (ly:music-property mod 'name)))
+                                           (ly:broadcast (ly:context-event-source context)
+                                             (ly:make-stream-event
+                                              (ly:make-event-class 'hyphen-event)
                                               (ly:music-mutable-properties mod)))
                                            )
                                           ((apply-context? mod)
