@@ -204,19 +204,17 @@
                        (set! mods `(,@mods ,(context-mod-from-music m)))
                        #t
                        )
-                      ((or
-                        (eq? 'TextScriptEvent (ly:music-property m 'name))
-                        (eq? 'LineBreakEvent (ly:music-property m 'name))
-                        (eq? 'PageBreakEvent (ly:music-property m 'name))
-                        (eq? 'PageTurnEvent (ly:music-property m 'name))
-                        (eq? 'ApplyOutputEvent (ly:music-property m 'name))
-                        (eq? 'MarkEvent (ly:music-property m 'name))
-                        (eq? 'KeyChangeEvent (ly:music-property m 'name))
-                        (eq? 'ExtenderEvent (ly:music-property m 'name))
-                        (eq? 'HyphenEvent (ly:music-property m 'name))
-
-                        (eq? 'PartCombineForceEvent (ly:music-property m 'name))
-                        )
+                      ((memq (ly:music-property m 'name)
+                         '(TextScriptEvent
+                           LineBreakEvent PageBreakEvent PageTurnEvent
+                           ApplyOutputEvent
+                           MarkEvent
+                           KeyChangeEvent
+                           ExtenderEvent HyphenEvent
+                           
+                           ;ContextChange
+                           ;PartCombineForceEvent
+                           ))
                        (set! mods `(,@mods ,m))
                        #t
                        )
