@@ -545,6 +545,11 @@
     (let* ((p (create-music-path #f path)))
       (track-quote p (*location*))
       )))
+(define-public quoteName
+  (define-scheme-function (absolute path)((boolean? #f) list?)
+    (let* ((p (create-music-path absolute path)))
+      (quote-name p)
+      )))
 (define-public aCreateQuote
   (define-void-function (path)(list?)
     (let* ((p (create-music-path #t path)))
