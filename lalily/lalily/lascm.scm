@@ -385,8 +385,8 @@ example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"
 
 (define (not-null? val)(if val #t #f))
 
-(define-public getRegistryVal (define-scheme-function (parser location key val)(list? not-null?)
-                                (get-registry-val key)))
+(define-public getRegistryVal (define-scheme-function (parser location key def)(list? not-null?)
+                                (get-registry-val key def)))
 (define-public setRegistryVal (define-music-function (parser location key val)(list? not-null?)
                                 (set-registry-val key val)
                                 (make-music 'SequentialMusic 'void #t)))
