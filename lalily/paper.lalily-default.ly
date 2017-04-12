@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.17.29"
+\version "2.19.49"
 
 #(define lalily-relincl-tmp (ly:get-option 'relative-includes))
 #(ly:set-option 'relative-includes #t)
@@ -57,7 +57,8 @@ markupCopyright = \markup
                              {
                                \teeny \sans \line {
                                  "Vervielfältigungen jeglicher Art sind gesetzlich verboten / Any unauthorized reproduction is prohibited by law"
-                             } }
+                               }
+                             }
                              \versionMarkup
                            }
                            \jpv-cond-override #(lambda (layout props)(if (jpv:print-version layout) 0 2.5)) #'baseline-skip
@@ -88,7 +89,8 @@ markupCopyrightBack = \markup
                              {
                                \teeny \sans \line {
                                  "Vervielfältigungen jeglicher Art sind gesetzlich verboten / Any unauthorized reproduction is prohibited by law"
-                             } }
+                               }
+                             }
                              \versionMarkup
                            }
                          }
@@ -178,93 +180,105 @@ markupCopyrightBack = \markup
 
   oddHeaderMarkup = \markup \fill-line { \null \box-ne \fromproperty #'header:instrument }
   evenHeaderMarkup = \markup \null
-  titleFooterMarkup = \markup \bold \execMarkup #(lambda (layout props)
-                                                   (let* ((msection (chain-assoc-get 'header:section props))
-                                                          (ssection (if (markup? msection) (string-trim-both (markup->string msection)) ""))
-                                                          (mtitle (chain-assoc-get 'header:title props))
-                                                          (stitle (if (markup? mtitle) (string-trim-both (markup->string mtitle)) ""))
-                                                          (mtoc (chain-assoc-get 'toc:current props))
-                                                          (stoc (if (markup? mtoc) (string-trim-both (markup->string mtoc)) ""))
-                                                          (mlist (list)))
-                                                     (if (> (string-length ssection) 0) (set! mlist (list (markup #:italic msection))))
-                                                     (if (> (string-length stitle) 0) (set! mlist `(,@mlist ,@(if (> (length mlist) 0) (list ", ")(list)) ,mtitle)))
-                                                     (if (and (> (string-length stoc) 0) (not (string=? stitle stoc)))
-                                                         (set! mlist `(,@mlist ,@(if (> (length mlist) 0) (list ", ")(list)) ,mtoc)))
-                                                     (make-line-markup mlist)
-                                                     ))
-
-  oddFooterMarkup = \markup \delayed \column {
-    \on-the-fly #page-copyright \markupCopyright
-
-    \on-the-fly #run-page+last-footer {
-      \override #'(baseline-skip . 2.5)
-      \column {
-        \sloppyline {
-          \fontsize #-3 {
-            \concat {
-              \concat {
-                \on-the-fly #has-bookname
-                \italic \concat { \fromproperty #'header:bookname ", " }
-                \on-the-fly #has-booktitle
-                \italic \concat { \fromproperty #'header:booktitle ", " }
-              }
-              \on-the-fly #diff-composer \concat { \fromproperties #'(header:composername header:composer) ", " }
-              \on-the-fly #(lambda (layout props arg)
-                            (if (chain-assoc-get 'header:poet-footer props #f)
-                              (interpret-markup layout props arg)
-                              empty-stencil)) \concat { \fromproperties #'(header:poetname header:poet) ", " }
-              \execMarkup #(lambda (layout props)(ly:output-def-lookup layout 'titleFooterMarkup
-                                                   (markup #:bold #:fromproperties '(header:title toc:current)) ))
-              \on-the-fly #has-piece \concat { ", " \fromproperty #'header:piece }
-            }
-          }
-          \on-the-fly #has-catname \concat { \hspace #2 \bold \fontsize #-3 { \sans \concat { \fromproperty #'header:catname "-" \cat-number } } }
-          \on-the-fly #has-copyright \concat { \hspace #2 \fontsize #-3 { \char #169 " " \year " " \fromproperty #'header:copyright } }
-
-          \on-the-fly #not-one-page \bold \concat { \hspace #1 \fromproperty #'page:page-number-string }
-        }
-      }
-    }
+  titleFooterMarkup = \markup {
+    \bold \execMarkup #(lambda (layout props)
+                         (let* ((msection (chain-assoc-get 'header:section props))
+                                (ssection (if (markup? msection) (string-trim-both (markup->string msection)) ""))
+                                (mtitle (chain-assoc-get 'header:title props))
+                                (stitle (if (markup? mtitle) (string-trim-both (markup->string mtitle)) ""))
+                                (mtoc (chain-assoc-get 'toc:current props))
+                                (stoc (if (markup? mtoc) (string-trim-both (markup->string mtoc)) ""))
+                                (mlist (list)))
+                           (if (> (string-length ssection) 0) (set! mlist (list (markup #:italic msection))))
+                           (if (> (string-length stitle) 0) (set! mlist `(,@mlist ,@(if (> (length mlist) 0) (list ", ")(list)) ,mtitle)))
+                           (if (and (> (string-length stoc) 0) (not (string=? stitle stoc)))
+                               (set! mlist `(,@mlist ,@(if (> (length mlist) 0) (list ", ")(list)) ,mtoc)))
+                           (make-line-markup mlist)
+                           ))
   }
-  evenFooterMarkup = \markup \delayed \column {
-    \on-the-fly #page-copyright \markupCopyright
 
-    \on-the-fly #run-page+last-footer {
-      \override #'(baseline-skip . 1)
-      \column {
-        \sloppyline {
-          \on-the-fly #not-one-page \bold \concat { \fromproperty #'page:page-number-string \hspace #1 }
+  oddFooterMarkup = \markup {
+    \delayed \column {
+      \on-the-fly #page-copyright \markupCopyright
 
-          \on-the-fly #has-copyright \concat { \fontsize #-3 { \char #169 " " \year " " \fromproperty #'header:copyright } \hspace #2 }
-          \on-the-fly #has-catname \concat { \bold \fontsize #-3 { \sans \concat { \fromproperty #'header:catname "-" \cat-number } } \hspace #2 }
-
-          \fontsize #-3 {
-            \concat {
-              \on-the-fly #diff-composer \concat { \fromproperties #'(header:composername header:composer) ", " }
-              \on-the-fly #(lambda (layout props arg)
-                            (if (chain-assoc-get 'header:poet-footer props #f)
-                              (interpret-markup layout props arg)
-                              empty-stencil)) \concat { \fromproperties #'(header:poetname header:poet) ", " }
-              \execMarkup #(lambda (layout props)(ly:output-def-lookup layout 'titleFooterMarkup
-                                                   (markup #:bold #:fromproperties '(header:title toc:current)) ))
-              \on-the-fly #has-piece \concat { ", " \fromproperty #'header:piece }
+      \on-the-fly #run-page+last-footer {
+        \override #'(baseline-skip . 2.5)
+        \column {
+          \sloppyline {
+            \fontsize #-3 {
               \concat {
-                \on-the-fly #has-bookname
-                \italic \concat { ", " \fromproperty #'header:bookname }
-                \on-the-fly #has-booktitle
-                \italic \concat { ", " \fromproperty #'header:booktitle }
+                \concat {
+                  \on-the-fly #has-bookname
+                  \italic \concat {
+                    \fromproperty #'header:bookname ", "
+                  }
+                  \on-the-fly #has-booktitle
+                  \italic \concat { \fromproperty #'header:booktitle ", " }
+                }
+                \on-the-fly #diff-composer \concat { \fromproperties #'(header:composername header:composer) ", " }
+                \on-the-fly #(lambda (layout props arg)
+                               (if (chain-assoc-get 'header:poet-footer props #f)
+                                   (interpret-markup layout props arg)
+                                   empty-stencil)) \concat { \fromproperties #'(header:poetname header:poet) ", " }
+                \execMarkup #(lambda (layout props)(ly:output-def-lookup layout 'titleFooterMarkup
+                                                     (markup #:bold #:fromproperties '(header:title toc:current)) ))
+                \on-the-fly #has-piece \concat { ", " \fromproperty #'header:piece }
               }
             }
+            \on-the-fly #has-catname \concat { \hspace #2 \bold \fontsize #-3 { \sans \concat { \fromproperty #'header:catname "-" \cat-number } } }
+            \on-the-fly #has-copyright \concat { \hspace #2 \fontsize #-3 { \char #169 " " \year " " \fromproperty #'header:copyright } }
+
+            \on-the-fly #not-one-page \bold \concat { \hspace #1 \fromproperty #'page:page-number-string }
           }
         }
       }
     }
   }
+  evenFooterMarkup = \markup {
+    \delayed \column {
+      \on-the-fly #page-copyright \markupCopyright
 
-  tocTitleMarkup = \markup \huge \column {
-    %\override #`(line-width . ,tocWidth)
-    \fill-line { \huge \bold "Inhalt" }
-    \hspace #1
+      \on-the-fly #run-page+last-footer {
+        \override #'(baseline-skip . 1)
+        \column {
+          \sloppyline {
+            \on-the-fly #not-one-page \bold \concat {
+              \fromproperty #'page:page-number-string \hspace #1
+            }
+
+            \on-the-fly #has-copyright \concat { \fontsize #-3 { \char #169 " " \year " " \fromproperty #'header:copyright } \hspace #2 }
+            \on-the-fly #has-catname \concat { \bold \fontsize #-3 { \sans \concat { \fromproperty #'header:catname "-" \cat-number } } \hspace #2 }
+
+            \fontsize #-3 {
+              \concat {
+                \on-the-fly #diff-composer \concat { \fromproperties #'(header:composername header:composer) ", " }
+                \on-the-fly #(lambda (layout props arg)
+                               (if (chain-assoc-get 'header:poet-footer props #f)
+                                   (interpret-markup layout props arg)
+                                   empty-stencil)) \concat { \fromproperties #'(header:poetname header:poet) ", " }
+                \execMarkup #(lambda (layout props)(ly:output-def-lookup layout 'titleFooterMarkup
+                                                     (markup #:bold #:fromproperties '(header:title toc:current)) ))
+                \on-the-fly #has-piece \concat { ", " \fromproperty #'header:piece }
+                \concat {
+                  \on-the-fly #has-bookname
+                  \italic \concat { ", " \fromproperty #'header:bookname }
+                  \on-the-fly #has-booktitle
+                  \italic \concat { ", " \fromproperty #'header:booktitle }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  tocTitleMarkup = \markup {
+    \huge \column {
+      %\override #`(line-width . ,tocWidth)
+      \fill-line { \huge \bold "Inhalt" }
+      \hspace #1
+    }
   }
   tocItemMarkup = \markup {
     %\override #`(line-width . ,tocWidth)
@@ -287,11 +301,3 @@ markupCopyrightBack = \markup
   evenFooterMarkup = \markup \null
 }
 
-
-%{
-/usr/bin/python: /home/jpv/lily2.17/lilypond/usr/lib/libz.so.1: no
-version information available (required by /usr/bin/python) convert-ly
-(GNU LilyPond) 2.17.96  convert-ly: »« wird verarbeitet... Anwenden
-der Umwandlung: 2.17.0, 2.17.4, 2.17.5, 2.17.6, 2.17.11, 2.17.14,
-2.17.15, 2.17.18, 2.17.19, 2.17.20, 2.17.25, 2.17.27, 2.17.29
-%}
