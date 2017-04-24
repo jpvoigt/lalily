@@ -1,4 +1,4 @@
-\version "2.18.0"
+\version "2.19.49"
 
 #(define lalily-relincl-tmp (ly:get-option 'relative-includes))
 #(ly:set-option 'relative-includes #t)
@@ -6,7 +6,7 @@
 #(ly:set-option 'relative-includes lalily-relincl-tmp)
 
 \registerTemplate lalily.piano
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((mods (assoc-get 'context-mods options #f #f))
          (smods (assoc-get 'staff-mods options #f #f))
          (rmods (assoc-get 'right-mods options #f #f))
@@ -15,7 +15,10 @@
          (pmods (assoc-get 'pedal-mods options #f #f))
          (rclef (assoc-get 'right-clef options "G" #f))
          (lclef (assoc-get 'left-clef options "bass" #f))
+         (right-name (assoc-get 'right-name options "right" #f))
+         (left-name (assoc-get 'left-name options "left" #f))
          )
+     (ly:message "left-name: ~A" left-name)
      #{
        \new PianoStaff \with {
          $(if (ly:context-mod? mods) mods)
@@ -23,7 +26,7 @@
          \override StaffGrouper.staff-staff-spacing =
          #'((basic-distance . 6)(minimum-distance . 1)(padding . 1)(stretchability . 4))
        } <<
-         \new Staff = "right" \with {
+         \new Staff = $right-name \with {
            $(if (ly:context-mod? smods) smods)
            $(if (ly:context-mod? rmods) rmods)
            \consists \editionEngraver \musicPath right
@@ -36,7 +39,7 @@
            \consists \editionEngraver $piece
            \override DynamicText.padding = #1
          } { \getMusic {} dynamics }
-         \new Staff = "left" \with {
+         \new Staff = $left-name \with {
            $(if (ly:context-mod? smods) smods)
            $(if (ly:context-mod? lmods) lmods)
            \consists \editionEngraver \musicPath left
@@ -51,3 +54,10 @@
          } \getMusic {} pedal
        >>
      #}))
+
+
+%{
+convert-ly (GNU LilyPond) 2.19.60  convert-ly: Processing `'...
+Applying conversion: 2.19.2, 2.19.7, 2.19.11, 2.19.16, 2.19.22,
+2.19.24, 2.19.28, 2.19.29, 2.19.32, 2.19.40, 2.19.46, 2.19.49
+%}
