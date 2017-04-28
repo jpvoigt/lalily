@@ -49,7 +49,7 @@ create one staff with one vocal voice and associated lyrics.
          (staff-mods (assoc-get 'staff-mods options #f #f))
          (voice-mods (assoc-get 'voice-mods options #f #f))
          ;(voices (assoc-get 'voices options #f #f)) % TODO two voices in staff
-         ;(lyric-mods (assoc-get 'lyric-mods options #f #f))
+         (lyric-mods (assoc-get 'lyric-mods options #f #f))
          ;(repeats (assoc-get 'repeats options #f #f))
          (verses (assoc-get 'verses options #f #f))
          (lyrics (assoc-get 'lyrics options '() #f))
@@ -99,11 +99,12 @@ create one staff with one vocal voice and associated lyrics.
          $(if (do-upper)
               (let ((vocname (assoc-get 'vocname upper "" #f))
                     (lyrics (assoc-get 'lyrics upper (if (> (length lyrics) 0) #f '())))
-                    (lyric-mods (assoc-get 'lyric-mods upper #f #f))
+                    (lyric-mods-upper (assoc-get 'lyric-mods upper #f #f))
                     (verses (assoc-get 'verses upper verses #f)))
-                (set! lyric-mods #{
+                (set! lyric-mods-upper #{
                   \with {
                     $(if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #})
+                    $(if (ly:context-mod? lyric-mods-upper) lyric-mods-upper #{ \with {} #})
                     alignAboveContext = $staffname
                       } #})
                 (if (list? lyrics)
@@ -111,16 +112,21 @@ create one staff with one vocal voice and associated lyrics.
                       $(if (list? verses)
                            #{ \stackTemplate lyrics #`(.. ,@lyrics) #(assoc-set-all! upper
                                                                        `((lyric-voice . ,vocname)
-                                                                         (lyric-mods . ,lyric-mods))
+                                                                         (lyric-mods . ,lyric-mods-upper))
                                                                        ) #'verse #(map (lambda (v) (list v)) verses) #}
                            #{ \callTemplate lyrics #`(.. ,@lyrics) #(assoc-set-all! upper
                                                                       `((lyric-voice . ,vocname)
-                                                                        (lyric-mods . ,lyric-mods))
+                                                                        (lyric-mods . ,lyric-mods-upper))
                                                                       ) #})
                     #})))
          $(if (list? verses)
-              #{ \stackTemplate lyrics #lyrics #(assoc-set! options 'lyric-voice vocname) #'verse #(map (lambda (v) (list v)) verses) #}
-              #{ \callTemplate lyrics #lyrics #(assoc-set! options 'lyric-voice vocname) #})
+              #{ \stackTemplate lyrics #lyrics #(assoc-set-all! options
+                                                  `((lyric-voice . ,vocname)
+                                                    (lyric-mods . ,lyric-mods)))
+                 #'verse #(map (lambda (v) (list v)) verses) #}
+              #{ \callTemplate lyrics #lyrics #(assoc-set-all! options
+                                                  `((lyric-voice . ,vocname)
+                                                    (lyric-mods . ,lyric-mods))) #})
        >>
      #}))
 
@@ -149,11 +155,11 @@ create one staff with one vocal voice and associated lyrics.
 \registerTemplate lalily.vocal.lyrics
 #(define-music-function (piece options)(list? list?)
    (let* ((v (ly:assoc-get 'verse options '() #f))
-         (rr (ly:assoc-get 'repeats options #f #f))
-         (lyric-mods (assoc-get 'lyric-mods options #f #f))
-         (voc (ly:assoc-get 'lyric-voice options "sop" #f))
-         (lyric-name (ly:assoc-get 'lyric-name options voc #f)))
-     ;(ly:message "-> ~A" options)
+          (rr (ly:assoc-get 'repeats options #f #f))
+          (lyric-mods (assoc-get 'lyric-mods options #f #f))
+          (voc (ly:assoc-get 'lyric-voice options "sop" #f))
+          (lyric-name (ly:assoc-get 'lyric-name options voc #f)))
+     ;(ly:message "-> ~A" lyric-mods)
      (if (list? rr)
          (make-music 'SimultaneousMusic 'elements
            (map (lambda (r)
@@ -214,17 +220,17 @@ create one staff with one vocal voice and associated lyrics.
          (set! lyrics (append music-prefix lyrics)))
      #{
        <<
-       \new Staff = $staff-name \with {
-         $(if (ly:context-mod? staff-mods) staff-mods #{ \with {} #})
-         \consists \editionEngraver $piece
-       } <<
-         \callTemplate LY_UP.voice #upper-music #(assoc-set-all! opts (append upper `((vocname . ,upper-name)(init-music . ,upper-init))))
-         \callTemplate LY_UP.voice #lower-music #(assoc-set-all! opts (append upper `((vocname . ,lower-name)(init-music . ,lower-init))))
-       >>
+         \new Staff = $staff-name \with {
+           $(if (ly:context-mod? staff-mods) staff-mods #{ \with {} #})
+           \consists \editionEngraver $piece
+         } <<
+           \callTemplate LY_UP.voice #upper-music #(assoc-set-all! opts (append upper `((vocname . ,upper-name)(init-music . ,upper-init))))
+           \callTemplate LY_UP.voice #lower-music #(assoc-set-all! opts (append upper `((vocname . ,lower-name)(init-music . ,lower-init))))
+         >>
          $(if (list? verses)
               #{
                 <<
-                  \stackTemplate LY_UP.lyrics #upper-lyrics #(assoc-set-all! upper 
+                  \stackTemplate LY_UP.lyrics #upper-lyrics #(assoc-set-all! upper
                                                                `((lyric-voice . ,upper-name)
                                                                  (lyric-mods . ,upper-lyric-mods)
                                                                  (repeats . ,repeats)
@@ -237,15 +243,15 @@ create one staff with one vocal voice and associated lyrics.
               >> #}
               #{
                 <<
-                \callTemplate LY_UP.lyrics #upper-lyrics #(assoc-set-all! upper
-                                                            `((lyric-voice . ,upper-name)
-                                                              (lyric-mods . ,upper-lyric-mods)
-                                                              (repeats . ,repeats)))
-                \callTemplate LY_UP.lyrics #lower-lyrics #(assoc-set-all! lower
-                                                            `((lyric-voice . ,lower-name)
-                                                              (lyric-mods . ,lower-lyric-mods)
-                                                              (repeats . ,(if (list? repeats) (reverse repeats) repeats))
-                                                              ))
+                  \callTemplate LY_UP.lyrics #upper-lyrics #(assoc-set-all! upper
+                                                              `((lyric-voice . ,upper-name)
+                                                                (lyric-mods . ,upper-lyric-mods)
+                                                                (repeats . ,repeats)))
+                  \callTemplate LY_UP.lyrics #lower-lyrics #(assoc-set-all! lower
+                                                              `((lyric-voice . ,lower-name)
+                                                                (lyric-mods . ,lower-lyric-mods)
+                                                                (repeats . ,(if (list? repeats) (reverse repeats) repeats))
+                                                                ))
                 >>
               #})
        >>
@@ -267,6 +273,7 @@ create one staff with one vocal voice and associated lyrics.
            (prefix (ly:assoc-get 'prefix options (get-choir) #f))
            (staffs (ly:assoc-get 'staffs options lalily_vocal_group_default #f))
            (staff-mods (ly:assoc-get 'staff-mods options #f #f))
+           (lyric-mods (ly:assoc-get 'lyric-mods options #f #f))
            (spanbar (ly:assoc-get 'spanbar options #f))
            (mensur (ly:assoc-get 'mensur options #f))
            (verses (ly:assoc-get 'verses options #f))
@@ -298,6 +305,7 @@ create one staff with one vocal voice and associated lyrics.
                                     (else '(..))
                                     ))
                             (staff-mods-loc (ly:assoc-get 'staff-mods opts #f #f))
+                            (lyric-mods-loc (ly:assoc-get 'lyric-mods opts #f #f))
                             )
                        (if (and (list? upper)(list? (assoc-get 'music upper #f #f)))
                            (let ((uvocname (string-append
@@ -307,13 +315,16 @@ create one staff with one vocal voice and associated lyrics.
                              (assoc-set! opts 'upper (assoc-set! upper 'vocname uvocname))
                              ))
 
-                       (cond
-                        ((and
-                          (ly:context-mod? staff-mods)
-                          (ly:context-mod? staff-mods-loc))
-                         (set! opts (assoc-set! opts 'staff-mods #{ \with { #staff-mods #staff-mods-loc } #})))
-                        ((ly:context-mod? staff-mods) (set! opts (assoc-set! opts 'staff-mods staff-mods)))
-                        )
+                       (if (or (ly:context-mod? staff-mods)(ly:context-mod? staff-mods-loc))
+                           (set! opts (assoc-set! opts 'staff-mods #{ \with {
+                             $(if (ly:context-mod? staff-mods) staff-mods #{ \with {} #})
+                             $(if (ly:context-mod? staff-mods-loc) staff-mods-loc #{ \with {} #})
+                                        } #})))
+                       (if (or (ly:context-mod? lyric-mods)(ly:context-mod? lyric-mods-loc))
+                           (set! opts (assoc-set! opts 'lyric-mods #{ \with {
+                             $(if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #})
+                             $(if (ly:context-mod? lyric-mods-loc) lyric-mods-loc #{ \with {} #})
+                                        } #})))
                        #{ \callTemplate #templ #key #opts #}
                        )) staffs))
        #})))
