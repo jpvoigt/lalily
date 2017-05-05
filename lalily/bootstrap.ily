@@ -161,6 +161,11 @@ registerConfig =
 \includeOncePattern "../../lalily-extensions" "^.*\.ly$" % once?
 
 % TODO look for local lalily-extensions?
+% look for project config
+\includeOnceIfExists "../../lalily-project.ly" % once?
+\includeOnceIfExists "../lalily-project.ly" % once?
+\includeOnceIfExists "lalily-project.ly" % once?
+
 % look for local paper/layout/midi
 \includeOnceIfExists "lalily-paper.ly" % once?
 \includeOnceIfExists "lalily-layout.ly" % once?
