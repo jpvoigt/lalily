@@ -90,11 +90,52 @@
          (opts (let ((pce (ly:assoc-get 'piece options #f #f))) (if pce (get-default-options pce) options)))
          (pce (ly:assoc-get 'piece options piece #f))
          (pdiff (ly:assoc-get 'transpose options piece #f) )
+         (natpit (get-option 'naturalize options #f))
          )
+     (define (naturalize-pitch p)
+       (let ((o (ly:pitch-octave p))
+             (a (* 4 (ly:pitch-alteration p)))
+             ;; alteration, a, in quarter tone steps,
+             ;; for historical reasons
+             (n (ly:pitch-notename p)))
+         (cond
+          ((and (> a 1) (or (eq? n 6) (eq? n 2)))
+           (set! a (- a 2))
+           (set! n (+ n 1)))
+          ((and (< a -1) (or (eq? n 0) (eq? n 3)))
+           (set! a (+ a 2))
+           (set! n (- n 1))))
+         (cond
+          ((> a 2) (set! a (- a 4)) (set! n (+ n 1)))
+          ((< a -2) (set! a (+ a 4)) (set! n (- n 1))))
+         (if (< n 0) (begin (set! o (- o 1)) (set! n (+ n 7))))
+         (if (> n 6) (begin (set! o (+ o 1)) (set! n (- n 7))))
+         (ly:make-pitch o n (/ a 4))))
+     (define (naturalize music)
+       (let ((es (ly:music-property music 'elements))
+             (e (ly:music-property music 'element))
+             (p (ly:music-property music 'pitch)))
+         (if (pair? es)
+             (ly:music-set-property!
+              music 'elements
+              (map (lambda (x) (naturalize x)) es)))
+         (if (ly:music? e)
+             (ly:music-set-property!
+              music 'element
+              (naturalize e)))
+         (if (ly:pitch? p)
+             (begin
+              (set! p (naturalize-pitch p))
+              (ly:music-set-property! music 'pitch p)))
+         music))
      (if (not (list? pce))(set! pce (list pce)))
-     (ly:music-transpose (ly:music-deep-copy
-                          (call-template template pce options)
-                          ) pdiff)
+     (let ((transp
+            (ly:music-transpose
+             (ly:music-deep-copy
+              (call-template template pce options)
+              ) pdiff)
+            ))
+       (if natpit (naturalize transp) transp))
      ))
 \parserDefine setTransposedTemplate
 #(define-void-function (t1 t2 piece tmpl options)
@@ -104,9 +145,3 @@
        `((transpose . ,(ly:pitch-diff t2 t1))
          (template . ,tmpl)))))
 
-
-%{
-convert-ly (GNU LilyPond) 2.19.36  convert-ly: Processing `'...
-Applying conversion: 2.17.97, 2.18.0, 2.19.2, 2.19.7, 2.19.11,
-2.19.16, 2.19.22, 2.19.24, 2.19.28, 2.19.29, 2.19.32
-%}
