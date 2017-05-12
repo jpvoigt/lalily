@@ -265,16 +265,12 @@
 #(define-music-function (piece options)(list? list?)
    (let ((organ #f)
          (do-general (assoc-get 'general options #t #f))
-         (sysdelim (assoc-get 'systemStartDelimiter options 'SystemStartBracket #f)))
+         (sysdelim (assoc-get 'systemStartDelimiter options 'SystemStartBar #f)))
      #{
        \new StaffGroup \with {
          systemStartDelimiter = #sysdelim
          \override SystemStartBracket.collapse-height = #1
          \override SystemStartBar.collapse-height = #1
-         \override BassFigure.font-size = #2
-         \override BassFigure.font-name = "Agfa Rotis Serif Bold,Regular"
-         \override BassFigureAlignmentPositioning.padding = #1
-         \override BassFigureAlignment.stacking-dir = #DOWN
        } <<
          \callTemplate LY_UP ##t #piece #(assoc-set-all! options
                                            `(,(if organ '(midi-instrument . "drawbar organ") '(dummy . #f))
