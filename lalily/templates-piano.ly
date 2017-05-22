@@ -18,7 +18,6 @@
          (right-name (assoc-get 'right-name options "right" #f))
          (left-name (assoc-get 'left-name options "left" #f))
          )
-     (ly:message "left-name: ~A" left-name)
      #{
        \new PianoStaff \with {
          $(if (ly:context-mod? mods) mods)
