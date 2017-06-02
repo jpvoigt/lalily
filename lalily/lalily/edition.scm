@@ -211,6 +211,7 @@
                            MarkEvent
                            KeyChangeEvent
                            ExtenderEvent HyphenEvent
+                           BeamEvent SlurEvent
                            
                            ;ContextChange
                            ;PartCombineForceEvent
@@ -413,6 +414,18 @@
                                            (ly:broadcast (ly:context-event-source context)
                                              (ly:make-stream-event
                                               (ly:make-event-class 'hyphen-event)
+                                              (ly:music-mutable-properties mod)))
+                                           )
+                                          ((and (ly:music? mod)(eq? 'BeamEvent (ly:music-property mod 'name)))
+                                           (ly:broadcast (ly:context-event-source context)
+                                             (ly:make-stream-event
+                                              (ly:make-event-class 'beam-event)
+                                              (ly:music-mutable-properties mod)))
+                                           )
+                                          ((and (ly:music? mod)(eq? 'SlurEvent (ly:music-property mod 'name)))
+                                           (ly:broadcast (ly:context-event-source context)
+                                             (ly:make-stream-event
+                                              (ly:make-event-class 'slur-event)
                                               (ly:music-mutable-properties mod)))
                                            )
                                           ((apply-context? mod)
