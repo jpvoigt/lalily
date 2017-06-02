@@ -61,6 +61,9 @@
 % accessing parent context so stanza is set in all lyrics inside this StaffGroup
 \editionMod demo 9 0/4 bas.Lyrics \set StaffGroup.stanza = "St."
 
+% add a dynamic event
+\editionMod demo 9 0/4 sop.Voice \f
+
 % inserting some senseless breaks
 \editionMod demo 10 0/4 Score \break
 \editionMod demo 17 0/4 Score \pageBreak

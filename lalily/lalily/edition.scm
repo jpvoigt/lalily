@@ -212,6 +212,7 @@
                            KeyChangeEvent
                            ExtenderEvent HyphenEvent
                            BeamEvent SlurEvent
+                           AbsoluteDynamicEvent
                            
                            ;ContextChange
                            ;PartCombineForceEvent
@@ -426,6 +427,12 @@
                                            (ly:broadcast (ly:context-event-source context)
                                              (ly:make-stream-event
                                               (ly:make-event-class 'slur-event)
+                                              (ly:music-mutable-properties mod)))
+                                           )
+                                          ((and (ly:music? mod)(eq? 'AbsoluteDynamicEvent (ly:music-property mod 'name)))
+                                           (ly:broadcast (ly:context-event-source context)
+                                             (ly:make-stream-event
+                                              (ly:make-event-class 'absolute-dynamic-event)
                                               (ly:music-mutable-properties mod)))
                                            )
                                           ((apply-context? mod)
