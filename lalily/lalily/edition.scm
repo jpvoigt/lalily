@@ -131,6 +131,23 @@
 
 (define-public (context-find-edition-engraver context) #f)
 
+(define (for-some-music-with-elements-callback stop? music)
+  "Like @var{for-some-music}, but also processes @var{elements-callback},
+  which is used by TimeSignatureMusic, SequentialMusic, and a few others"
+  (let loop ((music music))
+    (if (not (stop? music))
+        (let ((callback (ly:music-property music 'elements-callback)))
+          (if (procedure? callback)
+              (for-each loop (callback music))
+              (begin
+               (let ((elt (ly:music-property music 'element)))
+                 (if (ly:music? elt)
+                     (loop elt)))
+               (for-each loop (ly:music-property music 'elements))
+               (for-each loop (ly:music-property music 'articulations))
+               ))))))
+
+
 (define lalily:edition-tags 'lalily:edition-tags)
 (let ((mod-tree (tree-create 'mods))
       (edition-list '())
@@ -149,80 +166,99 @@
              ((ly:music? modm)
               (let ((x 0))
                 (define (add-mods modmus ctx)
-                  (for-some-music
+                  (for-some-music-with-elements-callback
                    (lambda (m)
-                     (cond
-                      ((eq? 'ContextSpeccedMusic (ly:music-property m 'name))
-                       (let* ((ct (ly:music-property m 'context-type))
-                              (elm (ly:music-property m 'element)))
-                         (if (eq? 'Bottom ct)
-                             #f
-                             (begin
-                              (add-mods elm ct)
-                              #t)
-                             )
-                         ))
-                      ((eq? 'OverrideProperty (ly:music-property m 'name))
-                       (let* ((once (ly:music-property m 'once #f))
-                              (grob (ly:music-property m 'symbol))
-                              (prop (ly:music-property m 'grob-property))
-                              (prop (if (symbol? prop)
-                                        prop
-                                        (car (ly:music-property m 'grob-property-path))))
-                              (value (ly:music-property m 'grob-value))
-                              (mod (make <override> #:once once #:grob grob #:prop prop #:value value #:context ctx)))
-                         (set! mods `(,@mods ,mod))
-                         #t
-                         ))
-                      ((eq? 'RevertProperty (ly:music-property m 'name))
-                       (let* ((grob (ly:music-property m 'symbol))
-                              (prop (ly:music-property m 'grob-property))
-                              (prop (if (symbol? prop)
-                                        prop
-                                        (car (ly:music-property m 'grob-property-path))))
-                              (mod (make <override> #:once #f #:revert #t #:grob grob #:prop prop #:value #f #:context ctx)))
-                         (set! mods `(,@mods ,mod))
-                         #t
-                         ))
-                      ((eq? 'PropertySet (ly:music-property m 'name))
-                       (let* ((once (ly:music-property m 'once #f))
-                              (symbol (ly:music-property m 'symbol))
-                              (value (ly:music-property m 'value))
-                              (mod (make <propset> #:once once #:symbol symbol #:value value #:context ctx)))
-                         (set! mods `(,@mods ,mod))
-                         #t
-                         ))
-                      ((eq? 'ApplyContext (ly:music-property m 'name))
-                       (let* ((proc (ly:music-property m 'procedure))
-                              (mod (make <apply-context> #:proc proc)))
-                         (set! mods `(,@mods ,mod))
-                         #t
-                         ))
-                      ((or
-                        (eq? 'OttavaMusic (ly:music-property m 'name))
-                        )
-                       (set! mods `(,@mods ,(context-mod-from-music m)))
-                       #t
-                       )
-                      ((memq (ly:music-property m 'name)
-                         '(TextScriptEvent
-                           LineBreakEvent PageBreakEvent PageTurnEvent
-                           ApplyOutputEvent
-                           MarkEvent
-                           KeyChangeEvent
-                           ExtenderEvent HyphenEvent
-                           BeamEvent SlurEvent
-                           AbsoluteDynamicEvent
-                           
-                           ;ContextChange
-                           ;PartCombineForceEvent
+                     (let ((music-name (ly:music-property m 'name)))
+                       (cond
+                        ((eq? 'ContextSpeccedMusic (ly:music-property m 'name))
+                         (let* ((ct (ly:music-property m 'context-type))
+                                (elm (ly:music-property m 'element)))
+                           (if (eq? 'Bottom ct)
+                               #f
+                               (begin
+                                (add-mods elm ct)
+                                #t)
+                               )
                            ))
-                       (set! mods `(,@mods ,m))
-                       #t
-                       )
-                      (else #f)
-                      )
-                     )
+                        ((eq? 'OverrideProperty (ly:music-property m 'name))
+                         (let* ((once (ly:music-property m 'once #f))
+                                (grob (ly:music-property m 'symbol))
+                                (prop (ly:music-property m 'grob-property))
+                                (prop (if (symbol? prop)
+                                          prop
+                                          (car (ly:music-property m 'grob-property-path))))
+                                (value (ly:music-property m 'grob-value))
+                                (mod (make <override> #:once once #:grob grob #:prop prop #:value value #:context ctx)))
+                           (set! mods `(,@mods ,mod))
+                           #t
+                           ))
+                        ((eq? 'RevertProperty (ly:music-property m 'name))
+                         (let* ((grob (ly:music-property m 'symbol))
+                                (prop (ly:music-property m 'grob-property))
+                                (prop (if (symbol? prop)
+                                          prop
+                                          (car (ly:music-property m 'grob-property-path))))
+                                (mod (make <override> #:once #f #:revert #t #:grob grob #:prop prop #:value #f #:context ctx)))
+                           (set! mods `(,@mods ,mod))
+                           #t
+                           ))
+                        ((eq? 'PropertySet (ly:music-property m 'name))
+                         (let* ((once (ly:music-property m 'once #f))
+                                (symbol (ly:music-property m 'symbol))
+                                (value (ly:music-property m 'value))
+                                (mod (make <propset> #:once once #:symbol symbol #:value value #:context ctx)))
+                           (set! mods `(,@mods ,mod))
+                           #t
+                           ))
+                        ((eq? 'ApplyContext (ly:music-property m 'name))
+                         (let* ((proc (ly:music-property m 'procedure))
+                                (mod (make <apply-context> #:proc proc)))
+                           (set! mods `(,@mods ,mod))
+                           #t
+                           ))
+                        ((or
+                          (eq? 'OttavaMusic (ly:music-property m 'name))
+                          )
+                         (set! mods `(,@mods ,(context-mod-from-music m)))
+                         #t
+                         )
+
+                        ((memq (ly:music-property m 'name)
+                           '(TextScriptEvent
+                             LineBreakEvent PageBreakEvent PageTurnEvent
+                             ApplyOutputEvent
+                             MarkEvent
+                             KeyChangeEvent
+                             ExtenderEvent HyphenEvent
+                             BeamEvent SlurEvent
+                             AbsoluteDynamicEvent
+
+                             ;ContextChange
+                             ;PartCombineForceEvent
+                             ))
+                         (set! mods `(,@mods ,m))
+                         #t
+                         )
+
+                        ; TimeSignature
+                        ((memq music-name '(TimeSignatureMusic))
+                         ;(set! collected-mods `(,@collected-mods ,m))
+                         (let ((callback (ly:music-property m 'elements-callback)))
+                           (if (procedure? callback)
+                               (for-each (lambda (m) (add-mods m ctx)) (callback m)))
+                           #t))
+
+                        ((memq music-name
+                           (filter
+                            (lambda (e)
+                              (not (memq e '(SequentialMusic SimultaneousMusic EventChord))))
+                            (map car music-descriptions)))
+                         (set! mods `(,@mods ,m))
+                         #t)
+
+                        (else #f)
+                        )
+                       ))
                    modmus))
                 (add-mods modm #f)))
              ((ly:context-mod? modm)(set! mods `(,@mods ,modm)))
@@ -385,62 +421,44 @@
                                 (define (modc+ mod)(set! modc `(,@modc ,mod)))
                                 (set! barnum takt)(set! measurepos pos)
                                 (let ((mods (get-mods)))
+                                  (define (broadcast-music mod clsevent)
+                                    (ly:broadcast (ly:context-event-source context)
+                                      (ly:make-stream-event
+                                       (ly:make-event-class clsevent)
+                                       (ly:music-mutable-properties mod))
+                                      ))
                                   ;(display path)(display mods)(newline)
                                   (if (list? mods)
                                       (for-each
                                        (lambda (mod)
-                                         (cond
-                                          ((override? mod)
-                                           (if (is-revert mod)
-                                               (do-revert context mod)
-                                               (do-override context mod))
-                                           (modc+ mod))
-                                          ((propset? mod)
-                                           (do-propset context mod)
-                                           (modc+ mod))
-                                          ((and (ly:music? mod)(eq? 'KeyChangeEvent (ly:music-property mod 'name)))
-                                           (ly:broadcast (ly:context-event-source context)
-                                             (ly:make-stream-event
-                                              (ly:make-event-class 'key-change-event)
-                                              `((pitch-alist . ,(ly:music-property mod 'pitch-alist))
-                                                (tonic . ,(ly:music-property mod 'tonic)))))
-                                           )
-                                          ((and (ly:music? mod)(eq? 'ExtenderEvent (ly:music-property mod 'name)))
-                                           (ly:broadcast (ly:context-event-source context)
-                                             (ly:make-stream-event
-                                              (ly:make-event-class 'extender-event)
-                                              (ly:music-mutable-properties mod)))
-                                           )
-                                          ((and (ly:music? mod)(eq? 'HyphenEvent (ly:music-property mod 'name)))
-                                           (ly:broadcast (ly:context-event-source context)
-                                             (ly:make-stream-event
-                                              (ly:make-event-class 'hyphen-event)
-                                              (ly:music-mutable-properties mod)))
-                                           )
-                                          ((and (ly:music? mod)(eq? 'BeamEvent (ly:music-property mod 'name)))
-                                           (ly:broadcast (ly:context-event-source context)
-                                             (ly:make-stream-event
-                                              (ly:make-event-class 'beam-event)
-                                              (ly:music-mutable-properties mod)))
-                                           )
-                                          ((and (ly:music? mod)(eq? 'SlurEvent (ly:music-property mod 'name)))
-                                           (ly:broadcast (ly:context-event-source context)
-                                             (ly:make-stream-event
-                                              (ly:make-event-class 'slur-event)
-                                              (ly:music-mutable-properties mod)))
-                                           )
-                                          ((and (ly:music? mod)(eq? 'AbsoluteDynamicEvent (ly:music-property mod 'name)))
-                                           (ly:broadcast (ly:context-event-source context)
-                                             (ly:make-stream-event
-                                              (ly:make-event-class 'absolute-dynamic-event)
-                                              (ly:music-mutable-properties mod)))
-                                           )
-                                          ((apply-context? mod)
-                                           (do-apply context mod))
-                                          ((ly:context-mod? mod)
-                                           (ly:context-mod-apply! context mod)
-                                           (modc+ mod))
-                                          )) mods)
+                                         (let ((mod-name (if (ly:music? mod) (ly:music-property mod 'name) #f)))
+                                           (cond
+                                            ((override? mod)
+                                             (if (is-revert mod)
+                                                 (do-revert context mod)
+                                                 (do-override context mod))
+                                             (modc+ mod))
+                                            ((propset? mod)
+                                             (do-propset context mod)
+                                             (modc+ mod))
+                                            ((apply-context? mod)
+                                             (do-apply context mod))
+                                            ((ly:context-mod? mod)
+                                             (ly:context-mod-apply! context mod)
+                                             (modc+ mod))
+                                            ((eq? 'CrescendoEvent mod-name)
+                                             (broadcast-music mod 'crescendo-event))
+                                            ((eq? 'DecrescendoEvent mod-name)
+                                             (broadcast-music mod 'decrescendo-event))
+
+                                            ((and (ly:music? mod)(memq mod-name (map car music-descriptions)))
+                                             ;(ly:message "trying ~A" mod-name)
+                                             (ly:broadcast (ly:context-event-source context)
+                                               (ly:make-stream-event
+                                                (ly:assoc-get 'types (ly:assoc-get mod-name music-descriptions '()) '())
+                                                (ly:music-mutable-properties mod)))
+                                             )
+                                            ))) mods)
                                       ))
 
                                 ; warning if start-translation-timestep is not called in first place
@@ -480,22 +498,14 @@
                                           ((and (ly:music? mod) (eq? 'TextScriptEvent (ly:music-property mod 'name)))
                                            (let ((grob (ly:engraver-make-grob trans 'TextScript (ly:make-stream-event '(event) `((origin . ,(ly:music-property mod 'origin) ))) ))
                                                  (text (ly:music-property mod 'text))
-                                                 (direction (ly:music-property mod 'direction #f)))
+                                                 (direction (ly:music-property mod 'direction #f))
+                                                 (annotation (ly:music-property mod 'annotation #f)))
                                              (ly:grob-set-property! grob 'text text)
                                              (if direction (ly:grob-set-property! grob 'direction direction))
-                                             ))
-                                          ((and (ly:music? mod) (eq? 'MarkEvent (ly:music-property mod 'name)))
-                                           (let ((grob (ly:engraver-make-grob trans 'RehearsalMark (ly:make-stream-event '(event) `((origin . ,(ly:music-property mod 'origin) ))) ))
-                                                 (text (ly:music-property mod 'label)))
-                                             (if (not (markup? text))
-                                                 (let ((rmi (ly:context-property context 'rehearsalMark))
-                                                       (rmf (ly:context-property context 'markFormatter)))
-                                                   (if (and (integer? rmi)(procedure? rmf))
-                                                       (let ((rmc (ly:context-property-where-defined context 'rehearsalMark)))
-                                                         (set! text (rmf rmi rmc))
-                                                         (ly:context-set-property! rmc 'rehearsalMark (+ 1 rmi))
-                                                         ))))
-                                             (ly:grob-set-property! grob 'text text)
+                                             (if (annotation? annotation)
+                                                 (let ((pc (if (markup? ctxid) ctxid (format "~A" tag-path))))
+                                                   (add-annotation context annotation pc)
+                                                   ))
                                              ))
                                           ))
                                        mods)))
@@ -758,16 +768,19 @@
                 ))))
   (set! annoCollect
         (lambda (context)
-          (let* ((outname (ly:parser-output-name (get-registry-val lalily:registry-parser)))
+          (let* ((ctxid (ly:context-id context))
+                 (outname (ly:parser-output-name (get-registry-val lalily:registry-parser)))
                  (edeng (context-find-edition-engraver context))
                  (edpath (if edeng (object-property edeng 'path) #f))
                  ; title/instrumentName
-                 (pc (if edpath
-                         (glue-list edpath " ")
-                         (format "~A~3,'0d"
-                           (if (> (length (get-music-folder)) 0)
-                               (string-append (glue-list (get-music-folder) " ") " internal ") "") instance)
-                         ))
+                 (pc (cond
+                      (markup? ctxid ctxid)
+                      (edpath (glue-list edpath " "))
+                      (else
+                       (format "~A~3,'0d"
+                         (if (> (length (get-music-folder)) 0)
+                             (string-append (glue-list (get-music-folder) " ") " internal ") "") instance))
+                      ))
                  (printmsgs (lambda()
                               (let ((todofile (format "~A.todo.log" outname pc)))
                                 (if (> (length msgs) msgc)
