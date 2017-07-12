@@ -496,7 +496,10 @@
                                        (lambda (mod)
                                          (cond
                                           ((and (ly:music? mod) (eq? 'TextScriptEvent (ly:music-property mod 'name)))
-                                           (let ((grob (ly:engraver-make-grob trans 'TextScript (ly:make-stream-event '(event) `((origin . ,(ly:music-property mod 'origin) ))) ))
+                                           (let ((grob (ly:engraver-make-grob trans 'TextScript
+                                                         (ly:make-stream-event (ly:assoc-get 'types (ly:assoc-get 'TextScriptEvent music-descriptions '()) '())
+                                                           `((origin . ,(ly:music-property mod 'origin) ) (tweaks . ,(ly:music-property mod 'tweaks))))
+                                                         ))
                                                  (text (ly:music-property mod 'text))
                                                  (direction (ly:music-property mod 'direction #f))
                                                  (annotation (ly:music-property mod 'annotation #f)))

@@ -45,7 +45,7 @@
 \editionMod demo 7 0/4 sop.Staff ^\todo #'() #'() "Slur" "Here we modify the shape of the slur"
 \editionMod demo 7 0/4 sop.Voice \shape #'((0 . 0)(0 . 1)(0 . 1)(0 . 0)) Slur
 
-\editionMod demo 6 2/4 ten.Staff ^\todo #'() #'() "Slur" "Here we modify the shape of the slur"
+\editionMod demo 6 2/4 ten.Staff ^\tweak self-alignment-X #CENTER -\todo #'() #'() "Slur" "Here we modify the shape of the slur"
 \editionMod demo 6 2/4 ten.Voice \shape #'((0 . 0)(0 . 1)(0 . 1)(0 . 0)) Slur
 
 \editionMod demo 2 0/4 sop.Staff ^\todo #'() #'() "Lyrics" \markup \column {
