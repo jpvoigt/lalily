@@ -38,3 +38,6 @@
 (define-public lalily:get-music-store-callbacks '(lalily runtime store store callbacks))
 
 (define-public lalily:latex:default-font '(lalily latex font default))
+
+(define-public template:piano:spacing '(lalily template piano staff-staff-spacing))
+

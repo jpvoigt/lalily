@@ -17,13 +17,16 @@
          (lclef (assoc-get 'left-clef options "bass" #f))
          (right-name (assoc-get 'right-name options "right" #f))
          (left-name (assoc-get 'left-name options "left" #f))
+         (staff-staff-spacing (assoc-get 'staff-staff-spacing options
+                    (get-registry-val template:piano:spacing
+                      '((basic-distance . 6)(minimum-distance . 1)(padding . 1)(stretchability . 4)) )))
          )
+     ;(ly:message "spacing: ~A" spacing)
      #{
        \new PianoStaff \with {
+         \override StaffGrouper.staff-staff-spacing = #staff-staff-spacing
          $(if (ly:context-mod? mods) mods)
          \consists \editionEngraver $piece
-         \override StaffGrouper.staff-staff-spacing =
-         #'((basic-distance . 6)(minimum-distance . 1)(padding . 1)(stretchability . 4))
        } <<
          \new Staff = $right-name \with {
            $(if (ly:context-mod? smods) smods)
