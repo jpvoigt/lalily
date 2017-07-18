@@ -506,7 +506,7 @@
                                              (ly:grob-set-property! grob 'text text)
                                              (if direction (ly:grob-set-property! grob 'direction direction))
                                              (if (annotation? annotation)
-                                                 (let ((pc (if (markup? ctxid) ctxid (format "~A" tag-path))))
+                                                 (let ((pc (if (markup? ctxid) (format "~A ~A" ctxname ctxid) (format "~A" tag-path))))
                                                    (add-annotation context annotation pc)
                                                    ))
                                              ))
