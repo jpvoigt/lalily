@@ -44,6 +44,7 @@
       "(?:?)"
       ))
 
+((@@ (lily) translator-property-description) 'edition-id list? "edition id (list)")
 
 ;%%%%%%%%%%%%%
 
