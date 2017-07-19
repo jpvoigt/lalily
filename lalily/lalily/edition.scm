@@ -45,6 +45,7 @@
       ))
 
 ((@@ (lily) translator-property-description) 'edition-id list? "edition id (list)")
+((@@ (lily) translator-property-description) 'annotation-name string? "annotation context name")
 
 ;%%%%%%%%%%%%%
 
@@ -507,7 +508,11 @@
                                              (ly:grob-set-property! grob 'text text)
                                              (if direction (ly:grob-set-property! grob 'direction direction))
                                              (if (annotation? annotation)
-                                                 (let ((pc (if (markup? ctxid) (format "~A ~A" ctxname ctxid) (format "~A" tag-path))))
+                                                 (let* ((ctxanno (ly:context-property context 'annotation-name))
+                                                        (pc (cond
+                                                             ((markup? ctxanno) (format "~A ~A" ctxname ctxanno))
+                                                             ((markup? ctxid) (format "~A ~A" ctxname ctxid))
+                                                             (else (format "~A" tag-path)))))
                                                    (add-annotation context annotation pc)
                                                    ))
                                              ))
@@ -773,13 +778,16 @@
   (set! annoCollect
         (lambda (context)
           (let* ((ctxid (ly:context-id context))
+                 (ctxname (ly:context-name context))
+                 (ctxanno (ly:context-property context 'annotation-name))
                  (outname (ly:parser-output-name (get-registry-val lalily:registry-parser)))
                  (edeng (context-find-edition-engraver context))
                  (edpath (if edeng (object-property edeng 'path) #f))
                  ; title/instrumentName
                  (pc (cond
-                      (markup? ctxid ctxid)
-                      (edpath (glue-list edpath " "))
+                      ((markup? ctxanno) (format "~A ~A" ctxname ctxanno))
+                      ((markup? ctxid) (format "~A ~A" ctxname ctxid))
+                      ((list? edpath) (glue-list edpath " "))
                       (else
                        (format "~A~3,'0d"
                          (if (> (length (get-music-folder)) 0)

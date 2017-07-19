@@ -32,6 +32,7 @@
            $(if (ly:context-mod? smods) smods)
            $(if (ly:context-mod? rmods) rmods)
            \consists \editionEngraver \musicPath right
+           annotation-name = "Piano right-hand"
          } <<
            \keepWithTag #'piano-right \getMusicDeep {} #'meta
            \keepWithTag #'piano-right { \getMusic {} global \getMusic right }
@@ -40,11 +41,13 @@
            $(if (ly:context-mod? dmods) dmods)
            \consists \editionEngraver $piece
            \override DynamicText.padding = #1
+           annotation-name = "Piano dynamics"
          } { \getMusic {} dynamics }
          \new Staff = $left-name \with {
            $(if (ly:context-mod? smods) smods)
            $(if (ly:context-mod? lmods) lmods)
            \consists \editionEngraver \musicPath left
+           annotation-name = "Piano left-hand"
          } <<
            \keepWithTag #'piano-left \getMusicDeep {} #'meta
            \keepWithTag #'piano-left { \getMusic {} global \clef $lclef \getMusic left }
@@ -53,6 +56,7 @@
            $(if (ly:context-mod? pmods) pmods)
            \consists \editionEngraver $piece
            \override DynamicText.padding = #1
+           annotation-name = "Piano pedal"
          } \getMusic {} pedal
        >>
      #}))
