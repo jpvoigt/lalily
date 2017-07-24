@@ -20,12 +20,14 @@
          (staff-staff-spacing (assoc-get 'staff-staff-spacing options
                     (get-registry-val template:piano:spacing
                       '((basic-distance . 6)(minimum-distance . 1)(padding . 1)(stretchability . 4)) )))
+         (instrument-name (assoc-get 'instrument-name options #f #f))
          )
      ;(ly:message "spacing: ~A" spacing)
      #{
        \new PianoStaff \with {
          \override StaffGrouper.staff-staff-spacing = #staff-staff-spacing
          $(if (ly:context-mod? mods) mods)
+         $(if (markup? instrument-name) #{ \with { instrumentName = $instrument-name } #})
          \consists \editionEngraver $piece
        } <<
          \new Staff = $right-name \with {
