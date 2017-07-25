@@ -23,6 +23,9 @@
  (lalily lascm)
  (lalily laly))
 
+((@@ (lily) translator-property-description) 'lalily:music-folder list? "music folder of this context (list)")
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; path substitution
 

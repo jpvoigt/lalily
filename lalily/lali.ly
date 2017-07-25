@@ -73,6 +73,7 @@
                 \Score
                 \consists \editionEngraver ##f
                 \consists \annoCollect
+                "lalily:music-folder" = $(get-music-folder)
               }
               \context {
                 \Voice
@@ -115,6 +116,7 @@
                   \Score
                   \consists \editionEngraver #(get-music-folder)
                   \consists \annoCollect
+                  "lalily:music-folder" = $(get-music-folder)
                 }
                 \context {
                   \Voice
@@ -303,6 +305,7 @@
                   \Score
                   \consists \editionEngraver #(get-music-folder)
                   \consists \annoCollect
+                  "lalily:music-folder" = $(get-music-folder)
                 }
                 \context {
                   \Voice
