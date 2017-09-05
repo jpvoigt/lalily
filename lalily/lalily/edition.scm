@@ -282,6 +282,7 @@
                            (ctxid (ly:context-id context))
                            (ctxname (ly:context-name context))
                            (context-mods #f)
+                           (start-translation-timestep-moment #f)
 
                            ; TODO get-paths -> collect from all paths
                            (get-paths
@@ -383,6 +384,22 @@
                                    )
                                  )
                                 ; (if (lalily:verbose) (ly:message "looking for editions in ~A" (glue-list path "/")))
+
+                                ; if the now-moment is greater than 0, this is an instantly created context,
+                                ; so we need to call start-translation-timestep here.
+                                (let ((now (ly:context-now context))
+                                      (partial (ly:context-property context 'measurePosition)))
+                                  (if (or
+                                       ; start-translation-timestep is not called for instant Voices
+                                       (ly:moment<? (ly:make-moment 0/4) now)
+                                       ; start-translation-timestep is not called on upbeats!
+                                       (and (ly:moment? partial)(< (ly:moment-main partial) 0)))
+                                      (begin
+                                       (log-slot "initialize->start-translation-timestep")
+                                       (start-translation-timestep trans)
+                                       ))
+                                  (set! start-translation-timestep-moment now))
+
                                 )))
                            ; paper column interface
                            (paper-column-interface
@@ -417,59 +434,61 @@
 
                            (start-translation-timestep
                             (lambda (trans . recall) ; recall from process-music
-                              (let ((takt (ly:context-property context 'currentBarNumber))
-                                    (pos (ly:context-property context 'measurePosition))
-                                    (modc '()))
-                                (define (modc+ mod)(set! modc `(,@modc ,mod)))
-                                (set! barnum takt)(set! measurepos pos)
-                                (let ((mods (get-mods)))
-                                  (define (broadcast-music mod clsevent)
-                                    (ly:broadcast (ly:context-event-source context)
-                                      (ly:make-stream-event
-                                       (ly:make-event-class clsevent)
-                                       (ly:music-mutable-properties mod))
-                                      ))
-                                  ;(display path)(display mods)(newline)
-                                  (if (list? mods)
-                                      (for-each
-                                       (lambda (mod)
-                                         (let ((mod-name (if (ly:music? mod) (ly:music-property mod 'name) #f)))
-                                           (cond
-                                            ((override? mod)
-                                             (if (is-revert mod)
-                                                 (do-revert context mod)
-                                                 (do-override context mod))
-                                             (modc+ mod))
-                                            ((propset? mod)
-                                             (do-propset context mod)
-                                             (modc+ mod))
-                                            ((apply-context? mod)
-                                             (do-apply context mod))
-                                            ((ly:context-mod? mod)
-                                             (ly:context-mod-apply! context mod)
-                                             (modc+ mod))
-                                            ((eq? 'CrescendoEvent mod-name)
-                                             (broadcast-music mod 'crescendo-event))
-                                            ((eq? 'DecrescendoEvent mod-name)
-                                             (broadcast-music mod 'decrescendo-event))
+                              (if (or (not start-translation-timestep-moment)
+                                      (ly:moment<? start-translation-timestep-moment (ly:context-now context)))
+                                  (let ((takt (ly:context-property context 'currentBarNumber))
+                                        (pos (ly:context-property context 'measurePosition))
+                                        (modc '()))
+                                    (define (modc+ mod)(set! modc `(,@modc ,mod)))
+                                    (set! barnum takt)(set! measurepos pos)
+                                    (let ((mods (get-mods)))
+                                      (define (broadcast-music mod clsevent)
+                                        (ly:broadcast (ly:context-event-source context)
+                                          (ly:make-stream-event
+                                           (ly:make-event-class clsevent)
+                                           (ly:music-mutable-properties mod))
+                                          ))
+                                      ;(display path)(display mods)(newline)
+                                      (if (list? mods)
+                                          (for-each
+                                           (lambda (mod)
+                                             (let ((mod-name (if (ly:music? mod) (ly:music-property mod 'name) #f)))
+                                               (cond
+                                                ((override? mod)
+                                                 (if (is-revert mod)
+                                                     (do-revert context mod)
+                                                     (do-override context mod))
+                                                 (modc+ mod))
+                                                ((propset? mod)
+                                                 (do-propset context mod)
+                                                 (modc+ mod))
+                                                ((apply-context? mod)
+                                                 (do-apply context mod))
+                                                ((ly:context-mod? mod)
+                                                 (ly:context-mod-apply! context mod)
+                                                 (modc+ mod))
+                                                ((eq? 'CrescendoEvent mod-name)
+                                                 (broadcast-music mod 'crescendo-event))
+                                                ((eq? 'DecrescendoEvent mod-name)
+                                                 (broadcast-music mod 'decrescendo-event))
 
-                                            ((and (ly:music? mod)(memq mod-name (map car music-descriptions)))
-                                             ;(ly:message "trying ~A" mod-name)
-                                             (ly:broadcast (ly:context-event-source context)
-                                               (ly:make-stream-event
-                                                (ly:assoc-get 'types (ly:assoc-get mod-name music-descriptions '()) '())
-                                                (ly:music-mutable-properties mod)))
-                                             )
-                                            ))) mods)
-                                      ))
+                                                ((and (ly:music? mod)(memq mod-name (map car music-descriptions)))
+                                                 ;(ly:message "trying ~A" mod-name)
+                                                 (ly:broadcast (ly:context-event-source context)
+                                                   (ly:make-stream-event
+                                                    (ly:assoc-get 'types (ly:assoc-get mod-name music-descriptions '()) '())
+                                                    (ly:music-mutable-properties mod)))
+                                                 )
+                                                ))) mods)
+                                          ))
 
-                                ; warning if start-translation-timestep is not called in first place
-                                (if (and (> (length modc) 0)(> (length recall) 0) (eq? #t (car recall)))
-                                    (begin
-                                     (ly:warning "missing @ ~A ~A ~A" takt pos (glue-list tag "/"))
-                                     (for-each (lambda (mod) (ly:warning "---> ~A" mod)) modc)
-                                     ))
-                                )))
+                                    ; warning if start-translation-timestep is not called in first place
+                                    (if (and (> (length modc) 0)(> (length recall) 0) (eq? #t (car recall)))
+                                        (begin
+                                         (ly:warning "missing @ ~A ~A ~A" takt pos (glue-list tag "/"))
+                                         (for-each (lambda (mod) (ly:warning "---> ~A" mod)) modc)
+                                         ))
+                                    ))))
 
                            (stop-translation-timestep
                             (lambda (trans)
@@ -499,14 +518,14 @@
                                          (cond
                                           ((and (ly:music? mod) (eq? 'TextScriptEvent (ly:music-property mod 'name)))
                                            (let* ((direction (ly:music-property mod 'direction #f))
-                                                   (grob (ly:engraver-make-grob trans 'TextScript
-                                                         (ly:make-stream-event (ly:assoc-get 'types (ly:assoc-get 'TextScriptEvent music-descriptions '()) '())
-                                                           `((origin . ,(ly:music-property mod 'origin) )
-                                                             (tweaks . ,(ly:music-property mod 'tweaks))
-                                                             (direction . ,direction) ))
-                                                         ))
-                                                 (text (ly:music-property mod 'text))
-                                                 (annotation (ly:music-property mod 'annotation #f)))
+                                                  (grob (ly:engraver-make-grob trans 'TextScript
+                                                          (ly:make-stream-event (ly:assoc-get 'types (ly:assoc-get 'TextScriptEvent music-descriptions '()) '())
+                                                            `((origin . ,(ly:music-property mod 'origin) )
+                                                              (tweaks . ,(ly:music-property mod 'tweaks))
+                                                              (direction . ,direction) ))
+                                                          ))
+                                                  (text (ly:music-property mod 'text))
+                                                  (annotation (ly:music-property mod 'annotation #f)))
                                              (ly:grob-set-property! grob 'text text)
                                              (if direction (ly:grob-set-property! grob 'direction direction))
                                              (if (annotation? annotation)
