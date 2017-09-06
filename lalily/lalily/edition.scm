@@ -383,22 +383,21 @@
                                    ,path
                                    )
                                  )
-                                ; (if (lalily:verbose) (ly:message "looking for editions in ~A" (glue-list path "/")))
+                                ;(ly:message "looking for editions in ~A" (glue-list path "/"))
 
                                 ; if the now-moment is greater than 0, this is an instantly created context,
                                 ; so we need to call start-translation-timestep here.
-                                (let ((now (ly:context-now context))
-                                      (partial (ly:context-property context 'measurePosition)))
-                                  (if (or
-                                       ; start-translation-timestep is not called for instant Voices
-                                       (ly:moment<? (ly:make-moment 0/4) now)
-                                       ; start-translation-timestep is not called on upbeats!
-                                       (and (ly:moment? partial)(< (ly:moment-main partial) 0)))
-                                      (begin
-                                       (log-slot "initialize->start-translation-timestep")
-                                       (start-translation-timestep trans)
-                                       ))
-                                  (set! start-translation-timestep-moment now))
+                                ;(let ((now (ly:context-now context))
+                                ;      (partial (ly:context-property context 'measurePosition)))
+                                ;  (if (or
+                                ;       ; start-translation-timestep is not called for instant Voices
+                                ;       (ly:moment<? (ly:make-moment 0/4) now)
+                                ;       ; start-translation-timestep is not called on upbeats!
+                                ;       (and (ly:moment? partial)(< (ly:moment-main partial) 0)))
+                                ;      (begin
+                                ;       (start-translation-timestep trans)
+                                ;       ))
+                                ;  (set! start-translation-timestep-moment now))
 
                                 )))
                            ; paper column interface
