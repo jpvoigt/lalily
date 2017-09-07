@@ -341,7 +341,7 @@ example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"
 
 (define-method (display (tree <tree>) port)
   (let ((tkey (key tree)))
-    (tree-display tree)))
+    (tree-display tree `(port . ,port))))
 
 (define-public (tree? tree)(is-a? tree <tree>))
 (define-public (tree-create . key)
