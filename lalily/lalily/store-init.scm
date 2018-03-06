@@ -258,6 +258,10 @@
   (define-void-function
    (name sympath val)(string-or-symbol? list? scheme?)
    (setatree name sympath (atree-deep-copy val))))
+(define-public optionsSetS
+  (define-void-function
+   (name sympath val)(string-or-symbol? list? symbol?)
+   (setatree name sympath (atree-deep-copy val))))
 (define-public optionsSetL
   (define-void-function
    (name sympath val)(string-or-symbol? list? list?)
@@ -265,6 +269,10 @@
 (define-public optionsAdd
   (define-void-function
    (name sympath val)(string-or-symbol? list? scheme?)
+   (addatree name sympath (atree-deep-copy val))))
+(define-public optionsAddS
+  (define-void-function
+   (name sympath val)(string-or-symbol? list? symbol?)
    (addatree name sympath (atree-deep-copy val))))
 (define-public optionsAddL
   (define-void-function
