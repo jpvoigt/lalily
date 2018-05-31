@@ -75,8 +75,8 @@
          $(if (ly:context-mod? staff-mods) staff-mods)
          \consists \editionEngraver $piece
          $(if (string? midi-instrument) #{ \with { midiInstrument = #midi-instrument } #} #{ \with {} #})
-         %$(if (string? instrument-name) #{ \with { instrumentName = #instrument-name } #} #{ \with {} #})
-         %$(if (string? short-name) #{ \with { instrumentName = #short-name } #} #{ \with {} #})
+         $(if (string? instrument-name) #{ \with { instrumentName = #instrument-name } #} #{ \with {} #})
+         $(if (string? short-name) #{ \with { instrumentName = #short-name } #} #{ \with {} #})
        } \new $voice-context = $name \with {
          $(if (ly:context-mod? voice-mods) voice-mods)
        } {
@@ -212,6 +212,17 @@
                          ((name . "trumpet")
                           (transposition . ,(ly:make-pitch -1 6 -1/2))
                           (midi-instrument . "trumpet")
+                          (output-concert-pitch . #f)
+                          )))
+       options
+       )))
+\registerTemplate lalily.instrument.tenorhornB
+#(define-music-function (piece options)(list? list?)
+   (call-template (create-template-path #f '(..)) piece
+     (assoc-set-all! `((default .
+                         ((name . "tenorhorn")
+                          (transposition . ,(ly:make-pitch -2 6 -1/2))
+                          (midi-instrument . "french horn")
                           (output-concert-pitch . #f)
                           )))
        options
