@@ -299,7 +299,7 @@
              ;; delete it and move ours.
              (ly:grob-suicide! othergrob)
              (hash-remove! ssymb-hash nmcol)
-             1) ; was 0
+             0)
             (begin
              ;; Just save this grob and return the default value.
              (hash-set! ssymb-hash nmcol grob)
