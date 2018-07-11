@@ -471,6 +471,9 @@
                                                 ((eq? 'DecrescendoEvent mod-name)
                                                  (broadcast-music mod 'decrescendo-event))
 
+;;;;;;;;;;; TODO
+                                                ((and (ly:music? mod)(memq mod-name '(TextScriptEvent)) ))
+
                                                 ((and (ly:music? mod)(memq mod-name (map car music-descriptions)))
                                                  ;(ly:message "trying ~A" mod-name)
                                                  (ly:broadcast (ly:context-event-source context)
