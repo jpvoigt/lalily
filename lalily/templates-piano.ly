@@ -44,7 +44,10 @@
            \consists \editionEngraver $piece
            \override DynamicText.padding = #1
            annotation-name = "Piano dynamics"
-         } { \getMusic {} dynamics }
+         } <<
+           \getMusic {} dynamics
+           \getMusicDeep meta
+         >>
          \new Staff = $left-name \with {
            $(if (ly:context-mod? smods) smods)
            $(if (ly:context-mod? lmods) lmods)
@@ -59,7 +62,10 @@
            \consists \editionEngraver $piece
            \override DynamicText.padding = #1
            annotation-name = "Piano pedal"
-         } \getMusic {} pedal
+         } <<
+           \getMusic {} pedal
+           \getMusicDeep meta
+         >>
        >>
      #}))
 
