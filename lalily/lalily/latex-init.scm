@@ -44,8 +44,7 @@
          "\\defaultfontfeatures{Mapping=tex-text}"
          ,(format "\\setmainfont{~A}" font-name)
          ,@(chain-assoc-get 'packages props '())
-         )
-      "xelatex" "-interaction=batchmode" m)
+         ) "xelatex" "-interaction=batchmode" m)
     ))
 ; xelatex markup-list include command
 (define-markup-list-command (xelatexInclude layout props m)(string?)

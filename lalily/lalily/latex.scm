@@ -83,12 +83,14 @@
 
 (define-public (tex-markup-list layout props pkgs cmd opts m)
   (let* ((mm (ly:output-def-lookup layout 'mm))
+         (template (chain-assoc-get 'template props #f))
          (padstart (chain-assoc-get 'padstart props 2))
          (padlength (* mm (chain-assoc-get 'padlength props 0)))
-         (scropts (chain-assoc-get 'scrartcl props ""))
+         (tex-opts (chain-assoc-get 'tex-opts props (chain-assoc-get 'scrartcl props "")))
          (size (chain-assoc-get 'line-width props (ly:output-def-lookup layout 'line-width 10)))
          ; width of our box in mm
-         (width (let ((tw (chain-assoc-get 'tex-width props #f))) (if tw (begin (set! size (* tw mm)) tw) (/ size mm))))
+         (width (let ((tw (chain-assoc-get 'tex-width props #f)))
+                  (if (number? tw) (begin (set! size (* tw mm)) tw) (/ size mm))))
          ; percent of page to use
          (perc (chain-assoc-get 'percent props))
          ; height of our box in mm
@@ -103,6 +105,25 @@
          (text-stencil empty-stencil)
          (pages 0)
          (epslist '()))
+    (define (create-tex props text)
+      (if (procedure? template)
+          (template props text)
+          (format "\\documentclass~A{scrartcl}
+\\usepackage[paperwidth=~A,paperheight=~A,margin=~A]{geometry}
+\\usepackage[~A]{babel}
+~A
+\\begin{document}
+~A
+\\end{document}
+"
+            (chain-assoc-get 'tex-opts props "")
+            (chain-assoc-get 'tex-width props "195mm")
+            (chain-assoc-get 'tex-height props #f)
+            (chain-assoc-get 'tex-margin props 1)
+            (chain-assoc-get 'babel props "ngerman")
+            (glue-list (chain-assoc-get 'tex-pkgs props '()) "\n")
+            text)
+          ))
     (define (readpipe port text)
       (let ((line (read-line port)))
         (if (not (eof-object? line))
@@ -124,20 +145,15 @@
                                ret))
 
     ; write <basename>.tex
-    (let ((tex-src
-           (format "\\documentclass~A{scrartcl}
-\\usepackage[paperwidth=~Amm,paperheight=~Amm,margin=~Amm]{geometry}
-\\usepackage[~A]{babel}
-~A
-\\begin{document}
-~A
-\\end{document}
-"
-scropts width height
-(chain-assoc-get 'tex-margin props 1)
-(chain-assoc-get 'babel props "ngerman")
-(glue-list pkgs "\n")
-text)))
+    (let ((tex-src (create-tex `((
+                                   (tex-opts . ,tex-opts)
+                                   (tex-width . ,(format "~Amm" width))
+                                   (tex-height . ,(format "~Amm" height))
+                                   (tex-margin . ,(format "~Amm" (chain-assoc-get 'tex-margin props 1)))
+                                   (tex-pkgs . ,(chain-assoc-get 'tex-pkgs props (chain-assoc-get 'packages props pkgs)))
+                                   (babel . ,(chain-assoc-get 'babel props "ngerman"))
+                                   ))
+                     text) ))
       (with-output-to-file (format "~A.tex" basename) (lambda () (display tex-src)))
       )
     ; produce pdf
