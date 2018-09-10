@@ -45,6 +45,26 @@
      '())
    )
 
+%%% get the lyrics context id and store it in (var)
+%%% this function returns an empty dummy engraver but store the context id
+%%% of the lyrics context in var
+\parserDefine getLyricID
+#(define-scheme-function (var)(symbol?)
+   "stores the context id of a found Lyrics context in a variable called {var}."
+   ; return scheme engraver
+   (lambda (context)
+     (let ((stc (ly:context-find context 'Lyrics)))
+       ; parental lyrics context is in 'stc'
+       (if (ly:context? stc)
+           ; store lyrics context id in variable with name given in 'var'
+           (ly:parser-define! var (ly:context-id stc))
+           ; if no Lyrics context is found display warning
+           (ly:input-warning (*location*) "no Lyrics found!")
+           ))
+     ; return an empty list as dummy engraver
+     '())
+   )
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% the returned engraver sets the alignAboveContext or alignBelowContext property
 %%% in the initialize funtion
