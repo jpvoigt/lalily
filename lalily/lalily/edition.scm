@@ -453,6 +453,8 @@
                                             ((eq? 'DecrescendoEvent mod-name)
                                              (broadcast-music mod 'decrescendo-event))
 
+                                            ((memq mod-name '(TextScriptEvent)) ) ; see process-music
+
                                             ((and (ly:music? mod)(memq mod-name (map car music-descriptions)))
                                              ;(ly:message "trying ~A" mod-name)
                                              (ly:broadcast (ly:context-event-source context)
