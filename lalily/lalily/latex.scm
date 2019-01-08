@@ -22,6 +22,8 @@
  (ice-9 popen)
  (ice-9 rdelim)
  (ice-9 regex)
+ (srfi srfi-1)
+ (srfi srfi-13)
  (scm framework-eps)
  (lalily lascm)
  (lalily markup))
@@ -104,7 +106,9 @@
          ; stencil to return
          (text-stencil empty-stencil)
          (pages 0)
-         (epslist '()))
+         (epslist '())
+         (current-dir (getcwd))
+         (cache-folder (chain-assoc-get 'tex-cache props "lily-latex-cache")))
     (define (create-tex props text)
       (if (procedure? template)
           (template props text)
@@ -135,47 +139,61 @@
              (result (close-pipe port)))
         (if (and (= 0 result)(> (string-length str) 0))
             str "")))
-    (define (loop n callback)(let ((ret (list)))
-                               (define (lp i)
-                                 (if (<= i n)
-                                     (begin
-                                      (set! ret (append ret (list (callback i))))
-                                      (lp (+ i 1)))))
-                               (lp 1)
-                               ret))
+    (define (loop n callback)
+      (let ((ret (list)))
+        (define (lp i)
+          (if (<= i n)
+              (begin
+               (set! ret (append ret (list (callback i))))
+               (lp (+ i 1)))))
+        (lp 1)
+        ret))
+
+    (if (not (file-exists? cache-folder)) (mkdir cache-folder))
+    (if (not (equal? 'directory (stat:type (stat cache-folder))))
+        (ly:error "~A is not a directory! ~A" cache-folder (stat:type cache-stat)))
+    (chdir cache-folder)
 
     ; write <basename>.tex
-    (let ((tex-src (create-tex `((
-                                   (tex-opts . ,tex-opts)
-                                   (tex-width . ,(format "~Amm" width))
-                                   (tex-height . ,(format "~Amm" height))
-                                   (tex-margin . ,(format "~Amm" (chain-assoc-get 'tex-margin props 1)))
-                                   (tex-pkgs . ,(chain-assoc-get 'tex-pkgs props (chain-assoc-get 'packages props pkgs)))
-                                   (babel . ,(chain-assoc-get 'babel props "ngerman"))
-                                   ))
-                     text) ))
-      (with-output-to-file (format "~A.tex" basename) (lambda () (display tex-src)))
+    (let* ((tex-src (create-tex `((
+                                    (tex-opts . ,tex-opts)
+                                    (tex-width . ,(format "~Amm" width))
+                                    (tex-height . ,(format "~Amm" height))
+                                    (tex-margin . ,(format "~Amm" (chain-assoc-get 'tex-margin props 1)))
+                                    (tex-pkgs . ,(chain-assoc-get 'tex-pkgs props (chain-assoc-get 'packages props pkgs)))
+                                    (babel . ,(chain-assoc-get 'babel props "ngerman"))
+                                    ))
+                      text) )
+           (tex-key (format "~A_~A" (string-length tex-src) (string-hash tex-src))))
+      (set! basename (format "~A" tex-key))
+      (if (not (file-exists? (format "~A.tex" basename)))
+          (with-output-to-file (format "~A.tex" basename) (lambda () (display tex-src))))
       )
     ; produce pdf
-    (set! result (system (format "export LD_LIBRARY_PATH=\"\" ; ~A ~A \"~A.tex\"" cmd opts basename)))
+    (if (not (file-exists? (format "~A.pdf" basename)))
+        (set! result (system (format "export LD_LIBRARY_PATH=\"\" ; ~A ~A \"~A.tex\"" cmd opts basename))))
     ; how many pages
     (set! pages (let* ((r (make-regexp "Pages:\\s+([0-9]+)"))
-                       (m (regexp-exec r (cmd->string (format "pdfinfo \"~A.pdf\"" basename)))))
+                       (m (regexp-exec r (cmd->string (format "export LD_LIBRARY_PATH=\"\" ; pdfinfo \"~A.pdf\"" basename)))))
                   (string->number (match:substring m 1))))
     ; add pages to markup-list
-    (loop pages (lambda (pag)(let ((pagname (format "~A-~A.eps" basename pag)))
-                               ; convert page to EPS
-                               (set! result (system (format "pdftops -eps -f ~A -l ~A \"~A.pdf\" \"~A\"" pag pag basename pagname)))
-                               ; include EPS
-                               (set! text-stencil (eps-file->stencil X size pagname))
-                               (if (and (>= pag padstart)(> padlength 0))
-                                   (set! text-stencil (ly:stencil-combine-at-edge
-                                                       (ly:make-stencil '() (cons 0 size) (cons 0 padlength))
-                                                       Y -1 text-stencil 0)))
-                               (set! epslist (append epslist (list text-stencil)))
-                               )))
+    (loop pages
+      (lambda (pag)
+        (let ((pagname (format "~A-~A.eps" basename pag)))
+          ; convert page to EPS
+          (if (not (file-exists? pagname))
+              (set! result (system (format "export LD_LIBRARY_PATH=\"\" ; pdftops -eps -level3 -f ~A -l ~A \"~A.pdf\" \"~A\"" pag pag basename pagname))))
+          ; include EPS
+          (set! text-stencil (eps-file->stencil X size pagname))
+          (if (and (>= pag padstart)(> padlength 0))
+              (set! text-stencil (ly:stencil-combine-at-edge
+                                  (ly:make-stencil '() (cons 0 size) (cons 0 padlength))
+                                  Y -1 text-stencil 0)))
+          (set! epslist (append epslist (list text-stencil)))
+          )))
     ; remove working files
-    (system (format "rm -v \"~A\"*" basename))
+    ;(system (format "rm -v \"~A\"*" basename))
+    (chdir current-dir)
     ; return eps-stencil
     epslist
     ))
