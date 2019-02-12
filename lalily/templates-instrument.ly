@@ -66,13 +66,14 @@
          (meta (get-music-deep piece 'meta #f))
          )
      (define (natmus mus) (if natpit (naturalize mus) mus))
-     (if (string? clef)
-         (set! meta (make-music 'SimultaneousMusic
-                      'elements (list #{ \clef #clef #} meta)))
-         )
+     ;(if (string? clef)
+     ;    (set! meta (make-music 'SimultaneousMusic
+     ;                 'elements (list #{ \clef #clef #} meta)))
+     ;    )
      #{
        \new $staff-context = $name \with {
          $(if (ly:context-mod? staff-mods) staff-mods)
+         $(if (string? clef) #{ \clef #clef #})
          \consists \editionEngraver $piece
          $(if (string? midi-instrument) #{ \with { midiInstrument = #midi-instrument } #} #{ \with {} #})
          %$(if (string? instrument-name) #{ \with { instrumentName = #instrument-name } #} #{ \with {} #})
