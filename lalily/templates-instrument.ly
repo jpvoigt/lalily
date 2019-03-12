@@ -266,7 +266,8 @@
 #(define-music-function (piece options)(list? list?)
    (let ((organ #f)
          (do-general (assoc-get 'general options #t #f))
-         (sysdelim (assoc-get 'systemStartDelimiter options 'SystemStartBar #f)))
+         (sysdelim (assoc-get 'systemStartDelimiter options 'SystemStartBar #f))
+         (instaff (assoc-get 'general-instaff options #f #f)))
      #{
        \new StaffGroup \with {
          systemStartDelimiter = #sysdelim
@@ -281,6 +282,7 @@
                                               (name . "continuo")
                                               ))
          $(if (and do-general (has-music? (create-music-path #f '(general))))
+              (if instaff
               #{
                 \context Staff = "continuo" \figuremode {
                   \set Staff.figuredBassAlterationDirection = #RIGHT
@@ -288,6 +290,11 @@
                   \getMusic general
                 }
               #}
+              #{
+                \new FiguredBass = "general" \with {
+                  \consists \editionEngraver ##f
+                } { \getMusic general }
+              #})
               (make-music 'SequentialMusic 'void #t))
        >>
      #}))
