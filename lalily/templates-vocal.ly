@@ -48,6 +48,7 @@ create one staff with one vocal voice and associated lyrics.
          (staff-context (assoc-get 'staff-context options 'Staff #f))
          (staff-mods (assoc-get 'staff-mods options #f #f))
          (voice-mods (assoc-get 'voice-mods options #f #f))
+         (midi-instrument (get-option 'midi-instrument options #f))
          ;(voices (assoc-get 'voices options #f #f)) % TODO two voices in staff
          (lyric-mods (assoc-get 'lyric-mods options #f #f))
          ;(repeats (assoc-get 'repeats options #f #f))
@@ -70,6 +71,7 @@ create one staff with one vocal voice and associated lyrics.
        <<
          \new $staff-context = $staffname \with {
            $(if (ly:context-mod? staff-mods) staff-mods #{ \with {} #})
+           $(if (string? midi-instrument) #{ \with { midiInstrument = #midi-instrument } #} #{ \with {} #})
            \consists \editionEngraver $piece
          } <<
            \callTemplate voice #'() #(assoc-set-all! options
