@@ -267,13 +267,20 @@
    (let ((organ #f)
          (do-general (assoc-get 'general options #t #f))
          (sysdelim (assoc-get 'systemStartDelimiter options 'SystemStartBar #f))
-         (instaff (assoc-get 'general-instaff options #f #f)))
+         (instaff (assoc-get 'general-instaff options #f #f))
+         (general-up (assoc-get 'general-up options #f #f)))
      #{
        \new StaffGroup \with {
          systemStartDelimiter = #sysdelim
          \override SystemStartBracket.collapse-height = #1
          \override SystemStartBar.collapse-height = #1
        } <<
+         $(if general-up
+              #{
+                \new FiguredBass = "general" \with {
+                  \consists \editionEngraver ##f
+                } { \getMusic general }
+              #} #{#} )
          \callTemplate LY_UP ##t #piece #(assoc-set-all! options
                                            `(,(if organ '(midi-instrument . "drawbar organ") '(dummy . #f))
                                               ;(staff-context . "ContinuoStaff")
@@ -283,18 +290,19 @@
                                               ))
          $(if (and do-general (has-music? (create-music-path #f '(general))))
               (if instaff
-              #{
-                \context Staff = "continuo" \figuremode {
-                  \set Staff.figuredBassAlterationDirection = #RIGHT
-                  \set Staff.figuredBassPlusDirection = #RIGHT
-                  \getMusic general
-                }
-              #}
-              #{
-                \new FiguredBass = "general" \with {
-                  \consists \editionEngraver ##f
-                } { \getMusic general }
-              #})
+                  #{
+                    \context Staff = "continuo" \figuremode {
+                      \set Staff.figuredBassAlterationDirection = #RIGHT
+                      \set Staff.figuredBassPlusDirection = #RIGHT
+                      \getMusic general
+                    }
+                  #}
+                  (if (not general-up)
+                      #{
+                        \new FiguredBass = "general" \with {
+                          \consists \editionEngraver ##f
+                        } { \getMusic general }
+                      #} #{ #}))
               (make-music 'SequentialMusic 'void #t))
        >>
      #}))
