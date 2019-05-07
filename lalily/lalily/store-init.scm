@@ -648,7 +648,7 @@
                 \override LyricText #'font-shape = #'italic
                 \override StanzaNumber #'font-shape = #'italic
                 \override StanzaNumber #'font-series = #'plain
-              } \lyricsto $cueid \lyricmode {
+              } \lyricsto $cueid {
                 $(if (strmup? cuename) #{
                   \set stanza = \markup { \concat { "(" $cuename ")" } }
                      #}) $lyrics
