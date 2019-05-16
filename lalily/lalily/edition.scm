@@ -578,7 +578,7 @@
             )))
 
   (set! display-edition (lambda () (tree-display edition-tree
-                                     '(pathsep . " ")
+                                     '(pathsep . ".")
                                      `(vformat . ,(lambda (p)
                                                     (let* ((m (if (pair? p) (cdr p) p))
                                                            (ctx (if (pair? p) (object-property (car p) 'context) #f))
@@ -592,7 +592,7 @@
   (set! display-mods
         (lambda ()
           (tree-display mod-tree
-            '(pathsep . " ")
+            '(pathsep . ".")
             `(pformat . ,(lambda (v) (cond
                                       ((ly:moment? v) (moment->string v))
                                       (else (format "~A" v))
