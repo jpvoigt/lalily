@@ -313,7 +313,7 @@
                                       (current-mods (tree-get context-mods (list measure measurePos))))
                                 (if (and (list? current-mods) (procedure? callback))
                                     (let ((cnow (ly:context-now context)))
-                                      (for-each (lambda (cmod) (callback tag-path cnow measure measurePos cmod)) current-mods)
+                                      (for-each (lambda (cmod) (callback context cnow measure measurePos cmod)) current-mods)
                                       ))
                                 (if (list? current-mods) current-mods '())
                                 )))
