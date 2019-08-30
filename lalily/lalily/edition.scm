@@ -46,6 +46,7 @@
 
 ((@@ (lily) translator-property-description) 'edition-id list? "edition id (list)")
 ((@@ (lily) translator-property-description) 'annotation-name string? "annotation context name")
+((@@ (lily) translator-property-description) 'edition-mod-callback procedure? "callback edition-id time measure moment music")
 
 ;%%%%%%%%%%%%%
 
@@ -282,6 +283,9 @@
                            (ctxid (ly:context-id context))
                            (ctxname (ly:context-name context))
                            (context-mods #f)
+                           (callback (if (equal? context (ly:context-property-where-defined context 'edition-mod-callback))
+                                         (ly:context-property context 'edition-mod-callback)
+                                         #f))
 
                            ; TODO get-paths -> collect from all paths
                            (get-paths
@@ -307,6 +311,10 @@
                                       (measure (ly:context-property context 'currentBarNumber))
                                       (measurePos (ly:context-property context 'measurePosition))
                                       (current-mods (tree-get context-mods (list measure measurePos))))
+                                (if (and (list? current-mods) (procedure? callback))
+                                    (let ((cnow (ly:context-now context)))
+                                      (for-each (lambda (cmod) (callback tag-path cnow measure measurePos cmod)) current-mods)
+                                      ))
                                 (if (list? current-mods) current-mods '())
                                 )))
                            (initialize
@@ -501,14 +509,14 @@
                                          (cond
                                           ((and (ly:music? mod) (eq? 'TextScriptEvent (ly:music-property mod 'name)))
                                            (let* ((direction (ly:music-property mod 'direction #f))
-                                                   (grob (ly:engraver-make-grob trans 'TextScript
-                                                         (ly:make-stream-event (ly:assoc-get 'types (ly:assoc-get 'TextScriptEvent music-descriptions '()) '())
-                                                           `((origin . ,(ly:music-property mod 'origin) )
-                                                             (tweaks . ,(ly:music-property mod 'tweaks))
-                                                             (direction . ,direction) ))
-                                                         ))
-                                                 (text (ly:music-property mod 'text))
-                                                 (annotation (ly:music-property mod 'annotation #f)))
+                                                  (grob (ly:engraver-make-grob trans 'TextScript
+                                                          (ly:make-stream-event (ly:assoc-get 'types (ly:assoc-get 'TextScriptEvent music-descriptions '()) '())
+                                                            `((origin . ,(ly:music-property mod 'origin) )
+                                                              (tweaks . ,(ly:music-property mod 'tweaks))
+                                                              (direction . ,direction) ))
+                                                          ))
+                                                  (text (ly:music-property mod 'text))
+                                                  (annotation (ly:music-property mod 'annotation #f)))
                                              (ly:grob-set-property! grob 'text text)
                                              (if direction (ly:grob-set-property! grob 'direction direction))
                                              (if (annotation? annotation)
