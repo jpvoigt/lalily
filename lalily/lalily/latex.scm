@@ -160,7 +160,7 @@
                                     (tex-width . ,(format "~Amm" width))
                                     (tex-height . ,(format "~Amm" height))
                                     (tex-margin . ,(format "~Amm" (chain-assoc-get 'tex-margin props 1)))
-                                    (tex-pkgs . ,(chain-assoc-get 'tex-pkgs props (chain-assoc-get 'packages props pkgs)))
+                                    (tex-pkgs . (,@(chain-assoc-get 'tex-pkgs props (chain-assoc-get 'packages props pkgs)) ,@pkgs))
                                     (babel . ,(chain-assoc-get 'babel props "ngerman"))
                                     ))
                       text) )
