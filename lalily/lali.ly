@@ -170,7 +170,8 @@
             }
             #})
           (doScore (ly:music-function-extract lalilyScore))
-          (doPart (ly:assoc-get 'toc-part options #f #f))
+          (hideTocCol (ly:assoc-get 'hide-toccol options #f #f))
+          (doTocPart (ly:assoc-get 'toc-part options #f #f))
           (headers (assoc-get 'header (get-music-folder-options) '()))
           )
      (set-book-headers! bookpart headers)
@@ -179,8 +180,10 @@
 
      (let ((title (get-music-folder-header-field 'toc-label)))
        (if (not (markup? title))(set! title (get-music-folder-header-field 'title)))
-       (if (markup? title) (if doPart (add-music #{ \tocPart $title #})
-                               (add-music #{ \tocCollection $title #}))))
+       (format #t "title: ~A\nhide: ~A\n" title hideTocCol)
+       (if (and (not hideTocCol)(markup? title))
+           (if doTocPart (add-music #{ \tocPart $title #})
+               (add-music #{ \tocCollection $title #}))))
 
      (if print-all-headers (set! options (assoc-set! options 'clear-headers headers)))
      (for-each
@@ -325,7 +328,8 @@
             #})
           (pre-markup (ly:assoc-get 'pre-markup (get-default-options (get-music-folder)) #f #f))
           (post-markup (ly:assoc-get 'post-markup (get-default-options (get-music-folder)) #f #f))
-          (doPart (ly:assoc-get 'toc-part options #f #f))
+          (hideTocCol (ly:assoc-get 'hide-toccol options #f #f))
+          (doTocPart (ly:assoc-get 'toc-part options #f #f))
           )
      (set-book-headers! bookpart (assoc-get 'header (get-music-folder-options) '()))
      (log-music-folder)
@@ -334,7 +338,7 @@
 
      (let ((title (get-music-folder-header-field 'toc-label)))
        (if (not (markup? title))(set! title (get-music-folder-header-field 'title)))
-       (if (markup? title) (if doPart (add-music #{ \tocPart $title #})
+       (if (and (not hideTocCol)(markup? title)) (if doTocPart (add-music #{ \tocPart $title #})
                                (add-music #{ \tocCollection $title #}))))
 
      (add-sco-mup pre-markup score post-markup)
