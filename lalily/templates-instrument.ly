@@ -231,6 +231,18 @@
        options
        )))
 
+\registerTemplate lalily.instrument.bugle.tenB
+#(define-music-function (piece options)(list? list?)
+   (call-template (create-template-path #f '(.. ..)) piece
+     (assoc-set-all! `((default .
+                         ((name . "cornoB")
+                          (transposition . ,(ly:make-pitch -2 6 -1/2))
+                          (midi-instrument . "trumpet")
+                          (output-concert-pitch . #f)
+                          )))
+       options
+       )))
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% string
 
