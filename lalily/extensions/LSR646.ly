@@ -22,7 +22,7 @@
    (let* ((tuplet-bracket (ly:grob-object tuplet-number 'bracket))
           (first-note (ly:grob-parent tuplet-number X))
           (first-stem (ly:grob-object first-note 'stem))
-          (beam (ly:grob-object first-stem 'beam)))
+          (beam (if (ly:grob? first-stem) (ly:grob-object first-stem 'beam) #f)))
 
      (if (and (ly:grob? beam) ; beam on first note?
               (ly:grob-property beam 'knee) ; is it kneed?
@@ -101,7 +101,7 @@
    (let* ((tuplet-bracket (ly:grob-object tuplet-number 'bracket))
           (first-note (ly:grob-parent tuplet-number X))
           (first-stem (ly:grob-object first-note 'stem))
-          (beam (ly:grob-object first-stem 'beam)))
+          (beam (if (ly:grob? first-stem) (ly:grob-object first-stem 'beam) #f)))
 
      (if (and (ly:grob? beam)
               (ly:grob-property beam 'knee)
