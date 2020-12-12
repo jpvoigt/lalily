@@ -239,6 +239,7 @@
                           (transposition . ,(ly:make-pitch -2 6 -1/2))
                           (midi-instrument . "trumpet")
                           (output-concert-pitch . #f)
+                          (clef . ,(if (ly:assoc-get 'output-concert-pitch options) "bass" "G"))
                           )))
        options
        )))
