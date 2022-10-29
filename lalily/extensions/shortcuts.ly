@@ -31,6 +31,8 @@
 #(make-dynamic-script (markup #:normal-text #:style 'dynamic "cresc."))
 \parserDefine #'adecr
 #(make-dynamic-script (markup #:normal-text #:style 'dynamic "decr."))
+\parserDefine #'adim
+#(make-dynamic-script (markup #:normal-text #:style 'dynamic "dim."))
 
 % \once \override DynamicText.extra-offset
 \parserDefine #'dyneo
