@@ -155,7 +155,7 @@
                     (if (and (list? keys)(> (length keys) 0))
                         keys
                         (let* ((keys (get-music-keys p))
-                               (kformat (lambda (k) (if (number? k) (format "~5,'0d" k)(format "~A" k))))
+                               (kformat (lambda (k) (if (number? k) (format #f "~5,'0d" k)(format #f "~A" k))))
                                (sfun (lambda (k1 k2) (string<? (kformat k1) (kformat k2)))))
                           (sort keys sfun)) )))
                  #f))
@@ -221,10 +221,10 @@
                \markuplist {
                  \with-props #(append
                                (map (lambda (p)
-                                      (cons (string->symbol (format "header:~A" (car p)))
+                                      (cons (string->symbol (format #f "header:~A" (car p)))
                                         (cdr p))) header)
                                (map (lambda (p)
-                                      (cons (string->symbol (format "lalily:~A" (car p)))
+                                      (cons (string->symbol (format #f "lalily:~A" (car p)))
                                         (cdr p))) alist)
                                )
                  \style #stl $text
@@ -264,7 +264,7 @@
                             #{
                               \markup {
                                 \with-props #(map (lambda (p)
-                                                    (cons (string->symbol (format "header:~A" (car p)))
+                                                    (cons (string->symbol (format #f "header:~A" (car p)))
                                                       (cdr p))) header)
                                 \style #stl $text
                               }
@@ -361,7 +361,7 @@
                     (if (and (list? keys)(> (length keys) 0))
                         keys
                         (let* ((keys (get-music-keys p))
-                               (kformat (lambda (k) (if (number? k) (format "~5,'0d" k)(format "~A" k))))
+                               (kformat (lambda (k) (if (number? k) (format #f "~5,'0d" k)(format #f "~A" k))))
                                (sfun (lambda (k1 k2) (string<? (kformat k1) (kformat k2)))))
                           (sort keys sfun)) )))
                  #f))
