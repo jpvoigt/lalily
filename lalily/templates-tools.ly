@@ -77,12 +77,25 @@
 % chord mode
 \registerTemplate lalily.chords
 #(define-music-function (parser location piece options)(list? list?)
-   (let ((mods (assoc-get 'context-mods options #f #f)))
-     #{
-       \new ChordNames \with {
-         $(if (ly:context-mod? mods) mods #{ \with {} #})
-       } \getMusic {} #'()
-     #}))
+   (let ((mods (assoc-get 'context-mods options #f #f))
+         (names (assoc-get 'names options #t #f))
+         (frets (assoc-get 'frets options #f #f)))
+     (if (and names frets)
+         #{
+           <<
+             \new ChordNames \with {
+               $(if (ly:context-mod? mods) mods #{ \with {} #})
+             } \getMusic {} #'()
+             \new FretBoards \with {
+               $(if (ly:context-mod? mods) mods #{ \with {} #})
+             } \getMusic {} #'()
+           >>
+         #}
+         #{
+           \new #(if frets 'FretBoards 'ChordNames) \with {
+             $(if (ly:context-mod? mods) mods #{ \with {} #})
+           } \getMusic {} #'()
+         #})))
 
 % lyrics not tied to another voice
 \registerTemplate lalily.Lyrics
