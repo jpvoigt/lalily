@@ -36,7 +36,7 @@
            \consists \editionEngraver \musicPath right
            annotation-name = "Piano right-hand"
          } <<
-           \keepWithTag #'piano-right \getMusicDeep {} #'meta
+           \keepWithTag #'piano-right { \clef $rclef \getMusicDeep {} #'meta }
            \keepWithTag #'piano-right { \getMusic {} global \getMusic right }
          >>
          \new Dynamics \with {
@@ -54,8 +54,8 @@
            \consists \editionEngraver \musicPath left
            annotation-name = "Piano left-hand"
          } <<
-           \keepWithTag #'piano-left \getMusicDeep {} #'meta
-           \keepWithTag #'piano-left { \getMusic {} global \clef $lclef \getMusic left }
+           \keepWithTag #'piano-left { \clef $lclef \getMusicDeep {} #'meta }
+           \keepWithTag #'piano-left { \getMusic {} global \getMusic left }
          >>
          \new Dynamics \with {
            $(if (ly:context-mod? pmods) pmods)
