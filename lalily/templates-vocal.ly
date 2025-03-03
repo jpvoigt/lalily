@@ -263,10 +263,10 @@ create one staff with one vocal voice and associated lyrics.
 \optionsInit lalily_vocal_group_default
 \optionsAdd lalily_vocal_group_default sop.staff-mods \with { instrumentName = "Sopran" }
 \optionsAdd lalily_vocal_group_default alt.staff-mods \with { instrumentName = "Alt" }
-\optionsAdd lalily_vocal_group_default ten.staff-mods \with { instrumentName = "Tenor" }
-\optionsAdd lalily_vocal_group_default ten.clef "G_8"
-\optionsAdd lalily_vocal_group_default bas.staff-mods \with { instrumentName = "Bass" }
-\optionsAdd lalily_vocal_group_default bas.clef "bass"
+\optionsAdd lalily_vocal_group_default ten.staff-mods \with { instrumentName = "Tenor" \clef "G_8" }
+% \optionsAdd lalily_vocal_group_default ten.clef "G_8"
+\optionsAdd lalily_vocal_group_default bas.staff-mods \with { instrumentName = "Bass" \clef "bass" }
+% \optionsAdd lalily_vocal_group_default bas.clef "bass"
 \registerTemplate lalily.vocal.group
 #(let ((choir 0))
    (define (get-choir) (set! choir (+ choir 1)) (format "choir~A" choir))
