@@ -164,25 +164,46 @@
 
 (define-public (set-book-headers! book header)
   (let ((bookhead (ly:book-header book)))
-    (if (or (not bookhead)(list? bookhead))(begin (set! bookhead (make-module)) (ly:book-set-header! book bookhead)))
+    ; Initialize header as empty list if not set or if it's a list
+    (if (or (not bookhead)(list? bookhead))
+        (begin 
+          (set! bookhead '())
+          (ly:book-set-header! book bookhead)))
+    ; Get header from options if not a list
     (if (not (list? header))
         (set! header (assoc-get 'header (get-music-folder-options) '())))
-    (for-each (lambda (p)
-                (if (pair? p)
-                    (let ((key (car p))
-                          (val (cdr p)))
-                      (module-define! bookhead key val)))) header)
+    ; Build new header alist by merging existing and new headers
+    (let ((new-header bookhead))
+      (for-each (lambda (p)
+                  (if (pair? p)
+                      (let ((key (car p))
+                            (val (cdr p)))
+                        (set! new-header (assoc-set new-header key val)))))
+                header)
+      ; Set the updated header
+      (ly:book-set-header! book new-header))
     ))
 (define-public (set-score-headers! score header)
   (let ((scorehead (ly:score-header score)))
-    (if (or (not scorehead)(list? scorehead))(let ((mod (make-module))) (set! scorehead mod) (ly:score-set-header! score scorehead)))
-    (if (not (list? header)) (set! header (assoc-get 'header (get-music-folder-options
-                                                              (if (ly:input-location? header) header #f)) '())))
-    (for-each (lambda (p)
-                (if (pair? p)
-                    (let ((key (car p))
-                          (val (cdr p)))
-                      (module-define! scorehead key val)))) header)
+    ; Initialize header as empty list if not set or if it's a list
+    (if (or (not scorehead)(list? scorehead))
+        (begin 
+          (set! scorehead '())
+          (ly:score-set-header! score scorehead)))
+    ; Get header from options if not a list
+    (if (not (list? header)) 
+        (set! header (assoc-get 'header (get-music-folder-options
+                                         (if (ly:input-location? header) header #f)) '())))
+    ; Build new header alist by merging existing and new headers
+    (let ((new-header scorehead))
+      (for-each (lambda (p)
+                  (if (pair? p)
+                      (let ((key (car p))
+                            (val (cdr p)))
+                        (set! new-header (assoc-set new-header key val)))))
+                header)
+      ; Set the updated header
+      (ly:score-set-header! score new-header))
     ))
 
 (define-public setGlobalStaffSize
