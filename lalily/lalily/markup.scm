@@ -82,7 +82,7 @@
   (let ((m (proc layout props)))
     (cond ((ly:stencil? m) m)
       ((markup? m)(interpret-markup layout props m))
-      (else (interpret-markup layout props (markup (format "~A" m))))
+      (else (interpret-markup layout props (markup (format #f "~A" m))))
       )))
 (define-markup-list-command (execMarkupList layout props proc)(procedure?)
   (let ((ml (proc layout props)))
@@ -90,7 +90,7 @@
            (cond ((ly:stencil? m) m)
              ((markup? m)(interpret-markup layout props m))
              ((string? m)(interpret-markup layout props (markup m)))
-             (else (interpret-markup layout props (markup (format "~A" m))))
+             (else (interpret-markup layout props (markup (format #f "~A" m))))
              )) ml)
     ))
 
@@ -332,7 +332,7 @@
       ((and (pair? mup) (equal? (car mup) page-ref-markup))
        (set! result (let* ((table (if layout (ly:output-def-lookup layout 'label-page-table) '()))
                            (pg (assoc-get (car (cdr mup)) table)))
-                      (if pg (format "~A" pg) (caddr (cdr mup)))) ))
+                      (if pg (format #f "~A" pg) (caddr (cdr mup)))) ))
 
       ((and (pair? mup)(markup-function? (car mup)))
        (let ((proc (get-markup-producer (car mup))))
@@ -343,7 +343,7 @@
       ((list? mup)
        (for-each (lambda (m)(set! result (string-append result (if (or conc (string=? result "")) "" " ") (la:markup->string m conc layout props))))
          (filter mup? mup)))
-      (else (set! result (format "?~A?" mup))(ly:message "markup->string: '~A'" mup)))
+      (else (set! result (format #f "?~A?" mup))(ly:message "markup->string: '~A'" mup)))
     result))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -353,31 +353,31 @@
   (let ((str (string? mup)))
     (define (object->serialize o)
       (cond
-       ((symbol? o) (format "#'~A" o))
-       ((boolean? o) (format "#~A" o))
-       ((number? o) (format "#~A" o))
-       ((string? o) (format "#\"~A\"" o))
+       ((symbol? o) (format #f "#'~A" o))
+       ((boolean? o) (format #f "#~A" o))
+       ((number? o) (format #f "#~A" o))
+       ((string? o) (format #f "#\"~A\"" o))
        ((markup? o) (markup-to-lily o))
        ((markup-list? o)
         (apply string-append "{" (append (map (lambda (s) (string-append " " (markup-to-lily s))) o) '(" }"))))
        ((list? o)
         (apply string-append "#(list" (append (map (lambda (s) (string-append " " (object->serialize s))) o) '(")"))))
        ((pair? o)
-        (format "#(cons ~A ~A)" (car o)(cdr o)))
+        (format #f "#(cons ~A ~A)" (car o)(cdr o)))
        ))
     (define (markup-to-lily mup)
       (cond
-       ((string? mup) (format "\"~A\"" mup))
+       ((string? mup) (format #f "\"~A\"" mup))
        ((and (pair? mup) (markup-function? (car mup))
              (let* ((ms (procedure-name (car mup)))
                     (mn (symbol->string ms)))
                (if (eq? 'simple-markup ms)
-                   (format "\"~A\"" (cadr mup))
-                   (format "\\~A ~A" (substring mn 0 (- (string-length mn) 7))
+                   (format #f "\"~A\"" (cadr mup))
+                   (format #f "\\~A ~A" (substring mn 0 (- (string-length mn) 7))
                      (apply string-append
                        (map (lambda (a)
                               (let ((osa (object->serialize a)))
-                                (if (string? osa) (string-append " " osa) (format "~A" osa))
+                                (if (string? osa) (string-append " " osa) (format #f "~A" osa))
                                 )) (cdr mup))))
                    ))))
        ))
@@ -388,17 +388,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; barcodes
 (define-markup-command (qr-code layout props str size idn)(string? number? boolean?)
-  (let ((tmp (format "~A-~2A.eps" (strftime "%Y%m%d%H%M%S" (localtime (current-time))) (random 100)))
+  (let ((tmp (format #f "~A-~2A.eps" (strftime "%Y%m%d%H%M%S" (localtime (current-time))) (random 100)))
         (qr-stencil (interpret-markup layout props (markup #:with-color red #:filled-box (cons 0 size) (cons 0 size) 0.7)))
         (quali (chain-assoc-get 'qr-quality props "L")))
     (if (symbol? str)(let ((tmp (chain-assoc-get str props #f)))
                        (if tmp (set! str tmp))))
-    (system (format (if idn
+    (system (format #f (if idn
                         "echo \"~A\" | idn --quiet | qrencode -o - -m 0 -l ~A | convert PNG:- BMP:- | potrace -a -1 -o \"~A\""
                         "echo \"~A\" | qrencode -o - -m 0 -l ~A | convert PNG:- BMP:- | potrace -a -1 -o \"~A\"")
               str quali tmp))
     (set! qr-stencil (eps-file->stencil X size tmp))
-    (system (format "rm -v \"~A\"" tmp))
+    (system (format #f "rm -v \"~A\"" tmp))
     qr-stencil
     ))
 (define-markup-command (barcode layout props type str size nums)(string? string-or-symbol? number-pair? boolean?)
@@ -407,12 +407,12 @@
     (if (symbol? str)(let ((tmp (chain-assoc-get str props #f)))
                        (set! str (if tmp tmp (symbol->string str)))))
     (if (string=? "EAN" type)(set! str (ismn->ean str)))
-    (let ((tmp (format "~A-~2A.eps" (strftime "%Y%m%d%H%M%S" (localtime (current-time))) (random 100)))
+    (let ((tmp (format #f "~A-~2A.eps" (strftime "%Y%m%d%H%M%S" (localtime (current-time))) (random 100)))
           (barcode-stencil (interpret-markup layout props (markup #:with-color red #:filled-box (cons 0 width) (cons 0 height) 0.7))))
       (if (> (string-length str) 0) (begin
-                                     (system (format "barcode ~A -e \"~A\" -g ~Ax~A+0+0 -o \"~A\" -E -b \"~A\"" (if nums "" "-n") type (* 100 width) (* 100 height) tmp str))
+                                     (system (format #f "barcode ~A -e \"~A\" -g ~Ax~A+0+0 -o \"~A\" -E -b \"~A\"" (if nums "" "-n") type (* 100 width) (* 100 height) tmp str))
                                      (set! barcode-stencil (eps-file->stencil X (car size) tmp))
-                                     (system (format "rm -v \"~A\"" tmp))
+                                     (system (format #f "rm -v \"~A\"" tmp))
                                      ))
       barcode-stencil
       )))

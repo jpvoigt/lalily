@@ -17,9 +17,36 @@
 
 (use-modules (lalily laly)(lalily lascm)(lalily markup)(lalily store))
 
-(re-export lalily:verbose)
+(catch #t
+  (lambda ()
+    (re-export lalily:verbose)
+    (re-export location-extract-path))
+  (lambda (key . args)
+    #f))
 
-(re-export location-extract-path)
+(define-public includeOnceIfExists
+  (define-void-function (file)(string?)
+    (if (file-exists? file)
+        (la:parser-include-file file #t))
+    ))
+
+(define-public includeIfAbsent
+  (define-void-function (sym file)(symbol? string?)
+    (if (not (defined? sym))
+        (la:parser-include-file file #f))
+    ))
+
+(define-public includeRelative
+  (define-void-function (file)(string?)
+    (let ((filename (string-append (location-extract-path (*location*)) file)))
+      (la:parser-include-file filename #f)
+      )))
+(define-public includeRelIf
+  (define-void-function (file proc)(string? procedure?)
+    (if (proc (*parser*) (*location*))
+        (includeRelative file))
+    ))
+
 (define-public (file-path location rel)
   (let ((dir (location-extract-path location)))
     (normalize-path-string (string-append dir rel))))
@@ -28,16 +55,20 @@
     (file-path (*location*) rel)))
 
 
-(re-export extent-size)
-(re-export info-message)
+(catch #t
+  (lambda ()
+    (re-export extent-size)
+    (re-export info-message))
+  (lambda (key . args)
+    #f))
 (define (return-music val)(if (ly:music? val) val (make-music 'SequentialMusic 'void #t)))
 (define-public displayMessage
-  (define-music-function (format val)(string? scheme?)
-    (ly:message format val)
+  (define-music-function (fmt val)(string? scheme?)
+    (ly:message fmt val)
     (return-music val)))
 (define-public inputMessage
-  (define-music-function (format val)(string? scheme?)
-    (ly:input-message (*location*) format val)
+  (define-music-function (fmt val)(string? scheme?)
+    (ly:input-message (*location*) fmt val)
     (return-music val)))
 (define-public displayObject
   (define-music-function (val)(scheme?)
@@ -59,7 +90,11 @@
 
 (define (not-null? v)(not (null? v)))
 
-(re-export lalily:save-def)
+(catch #t
+  (lambda ()
+    (re-export lalily:save-def))
+  (lambda (key . args)
+    #f))
 (define-public parserDefine
   (define-void-function (name val)(string-or-symbol? not-null?)
     (if (string? name) (set! name (string->symbol name)))
@@ -73,18 +108,20 @@
   (define-void-function (name mus)(string-or-symbol? markup?)
     (parserDefine name mus)))
 
-(re-export lalily-markup)
-(re-export lalilyMarkup)
-
-
-(re-export clralist)
-(re-export setalist)
-(re-export addalist)
-(re-export remalist)
-(re-export clratree)
-(re-export setatree)
-(re-export addatree)
-(re-export rematree)
+(catch #t
+  (lambda ()
+    (re-export lalily-markup)
+    (re-export lalilyMarkup)
+    (re-export clralist)
+    (re-export setalist)
+    (re-export addalist)
+    (re-export remalist)
+    (re-export clratree)
+    (re-export setatree)
+    (re-export addatree)
+    (re-export rematree))
+  (lambda (key . args)
+    #f))
 
 ; do something anywhere
 (define-public exec (define-void-function (mus)(scheme?)))
@@ -97,7 +134,11 @@
         (else (make-music 'SequentialMusic 'void #t)))
       )))
 
-(re-export la:parser-include-file)
+(catch #t
+  (lambda ()
+    (re-export la:parser-include-file))
+  (lambda (key . args)
+    #f))
 
 (define-public includeOnceIfExists
   (define-void-function (file)(string?)
@@ -105,25 +146,12 @@
         (la:parser-include-file file #t))
     ))
 
-(define-public includeIfAbsent
-  (define-void-function (sym file)(symbol? string?)
-    (if (not (defined? sym))
-        (ly:parser-include-string (format "\\include \"~A\"\n" file)))
-    ))
-
-(define-public includeRelative
-  (define-void-function (file)(string?)
-    (let ((filename (string-append (location-extract-path (*location*)) file)))
-      (ly:parser-include-string (format "\\include \"~A\"\n" filename))
-      )))
-(define-public includeRelIf
-  (define-void-function (file proc)(string? procedure?)
-    (if (proc (*parser*) (*location*))
-        (includeRelative file))
-    ))
-
-(re-export includePattern)
-(re-export includeOncePattern)
+(catch #t
+  (lambda ()
+    (re-export includePattern)
+    (re-export includeOncePattern))
+  (lambda (key . args)
+    #f))
 
 ;;; Helper function to get output name from location
 (define-public (lalily:get-output-name location)
@@ -136,7 +164,7 @@
     (let ((outname (lalily:get-output-name (*location*)))
           (locname (car (ly:input-file-line-char-column (*location*)))))
       (if (or (string=? outname locname) (string-suffix? outname locname))
-          (ly:parser-include-string (format "\\include \"~A\"\n" file)))
+          (la:parser-include-file file #f))
       )))
 (define-public executeLocal
   (define-void-function (fn)(procedure?)
@@ -146,7 +174,11 @@
           (fn))
       )))
 
-(re-export lalily-test-location?)
+(catch #t
+  (lambda ()
+    (re-export lalily-test-location?))
+  (lambda (key . args)
+    #f))
 (define-public bookpartAdd
   (define-void-function (bookpart)(ly:book?)
     (let ((book (lalily:parser-lookup '$current-book)))
@@ -222,15 +254,19 @@
       'context-type 'Score
       'element (make-music
                 'PropertySet
-                'value (ly:make-moment (car frac) (cdr frac) 0 1)
+                'value (ly:make-moment (car frac) (cdr frac))
                 'symbol 'tempoWholesPerMinute))
     ))
 
 ;;;;;;;;;;;;;;;;;;
 ;; toc sections
 
-(re-export set-toc-section!)
-(re-export get-toc-section)
+(catch #t
+  (lambda ()
+    (re-export set-toc-section!)
+    (re-export get-toc-section))
+  (lambda (key . args)
+    #f))
 (define-public setTocSection
   (define-music-function (text) (markup?)
     (set-toc-section! text)(make-music 'SequentialMusic 'void #t)))

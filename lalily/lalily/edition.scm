@@ -34,10 +34,10 @@
             (den (ly:moment-main-denominator mom))
             (gnum (ly:moment-grace-numerator mom))
             (gden (ly:moment-grace-denominator mom)))
-        (format "(~A/~A~A)" num den
+        (format #f "(~A/~A~A)" num den
           (cond
-           ((> gnum 0)(format "+~A/~A" gnum gden))
-           ((< gnum 0)(format "~A/~A" gnum gden))
+           ((> gnum 0)(format #f "+~A/~A" gnum gden))
+           ((< gnum 0)(format #f "~A/~A" gnum gden))
            (else "")
            ))
         )
@@ -75,7 +75,7 @@
 
 (define-public (propset? p)(is-a? p <propset>))
 (define-method (propset->string (ps <propset>))
-  (format "~A\\set ~A = ~A" (if (is-once ps) "once " "") (string-append (if (get-context ps) (format "~A." (get-context ps)) "") (format "~A" (get-symbol ps))) (get-value ps)))
+  (format #f "~A\\set ~A = ~A" (if (is-once ps) "once " "") (string-append (if (get-context ps) (format #f "~A." (get-context ps)) "") (format #f "~A" (get-symbol ps))) (get-value ps)))
 (export propset->string)
 (define-method (display (o <propset>) port) (display (propset->string o) port))
 
@@ -100,10 +100,10 @@
   )
 (define-method (oop->string (o <override>))
   (let* ((ctxn (get-context o))
-         (ctxp (if ctxn (format "~A." ctxn) "")))
+         (ctxp (if ctxn (format #f "~A." ctxn) "")))
     (if (is-revert o)
-        (string-append "\\revert " ctxp (format "~A " (get-grob o)) (format "#'~A" (get-prop o)))
-        (string-append (if (is-once o) "\\once " "") "\\override " ctxp (format "~A " (get-grob o)) (format "#'~A" (get-prop o)) " = " (format "~A" (get-value o)))
+        (string-append "\\revert " ctxp (format #f "~A " (get-grob o)) (format #f "#'~A" (get-prop o)))
+        (string-append (if (is-once o) "\\once " "") "\\override " ctxp (format #f "~A " (get-grob o)) (format #f "#'~A" (get-prop o)) " = " (format #f "~A" (get-value o)))
         )))
 (export oop->string)
 (define-method (display (o <override>) port) (display (oop->string o) port))
@@ -156,7 +156,7 @@
       (edition-list '())
       (edition-tree (tree-create 'edition))
       (context-count (tree-create 'context)))
-  (define (o->sym o) (cond ((symbol? o) o) ((string? o) (string->symbol o)) (else (string->symbol (format "~A" o)))))
+  (define (o->sym o) (cond ((symbol? o) o) ((string? o) (string->symbol o)) (else (string->symbol (format #f "~A" o)))))
   (set! editions (lambda () (if (list? edition-list) edition-list '())))
   (set! set-editions! (lambda (eds) (if (list? eds) (set! edition-list eds) (ly:error "list expected: ~A" eds))))
   (set! add-edmod
@@ -522,9 +522,9 @@
                                              (if (annotation? annotation)
                                                  (let* ((ctxanno (ly:context-property context 'annotation-name))
                                                         (pc (cond
-                                                             ((markup? ctxanno) (format "~A ~A" ctxname ctxanno))
-                                                             ((markup? ctxid) (format "~A ~A" ctxname ctxid))
-                                                             (else (format "~A" tag-path)))))
+                                                             ((markup? ctxanno) (format #f "~A ~A" ctxname ctxanno))
+                                                             ((markup? ctxid) (format #f "~A ~A" ctxname ctxid))
+                                                             (else (format #f "~A" tag-path)))))
                                                    (add-annotation context annotation pc)
                                                    ))
                                              ))
@@ -543,7 +543,7 @@
                                       (glue-list tag "/")
                                       takt (if (ly:moment? pos) (moment->string pos) pos))
                                     (let* ((outname (lalily:get-output-name (*location*)))
-                                           (logfile (format "~A.edition.log" outname)))
+                                           (logfile (format #f "~A.edition.log" outname)))
                                       (ly:message "writing '~A' ..." logfile)
                                       (with-output-to-file logfile
                                         (lambda()
@@ -593,8 +593,8 @@
                                                            (ctxid (if (ly:context? ctx) (ly:context-id ctx) "")))
 
                                                       (if (and (pair? m)(ly:moment? (cdr m)))
-                                                          (format "\"~A\" (~A . ~A)" ctxid (car m)(moment->string (cdr m)))
-                                                          (format "\"~A\" ~A" ctxid m))
+                                                          (format #f "\"~A\" (~A . ~A)" ctxid (car m)(moment->string (cdr m)))
+                                                          (format #f "\"~A\" ~A" ctxid m))
                                                       )))
                                      )))
   (set! display-mods
@@ -603,7 +603,7 @@
             '(pathsep . ".")
             `(pformat . ,(lambda (v) (cond
                                       ((ly:moment? v) (moment->string v))
-                                      (else (format "~A" v))
+                                      (else (format #f "~A" v))
                                       )))
             `(vformat . ,(lambda (v)
                            (if (list? v)
@@ -612,10 +612,10 @@
                                                   ((ly:music? e)
                                                    (let ((ann (ly:music-property e 'annotation)))
                                                      (if (annotation? ann)
-                                                         (format "[A] ~A: ~A" (markup->string (title ann)) (markup->string (annotation ann)))
-                                                         (format "[M] ~A" (ly:music-property e 'name)))
+                                                         (format #f "[A] ~A: ~A" (markup->string (title ann)) (markup->string (annotation ann)))
+                                                         (format #f "[M] ~A" (ly:music-property e 'name)))
                                                      ))
-                                                  (else (format "~A" e)))) v) "\n") (format "~A" v)))))))
+                                                  (else (format #f "~A" e)))) v) "\n") (format #f "~A" v)))))))
   )
 
 ;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -696,10 +696,10 @@
          (den (ly:moment-main-denominator mom))
          (gnum (ly:moment-grace-numerator mom))
          (gden (ly:moment-grace-denominator mom)))
-    (format "~A, ~A/~A~A" (measure a) num den
+    (format #f "~A, ~A/~A~A" (measure a) num den
       (cond
-       ((> gnum 0)(format "+~A:~A" gnum gden))
-       ((< gnum 0)(format "~A:~A" gnum gden))
+       ((> gnum 0)(format #f "+~A:~A" gnum gden))
+       ((< gnum 0)(format #f "~A:~A" gnum gden))
        (else "")
        ))
     ))
@@ -731,8 +731,8 @@
          (title2 (clearmup (title a2)))
          (moment1 (moment a1))
          (moment2 (moment a2)))
-    (set! cat1 (if cat1 (format "~A" cat1) ""))
-    (set! cat2 (if cat2 (format "~A" cat2) ""))
+    (set! cat1 (if cat1 (format #f "~A" cat1) ""))
+    (set! cat2 (if cat2 (format #f "~A" cat2) ""))
     (cond
      ((not (string=? piece1 piece2)) (string<? piece1  piece2))
      ((not (string=? cat1 cat2)) (string<? cat1  cat2))
@@ -797,16 +797,16 @@
                  (edpath (if edeng (object-property edeng 'path) #f))
                  ; title/instrumentName
                  (pc (cond
-                      ((markup? ctxanno) (format "~A ~A" ctxname ctxanno))
-                      ((markup? ctxid) (format "~A ~A" ctxname ctxid))
+                      ((markup? ctxanno) (format #f "~A ~A" ctxname ctxanno))
+                      ((markup? ctxid) (format #f "~A ~A" ctxname ctxid))
                       ((list? edpath) (glue-list edpath " "))
                       (else
-                       (format "~A~3,'0d"
+                       (format #f "~A~3,'0d"
                          (if (> (length (get-music-folder)) 0)
                              (string-append (glue-list (get-music-folder) " ") " internal ") "") instance))
                       ))
                  (printmsgs (lambda()
-                              (let ((todofile (format "~A.todo.log" outname pc)))
+                              (let ((todofile (format #f "~A.todo.log" outname pc)))
                                 (if (> (length msgs) msgc)
                                     (begin
                                      (set! msgc (length msgs))
@@ -861,7 +861,7 @@ This will override the previously set list."
                           (cond
                            ((symbol? edition) edition)
                            ((string? edition) (string->symbol edition))
-                           (else (string->symbol (format "~A" edition)))
+                           (else (string->symbol (format #f "~A" edition)))
                            )) editions))
     ))
 

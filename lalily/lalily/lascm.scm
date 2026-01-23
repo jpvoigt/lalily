@@ -51,16 +51,28 @@ example: (format-alist '((a . 1)(b . 2)))
         (istr (if (> (length ind) 0) (car ind) " ")))
     (define (indsp n)(if (> n 0) (string-append istr (indsp (- n 1))) ""))
     (cond
-     ((and (pair? l)(markup? (cdr l)))(format "~A~A=~A~&" (indsp (+ i 1)) (car l) (markup->string (cdr l))))
+     ((and (pair? l)(markup? (cdr l)))(format #f "~A~A=~A~&" (indsp (+ i 1)) (car l) (markup->string (cdr l))))
      ((and (list? l)(not (dotted-list? l))(any pair? l))
       (let ((ret ""))
         (for-each (lambda (e)
                     (set! ret (string-append ret (format-alist e istr (+ i 1)))))
           l)
         ret))
-     ((pair? l)(let ((k (car l))(v (cdr l)))(format "~A~A=~A~&" (indsp (+ i 1)) k v)))
-     (else (format "~A~A~&" (indsp i) l)))
+     ((pair? l)(let ((k (car l))(v (cdr l)))(format #f "~A~A=~A~&" (indsp (+ i 1)) k v)))
+     (else (format #f "~A~A~&" (indsp i) l)))
     ))
+
+; Guile 3.0 compatibility: assoc-remove and assoc-set as non-destructive operations
+; In Guile 3.0, assoc-set! and assoc-remove! are removed
+(define-public (assoc-remove alist key)
+  "Remove KEY from ALIST, returning a new alist. Non-destructive."
+  (filter (lambda (pair)
+            (not (equal? (car pair) key)))
+          alist))
+
+(define-public (assoc-set alist key value)
+  "Set KEY to VALUE in ALIST, returning a new alist. Non-destructive."
+  (acons key value (assoc-remove alist key)))
 
 (define-public (assoc-set-all! lst vls)
   "set all values from vls in lst"
@@ -296,7 +308,7 @@ example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"
     (cond
      ((and (number? v1) (number? v2)) (< v1 v2))
      ((and (ly:moment? v1) (ly:moment? v2)) (ly:moment<? v1 v2))
-     (else (string-ci<? (format "~A" v1) (format "~A" v2)))
+     (else (string-ci<? (format #f "~A" v1) (format #f "~A" v2)))
      )))
 (define-method (tree-walk (tree <tree>) (path <list>) (callback <procedure>) . opts)
   (let ((dosort (assoc-get 'sort opts))
@@ -323,8 +335,8 @@ example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"
         (sortby (assoc-get 'sortby opt stdsort))
         (empty (ly:assoc-get 'empty opt #f #f))
         (dval (ly:assoc-get 'value opt #t #f))
-        (vformat (ly:assoc-get 'vformat opt (lambda (v)(format "~A" v)) #f))
-        (pformat (ly:assoc-get 'pformat opt (lambda (v)(format "~A" v)) #f))
+        (vformat (ly:assoc-get 'vformat opt (lambda (v)(format #f "~A" v)) #f))
+        (pformat (ly:assoc-get 'pformat opt (lambda (v)(format #f "~A" v)) #f))
         (pathsep (ly:assoc-get 'pathsep opt "/" #f))
         (port (ly:assoc-get 'port opt (current-output-port))))
     (tree-walk-branch tree path

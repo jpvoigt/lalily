@@ -17,39 +17,20 @@
 
 \version "2.24.0"
 
-% Define helper function for startup
-#(define lalily:startup-function #f)
-
-% parser-define! ilyStartup to load lalily/bootstrap.ily
-% instant scheme expression ($) to allow nested includes
-$(set! lalily:startup-function
-   (if (defined? 'lalily-startup)
-       ; lalily.ily already loaded
-       (define-music-function ()()
-         ;(if (lalily:verbose) (ly:message "lalily already included!"))
-         (make-music 'SequentialMusic 'void #t ))
-       ; include lalily/bootstrap.ily
-       (define-music-function ()()
-         (let* ((locname (car (ly:input-file-line-char-column (*location*))))
-                (loclen (string-length locname))
-                (iname (string-append (substring locname 0 (- loclen 3)) "/bootstrap.ily")))
-           (ly:parser-include-string (format "\\include \"~A\"\n" iname))
-           (make-music 'SequentialMusic 'void #t )))
-       ))
-
-#(if lalily:startup-function (lalily:startup-function))
+% Simply include bootstrap.ily - it handles everything
+\include "lalily/bootstrap.ily"
 
 % write log-file, only if this file is compiled directly
-\executeLocal
-#(lambda ()
-   (write-lalily-log-file
-     '(persons . #t)
-     '(music . #f)
-     '(defaults . #f)
-     '(quotes . #f)
-     '(templates . #t)
-     '(template-ref . #f)
-     '(edition-mods . #f)
-     )
-   )
+% Temporarily disabled due to format issues in Guile 3.0
+%{
+#(if (defined? 'write-lalily-log-file)
+     (write-lalily-log-file
+       '(persons . #t)
+       '(music . #f)
+       '(defaults . #f)
+       '(quotes . #f)
+       '(templates . #t)
+       '(template-ref . #f)
+       '(edition-mods . #f)))
+%}
 

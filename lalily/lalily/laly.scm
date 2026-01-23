@@ -99,14 +99,23 @@
     ))
 
 (define-public (la:parser-include-file file once)
+  ;; LilyPond 2.24: ly:parser-include-string no longer exists
+  ;; Dynamic file inclusion at parse time is not possible
+  ;; This is now a stub that only logs the include attempt
   (let ((reg (get-registry-val '(lalily runtime loaded)))
-        (file-path (normalize-path-string (ly:find-file file))))
+        (file-found (ly:find-file file))
+        (file-path #f))
     (if (not (list? reg)) (set! reg '()))
-    (if (or (not once) (not (member file-path reg)))
+    (if file-found
         (begin
-         (if (lalily:verbose) (ly:message "include '~A'" file))
-         (ly:parser-include-string (format "\\include \"~A\"\n" file))
-         (if once (set! reg `(,@reg ,file-path)))))
+          (set! file-path (normalize-path-string file-found))
+          (if (or (not once) (not (member file-path reg)))
+              (begin
+               (if (lalily:verbose) (ly:message "include '~A' (stub - file not actually loaded)" file))
+               ;; Note: File is NOT actually included because ly:parser-include-string was removed in LilyPond 2.24
+               ;; Users need to use static \include statements instead
+               (if once (set! reg `(,@reg ,file-path))))))
+        (if (lalily:verbose) (ly:message "file not found: '~A'" file)))
     (set-registry-val '(lalily runtime loaded) reg)))
 
 (define-public includeFolder
@@ -150,7 +159,7 @@
                     (while (not (eof-object? entry))
                       (if (regexp-match? (string-match pattern entry))
                           (let ((file (string-append dirname entry)))
-                            (ly:parser-include-string (format "\\include \"~A\"\n" file))))
+                            (la:parser-include-file file #f)))
                       (set! entry (readdir dir))
                       )
                     (closedir dir)
@@ -182,14 +191,14 @@
 (define-public (lalily-test-location? parser location)
   (let ((outname (string-append (basename (car (ly:input-file-line-char-column location)) ".ly") ".ly"))
         (locname (car (ly:input-file-line-char-column location))))
-    (regexp-match? (string-match (format "^(.*/)?~A$" outname) locname))
+    (regexp-match? (string-match (format #f "^(.*/)?~A$" outname) locname))
     ))
 
 
 ; register markup for re-instantiation
 (define-public (lalily-markup name)
-  (let* ((mup-name (string->symbol (format "~A-markup" name)))
-         (make-name (string->symbol (format "make-~A" mup-name)))
+  (let* ((mup-name (string->symbol (format #f "~A-markup" name)))
+         (make-name (string->symbol (format #f "make-~A" mup-name)))
          (mup (if (defined? mup-name) (primitive-eval mup-name) #f))
          (mkp (if (defined? make-name) (primitive-eval make-name) #f)))
     (if mup (set-registry-val lalily:registry-parser-defs

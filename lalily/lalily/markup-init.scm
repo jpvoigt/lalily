@@ -17,8 +17,12 @@
 
 (use-modules (lalily markup)(lalily laly))
 
-(re-export register-markup-producer)
-(re-export get-markup-producer)
+(catch #t
+  (lambda ()
+    (re-export register-markup-producer)
+    (re-export get-markup-producer))
+  (lambda (key . args)
+    #f))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; on-the-fly commands
@@ -216,32 +220,32 @@
         (stil (make-line-stencil th 0 0 line-width 0)))
        stil))
 
-(re-export ismn->ean)
-(re-export put-stencil)
-(re-export get-stencil)
+(catch #t
+  (lambda ()
+    (re-export ismn->ean)
+    (re-export put-stencil)
+    (re-export get-stencil)
+    (re-export execMarkup-markup)
+    (re-export stretch-markup)
+    (re-export extline-markup)
+    (re-export sloppyline-markup)
+    (re-export hilite-markup)
+    (re-export tquote-markup)
+    (re-export strftime-markup)
+    (re-export year-markup)
+    (re-export copyright-markup)
+    (re-export style-markup)
+    (re-export with-props-markup)
+    (re-export qr-code-markup)
+    (re-export barcode-markup)
+    (re-export cache-markup)
+    (re-export widthalign-markup)
+    (re-export epsalignX-markup)
+    (re-export epsalignY-markup))
+  (lambda (key . args)
+    #f))
 
-
-(re-export execMarkup-markup)
-(re-export stretch-markup)
-(re-export extline-markup)
-(re-export sloppyline-markup)
-(re-export hilite-markup)
-(re-export tquote-markup)
-(re-export strftime-markup)
-(re-export year-markup)
-(re-export copyright-markup)
-(re-export style-markup)
 (lalily-markup 'style)
-
-(re-export with-props-markup)
-
-(re-export qr-code-markup)
-(re-export barcode-markup)
-
-(re-export cache-markup)
-(re-export widthalign-markup)
-(re-export epsalignX-markup)
-(re-export epsalignY-markup)
 
 (define-markup-command (scaled-cache layout props sym scl)(symbol? number-pair?)
   (let ((stil (get-stencil sym)))

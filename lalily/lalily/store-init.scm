@@ -17,7 +17,11 @@
 
 (use-modules (lalily store)(lalily definitions))
 
-(re-export LY_NOOP)
+(catch #t
+  (lambda ()
+    (re-export LY_NOOP))
+  (lambda (key . args)
+    #f))
 
 (define-public (log-music-folder)
   (ly:message "music folder: ~A~A"
@@ -29,7 +33,7 @@
     (log-music-folder)))
 
 (define-public (write-lalily-log-file . options)
-  (let ((logfile (format "~A~A.log" (lalily:get-output-name (*location*)) (ly:assoc-get 'suffix options ".lalily" #f))))
+  (let ((logfile (format #f "~A~A.log" (lalily:get-output-name (*location*)) (ly:assoc-get 'suffix options ".lalily" #f))))
     (if (not (equal? logfile
                      (get-registry-val '(lalily runtime logfile-written))))
         (ly:message "writing '~A' ..." logfile))
@@ -95,13 +99,17 @@
           )))
     ))
 
-(re-export put-music)
-(re-export get-music)
-(re-export has-music)
-(re-export load-music)
-(re-export get-music-deep)
-(re-export collect-music)
-(re-export display-music-pieces)
+(catch #t
+  (lambda ()
+    (re-export put-music)
+    (re-export get-music)
+    (re-export has-music)
+    (re-export load-music)
+    (re-export get-music-deep)
+    (re-export collect-music)
+    (re-export display-music-pieces))
+  (lambda (key . args)
+    #f))
 
 (define-public registerMusicLoadCallback
   (define-void-function (proc)(procedure?)
@@ -144,19 +152,27 @@
       (mmrest-of-length music)
       )))
 
-(re-export register-template)
-(re-export get-template)
-(re-export call-template)
-(re-export display-templates)
+(catch #t
+  (lambda ()
+    (re-export register-template)
+    (re-export get-template)
+    (re-export call-template)
+    (re-export display-templates))
+  (lambda (key . args)
+    #f))
 
 (define-public registerTemplate
   (define-void-function (name fun)(list? ly:music-function?)
     (register-template name fun)))
 
-(re-export create-template-path)
-(re-export create-music-path)
-(re-export musicPath)
-(re-export templatePath)
+(catch #t
+  (lambda ()
+    (re-export create-template-path)
+    (re-export create-music-path)
+    (re-export musicPath)
+    (re-export templatePath))
+  (lambda (key . args)
+    #f))
 
 (define-public callTemplate
   (define-music-function
@@ -188,17 +204,21 @@
               (call-template tmpl music (assoc-set options sym x))
               ) vals)))))
 
-(re-export get-current-music)
-(re-export display-music-stack)
-(re-export get-current-template)
-(re-export display-template-stack)
-(re-export get-music-folder)
-(re-export set-music-folder!)
-(re-export set-default-template)
-(re-export get-default-template)
-(re-export get-default-options)
-(re-export get-default-options-cumul)
-(re-export display-default-music)
+(catch #t
+  (lambda ()
+    (re-export get-current-music)
+    (re-export display-music-stack)
+    (re-export get-current-template)
+    (re-export display-template-stack)
+    (re-export get-music-folder)
+    (re-export set-music-folder!)
+    (re-export set-default-template)
+    (re-export get-default-template)
+    (re-export get-default-options)
+    (re-export get-default-options-cumul)
+    (re-export display-default-music))
+  (lambda (key . args)
+    #f))
 
 (define-public getCurrentMusic
   (define-scheme-function ()()
@@ -350,9 +370,13 @@
     (create-music-path #f path)))
 
 
-(re-export set-default-header)
-(re-export get-default-header)
-(re-export get-music-folder-header-field)
+(catch #t
+  (lambda ()
+    (re-export set-default-header)
+    (re-export get-default-header)
+    (re-export get-music-folder-header-field))
+  (lambda (key . args)
+    #f))
 
 (define-public aSetDefaultHeader
   (define-music-function (piece field value)(list? string-or-symbol? markup?)
@@ -574,7 +598,7 @@
 (define-public cueMusic
   (let ((staffnr 0)
         (cuenr 0))
-    (define (cue-id) (set! cuenr (+ 1 cuenr)) (format "cue~A" cuenr))
+    (define (cue-id) (set! cuenr (+ 1 cuenr)) (format #f "cue~A" cuenr))
     (define (alignlyrics direction)(if (eq? UP direction) 'alignAboveContext 'alignBelowContext))
     (define-music-function (path opts dir mus)(list? (list? '()) integer? ly:music?)
       (let ((p (create-music-path #f path))
@@ -679,20 +703,24 @@
     (add-tracked-quotes)))
 
 
-(re-export registerPaper)
-(re-export registerLayout)
-(re-export registerMidi)
-(re-export get-paper)
+(catch #t
+  (lambda ()
+    (re-export registerPaper)
+    (re-export registerLayout)
+    (re-export registerMidi)
+    (re-export get-paper)
+    (re-export get-layout)
+    (re-export get-midi)
+    (re-export registerPageTemplate)
+    (re-export get-page-template)
+    (re-export call-page-template))
+  (lambda (key . args)
+    #f))
+
 (define-public getPaper (define-scheme-function (name)(list?)(get-paper name)))
-(re-export get-layout)
 (define-public getLayout (define-scheme-function (name)(list?)(get-layout name)))
-(re-export get-midi)
 (define-public getMidi (define-scheme-function (name)(list?)(get-midi name)))
 
-
-(re-export registerPageTemplate)
-(re-export get-page-template)
-(re-export call-page-template)
 (define-public callPageTemplate
   (define-scheme-function (name options)(list? list?)
     (call-page-template name options)))

@@ -16,13 +16,19 @@
 ;;;; along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
 (use-modules (lalily definitions))
-(re-export lalily:version)
-(re-export lalily:init)
 
-(re-export lalily:registry-verbose)
-(re-export lalily:registry-loaded)
-(re-export lalily:registry-parser)
-(re-export lalily:registry-parser-defs)
+; Conditional re-export to avoid warnings in Guile 3.0 when loaded multiple times
+(catch #t
+  (lambda ()
+    (re-export lalily:version)
+    (re-export lalily:init)
+    (re-export lalily:registry-verbose)
+    (re-export lalily:registry-loaded)
+    (re-export lalily:registry-parser)
+    (re-export lalily:registry-parser-defs))
+  (lambda (key . args)
+    ; Ignore re-export errors
+    #f))
 
 (load-from-path "lalily/lascm-init.scm")
 (load-from-path "lalily/laly-init.scm")

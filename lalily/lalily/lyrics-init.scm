@@ -17,7 +17,11 @@
 
 (use-modules (lalily lyrics)(lalily store)(lalily markup))
 
-(re-export nl)
+(catch #t
+  (lambda ()
+    (re-export nl))
+  (lambda (key . args)
+    #f))
 
 (define-public (define-lyric-markup mup)
   (define-music-function (parser location lyrics) (ly:music?)

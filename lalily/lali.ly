@@ -41,7 +41,7 @@
     ))
 
 % command to create one score based on the current "music folder"
-\parserDefine lalilyCreate
+lalilyCreate =
 #(define-void-function ()()
    (let ((score #{
      \score {
@@ -95,14 +95,14 @@
 
 
 % command to create one score based on the music of the current music folder with PDF and MIDI only if the containing file is compiled directly
-\parserDefine lalilyTest
+lalilyTest =
 #(define-void-function ()()
    (if ((get-registry-val lalily:test-predicate lalily-test-location?) (*parser*) (*location*))
        (lalilyCreate)
        ))
 
 % create one score based on current music folder
-\parserDefine lalilyScore
+lalilyScore =
 #(define-void-function (options)(list?)
    (let* ((domidi (ly:assoc-get 'midi options #f #f))
           (extra (ly:assoc-get 'extra options '() #f))
@@ -143,7 +143,7 @@
 
 % create one bookpart containing named music folders
 #(use-modules (srfi srfi-1))
-\parserDefine lalilyBookpart
+lalilyBookpart =
 #(define-void-function (options)(list?)
    (let* ((options (assoc-set-all! (get-music-folder-options) options))
           (cbp (lalily:get-current-bookpart))
@@ -294,7 +294,7 @@
      ))
 
 % create one bookpart based on current music folder
-\parserDefine lalilyBookpartScore
+lalilyBookpartScore =
 #(define-void-function (options)(list?)
    (let* ((cbp (lalily:get-current-bookpart))
           (print-all-headers (ly:assoc-get 'print-all-headers options #f #f))
@@ -351,7 +351,7 @@
      #f
      ))
 
-\parserDefine lalilyBookparts
+lalilyBookparts =
 #(define-void-function (options)(list?)
    (let* ((keys (ly:assoc-get 'keys options (ly:assoc-get 'keys (get-music-folder-options)) #f))
           (mus (ly:assoc-get 'music options
@@ -376,7 +376,7 @@
 
 % test versions of above commands, executed only, if test predicate is met
 % default: name of location equals name of parser output
-\parserDefine lalilyTestScore
+lalilyTestScore =
 #(define-void-function (options)(list?)
    (if ((get-registry-val lalily:test-predicate lalily-test-location?) (*parser*) (*location*))
        (begin
@@ -384,7 +384,7 @@
         (write-lalily-log-file)
         ))
    )
-\parserDefine lalilyTestBookpart
+lalilyTestBookpart =
 #(define-void-function (options)(list?)
    (if ((get-registry-val lalily:test-predicate lalily-test-location?) (*parser*) (*location*))
        (begin
@@ -392,7 +392,7 @@
         (write-lalily-log-file)
         ))
    )
-\parserDefine lalilyTestBookpartScore
+lalilyTestBookpartScore =
 #(define-void-function (options)(list?)
    (if ((get-registry-val lalily:test-predicate lalily-test-location?) (*parser*) (*location*))
        (begin
@@ -400,7 +400,7 @@
         (write-lalily-log-file)
         ))
    )
-\parserDefine lalilyTestBookparts
+lalilyTestBookparts =
 #(define-void-function (options)(list?)
    (if ((get-registry-val lalily:test-predicate lalily-test-location?) (*parser*) (*location*))
        (begin
@@ -411,6 +411,6 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % write log file
-\parserDefine lalilyWriteLog
+lalilyWriteLog =
 #(define-void-function ()()
    (write-lalily-log-file))

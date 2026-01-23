@@ -17,21 +17,23 @@
 
 (use-modules (lalily edition))
 
-(re-export editionEngraver)
-(re-export editionMod)
-(re-export editionModList)
-
-(re-export propset?)
-(re-export override?)
-(re-export edition-engraver)
-(re-export walk-edition-engravers)
-(re-export display-mods)
-(re-export display-edition)
-
-; activate edition
-(re-export addEdition)
-; deactivate edition
-(re-export removeEdition)
+(catch #t
+  (lambda ()
+    (re-export editionEngraver)
+    (re-export editionMod)
+    (re-export editionModList)
+    (re-export propset?)
+    (re-export override?)
+    (re-export edition-engraver)
+    (re-export walk-edition-engravers)
+    (re-export display-mods)
+    (re-export display-edition)
+    ; activate edition
+    (re-export addEdition)
+    ; deactivate edition
+    (re-export removeEdition))
+  (lambda (key . args)
+    #f))
 
 
 (define-public startModList
@@ -77,36 +79,36 @@
 
 
 ; create ISMN string with publisher number and title number
-(re-export create-ismn)
-
-; annotations
-
-(re-export piece)
-(re-export set-piece!)
-(re-export category)
-(re-export set-category!)
-(re-export title)
-(re-export set-title!)
-(re-export annotation)
-(re-export set-annotation!)
-(re-export page-ref)
-(re-export set-page-ref!)
-(re-export measure)
-(re-export set-measure!)
-(re-export position)
-(re-export set-position!)
-(re-export moment)
-(re-export set-moment!)
-(re-export anno-pos)
-
-(re-export make-anno)
-(re-export annotation?)
-(re-export annotation<?)
-(re-export annotations)
-(re-export annoCollect)
-
-(re-export text)
-(re-export todo)
+(catch #t
+  (lambda ()
+    (re-export create-ismn)
+    ; annotations
+    (re-export piece)
+    (re-export set-piece!)
+    (re-export category)
+    (re-export set-category!)
+    (re-export title)
+    (re-export set-title!)
+    (re-export annotation)
+    (re-export set-annotation!)
+    (re-export page-ref)
+    (re-export set-page-ref!)
+    (re-export measure)
+    (re-export set-measure!)
+    (re-export position)
+    (re-export set-position!)
+    (re-export moment)
+    (re-export set-moment!)
+    (re-export anno-pos)
+    (re-export make-anno)
+    (re-export annotation?)
+    (re-export annotation<?)
+    (re-export annotations)
+    (re-export annoCollect)
+    (re-export text)
+    (re-export todo))
+  (lambda (key . args)
+    #f))
 
 (define-public anntitle #{ \markup { \override #'(baseline-skip . 0) \left-column { \huge \bold \fromproperty #'anno:piece \hrule \vspace #0.5 } } #})
 (define-public annentry #{ \markup {
@@ -135,10 +137,10 @@
                 (if (not (equal? ac (category a)))
                     (begin
                      (set! ac (category a))
-                     (append! mups (list (interpret-markup layout props #{ \markup \fill-line { $(format "~A" ac) \general-align #Y #CENTER \vspace #2 } #})))
+                     (append! mups (list (interpret-markup layout props #{ \markup \fill-line { $(format #f "~A" ac) \general-align #Y #CENTER \vspace #2 } #})))
                      ))
                 (append! mups (list
-                               (interpret-markup layout (cons `((anno:index . ,(format "~2,'0d" c))
+                               (interpret-markup layout (cons `((anno:index . ,(format #f "~2,'0d" c))
                                                                 (anno:position . ,(anno-pos a))
                                                                 (anno:title . ,(title a))
                                                                 (anno:text . ,(annotation a))) props) annentry))))
