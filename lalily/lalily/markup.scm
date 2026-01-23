@@ -27,7 +27,7 @@
 
 (let ((table (list)))
   (set! register-markup-producer (lambda (name proc)
-                                   (set! table (assoc-set! table name proc))))
+                                   (set! table (assoc-set table name proc))))
   (set! get-markup-producer (lambda (name)
                               (assoc-get name table))))
 
@@ -287,7 +287,7 @@
 (define-public (getstyle symbol) #f)
 (let ((style:markups (list)))
   (set! setstyle (lambda (symbol markup)
-                   (set! style:markups (assoc-set! style:markups symbol markup))))
+                   (set! style:markups (assoc-set style:markups symbol markup))))
   (set! getstyle (lambda (symbol)
                    (let ((m #f))
                      (set! m (assoc-get symbol style:markups))
@@ -447,7 +447,7 @@
 (define-public (get-stencil symbol) #f)
 (let ((cache (list)))
   (set! put-stencil (lambda (symbol stencil)
-                      (set! cache (assoc-set! cache symbol stencil))))
+                      (set! cache (assoc-set cache symbol stencil))))
   (set! get-stencil (lambda (symbol)
                       (assoc-get symbol cache)))
   )

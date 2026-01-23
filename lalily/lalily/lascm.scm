@@ -22,6 +22,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; utilities
 
+(define-public (dotted-list? lst)
+  "Check if lst is a dotted list (improper list)"
+  (and (pair? lst)
+       (not (list? lst))))
+
 (define-public (glue-list lst glue)
   "create string from list containing arbitrary objects"
   (string-join (map (lambda (s) (object->string s display)) lst) glue 'infix))
@@ -61,7 +66,7 @@ example: (format-alist '((a . 1)(b . 2)))
   "set all values from vls in lst"
   (begin
    (for-each (lambda (p)
-               (set! lst (assoc-set! lst (car p) (cdr p)))) vls)
+               (set! lst (assoc-set lst (car p) (cdr p)))) vls)
    lst))
 
 (define-public (assoc-replace! lst sym val)

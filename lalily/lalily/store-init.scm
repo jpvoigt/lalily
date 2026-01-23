@@ -173,7 +173,7 @@
      (make-music 'SimultaneousMusic
        'elements
        (map (lambda (x)
-              (call-template tmpl music (assoc-set! options sym x))
+              (call-template tmpl music (assoc-set options sym x))
               ) vals)))))
 (define-public loopTemplate
   (define-music-function
@@ -185,7 +185,7 @@
      (make-music kind
        'elements
        (map (lambda (x)
-              (call-template tmpl music (assoc-set! options sym x))
+              (call-template tmpl music (assoc-set options sym x))
               ) vals)))))
 
 (re-export get-current-music)
@@ -458,7 +458,7 @@
     (let* ((piece (get-music-folder))
            (tmpl (get-default-template piece))
            (opts (get-default-options piece)))
-      (set-default-template piece tmpl (assoc-set! opts 'paper paper))
+      (set-default-template piece tmpl (assoc-set opts 'paper paper))
       )))
 
 (define-public (get-default-layout piece)
@@ -472,7 +472,7 @@
     (let* ((piece (get-music-folder))
            (tmpl (get-default-template piece))
            (opts (get-default-options piece)))
-      (set-default-template piece tmpl (assoc-set! opts 'layout layout))
+      (set-default-template piece tmpl (assoc-set opts 'layout layout))
       )))
 
 (define-public (get-default-midi piece)
@@ -486,7 +486,7 @@
     (let* ((piece (get-music-folder))
            (tmpl (get-default-template piece))
            (opts (get-default-options piece)))
-      (set-default-template piece tmpl (assoc-set! opts 'midi midi))
+      (set-default-template piece tmpl (assoc-set opts 'midi midi))
       )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

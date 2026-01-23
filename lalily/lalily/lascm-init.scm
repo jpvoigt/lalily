@@ -26,7 +26,7 @@
 (define-public assocGet (define-scheme-function (parser location l k)(list? symbol?)
     (assoc-get k l #f #f)))
 (define-public assocSet (define-scheme-function (parser location l k v)(list? symbol? scheme?)
-    (assoc-set! l k v)))
+    (assoc-set l k v)))
 (define-public assocSetAll (define-scheme-function (parser location l v)(list? list?)
     (assoc-set-all! l v)))
 

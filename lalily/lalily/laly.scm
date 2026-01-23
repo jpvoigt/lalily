@@ -25,7 +25,7 @@
   (if (string? name) (set! name (string->symbol name)))
   (if (symbol? name)
       (set-registry-val lalily:registry-parser-defs
-        (assoc-set! (get-registry-val lalily:registry-parser-defs '()) name val))
+        (assoc-set (get-registry-val lalily:registry-parser-defs '()) name val))
       (ly:warning "~A not a symbol!" name)))
 
 (define-public (extent-size ext diff) (cons (- (car ext) diff) (+ (cdr ext) diff) ))
@@ -308,7 +308,7 @@
 (define-public setatree
   (define-void-function (name sympath val)(string-or-symbol? list? scheme?)
     (add-a-tree name sympath val
-      (lambda (l sym val) (assoc-set! l sym val)))))
+      (lambda (l sym val) (assoc-set l sym val)))))
 (define-public rematree
   (define-void-function (name sympath)(string-or-symbol? list?)
     (rem-a-tree name sympath)))
