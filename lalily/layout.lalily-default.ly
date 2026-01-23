@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.17.29"
+\version "2.24.0"
 
 #(define lalily-relincl-tmp (ly:get-option 'relative-includes))
 #(ly:set-option 'relative-includes #t)
@@ -112,7 +112,7 @@
   \context {
     \Voice
     \override Script.padding = #0.5
-    \override FootnoteItem.annotation-line = ##f
+    \override Footnote.annotation-line = ##f
   }
   \context { \Voice \remove "Instrument_switch_engraver" }
   \context { \Staff \consists "Instrument_switch_engraver" }

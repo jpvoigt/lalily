@@ -16,7 +16,7 @@
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
 % This file is included conditionaly by lalily.ly
-\version "2.19.32"
+\version "2.24.0"
 
 #(define-public lalily-startup #t)
 

@@ -1,4 +1,4 @@
-\version "2.19.32"
+\version "2.24.0"
 
 #(define lalily-relincl-tmp (ly:get-option 'relative-includes))
 #(ly:set-option 'relative-includes #t)

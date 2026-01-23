@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.18.0"
+\version "2.24.0"
 
 #(define lalily-relincl-tmp (ly:get-option 'relative-includes))
 #(ly:set-option 'relative-includes #t)
@@ -27,33 +27,33 @@
 
 % return list - the parser can return a list, given in dot-notation
 \parserDefine Path
-#(define-scheme-function (parser location p)(list?) p)
+#(define-scheme-function (p)(list?) p)
 
 % create a symbol list from string separated by optional character 's' (= '/')
 \parserDefine PathS
-#(define-scheme-function (parser location s p)((char? #\/) string?)
+#(define-scheme-function (s p)((char? #\/) string?)
    (map (lambda (e) (if (> (string-length e) 0) (string->symbol e) '/)) (string-split p s)))
 
 % create a pair from a list (that is the first two elements)
 \parserDefine Pair
-#(define-scheme-function (parser location p)(list?)
+#(define-scheme-function (p)(list?)
    (cond
     ((>= (length p) 2)
      (if (> (length p) 2)
-         (ly:input-warning location "more than 2 elements: ~A" p))
+         (ly:input-warning (*location*) "more than 2 elements: ~A" p))
      (cons (car p) (cadr p)))
     ((> (length p) 0) (cons (car p) #f))
     (else '(#f . #f))
     ))
 % create a pair from a string
 \parserDefine PairS
-#(define-scheme-function (parser location s p)((char? #\|) string?)
+#(define-scheme-function (s p)((char? #\|) string?)
    (Pair (string-split p s)))
 
 % give a template warning
 \parserDefine deprecateTemplate
-#(define-void-function (parser location)()
-   (ly:input-warning location "template [~A] is deprecated!" (glue-list (get-current-template) ".")))
+#(define-void-function ()()
+   (ly:input-warning (*location*) "template [~A] is deprecated!" (glue-list (get-current-template) ".")))
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -63,11 +63,11 @@
 % needs option 'mirror-path
 % may set other options fo the inherited templated
 \registerTemplate lalily.mirror
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((path (assoc-get 'mirror-path options #f #f)))
      (if (not (list? path))
          (begin
-          (ly:input-warning location "no mirror-path! (~A | ~A)" path piece)
+          (ly:input-warning (*location*) "no mirror-path! (~A | ~A)" path piece)
           (set! path '(..))
           ))
      #{
@@ -76,7 +76,7 @@
 
 % chord mode
 \registerTemplate lalily.chords
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((mods (assoc-get 'context-mods options #f #f))
          (names (assoc-get 'names options #t #f))
          (frets (assoc-get 'frets options #f #f)))
@@ -99,7 +99,7 @@
 
 % lyrics not tied to another voice
 \registerTemplate lalily.Lyrics
-#(define-music-function (parser location piece options)(list? list?)
+#(define-music-function (piece options)(list? list?)
    (let ((mods (assoc-get 'context-mods options #f #f))
          (lname (assoc-get 'context-name options (format "~A" piece) #f)))
      #{

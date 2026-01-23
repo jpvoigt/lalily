@@ -1,4 +1,4 @@
-\version "2.19.56"
+\version "2.24.0"
 
 #(define (ggt a b) (if (= b 0) a (ggt b (modulo a b))))
 #(define (simpFrac f)

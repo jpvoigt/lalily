@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.19.32"
+\version "2.24.0"
 
 #(define lalily-relincl-tmp (ly:get-option 'relative-includes))
 #(ly:set-option 'relative-includes #t)
@@ -58,8 +58,8 @@
     \translate #'(0 . 1.4)
     \override #'(baseline-skip . 1.4)
     \center-column {
-      \musicglyph #"scripts.ufermata"
-      \musicglyph #"scripts.rcomma"
+      \musicglyph "scripts.ufermata"
+      \musicglyph "scripts.rcomma"
     }
   } \breathe
 }
@@ -231,12 +231,12 @@
 \parserDefine hmul
 #(let ((pred (lambda (v) (and (list? v)(every number? v)))))
    (define-music-function (pos)(pred)
-     (let ((hl (list #{ \markup { \musicglyph #"noteheads.s2" } #}))
+     (let ((hl (list #{ \markup { \musicglyph "noteheads.s2" } #}))
            (oy 0)(dx 0))
        (for-each (lambda (y)
                    (if (< y oy) (set! dx (- dx .37)))
                    (set! oy y)
-                   (set! hl `(,@hl ,(begin #{ \markup { \translate #`(,dx . ,(/ y 2)) \musicglyph #"noteheads.s2" } #})))
+                   (set! hl `(,@hl ,(begin #{ \markup { \translate #`(,dx . ,(/ y 2)) \musicglyph "noteheads.s2" } #})))
                    ) pos)
        #{
          \once \override NoteHead.stencil = #ly:text-interface::print
@@ -245,12 +245,12 @@
 \parserDefine hdou {
   \once \override NoteHead.stencil = #ly:text-interface::print
   \once \override NoteHead.text = \markup \concat
-  { \musicglyph #"noteheads.s2" \musicglyph #"noteheads.s2" }
+  { \musicglyph "noteheads.s2" \musicglyph "noteheads.s2" }
 }
 \parserDefine htri {
   \once \override NoteHead.stencil = #ly:text-interface::print
   \once \override NoteHead.text = \markup \concat
-  { \musicglyph #"noteheads.s2" \musicglyph #"noteheads.s2" \musicglyph #"noteheads.s2" }
+  { \musicglyph "noteheads.s2" \musicglyph "noteheads.s2" \musicglyph "noteheads.s2" }
 }
 \parserDefine remstem
 #(define-music-function (mus)(ly:music?)
