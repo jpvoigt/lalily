@@ -28,6 +28,33 @@
         (assoc-set (get-registry-val lalily:registry-parser-defs '()) name val))
       (ly:warning "~A not a symbol!" name)))
 
+;;; Parser replacement functions using registry
+(define-public (lalily:parser-define! name val)
+  "Registry-based replacement for ly:parser-define!"
+  (set-registry-val (list 'lalily 'parser 'vars name) val))
+
+(define-public (lalily:parser-lookup name . default)
+  "Registry-based replacement for ly:parser-lookup"
+  (let ((def (if (pair? default) (car default) '())))
+    (get-registry-val (list 'lalily 'parser 'vars name) def)))
+
+;;; Special accessors for LilyPond internal variables
+(define-public (lalily:get-current-book)
+  "Get current book from registry"
+  (lalily:parser-lookup '$current-book))
+
+(define-public (lalily:set-current-book! book)
+  "Set current book in registry"
+  (lalily:parser-define! '$current-book book))
+
+(define-public (lalily:get-current-bookpart)
+  "Get current bookpart from registry"
+  (lalily:parser-lookup '$current-bookpart))
+
+(define-public (lalily:set-current-bookpart! bookpart)
+  "Set current bookpart in registry"
+  (lalily:parser-define! '$current-bookpart bookpart))
+
 (define-public (extent-size ext diff) (cons (- (car ext) diff) (+ (cdr ext) diff) ))
 (define-public (info-message location format . args)
   (if (ly:input-location? location)
@@ -153,9 +180,9 @@
       )))
 
 (define-public (lalily-test-location? parser location)
-  (let ((outname (ly:parser-output-name parser))
+  (let ((outname (string-append (basename (car (ly:input-file-line-char-column location)) ".ly") ".ly"))
         (locname (car (ly:input-file-line-char-column location))))
-    (regexp-match? (string-match (format "^(.*/)?~A\\.i?ly$" outname) locname))
+    (regexp-match? (string-match (format "^(.*/)?~A$" outname) locname))
     ))
 
 
@@ -181,14 +208,14 @@
   (define-void-function (alst)
     (string-or-symbol?)
     (if (string? alst)(set! alst (string->symbol alst)))
-    (ly:parser-define! alst (list))
+    (lalily:parser-define! alst (list))
     ))
 (define-public setalist
   (define-void-function (alst opt val)
     (string-or-symbol? string-or-symbol? scheme?)
     (if (string? alst)(set! alst (string->symbol alst)))
     (if (string? opt)(set! opt (string->symbol opt)))
-    (let ((l (ly:parser-lookup alst))
+    (let ((l (lalily:parser-lookup alst))
           (setv #t))
       (set! l (map (lambda (p)
                      (if (and (pair? p) (equal? (car p) opt))
@@ -198,30 +225,30 @@
                          p
                          )) l))
       (if setv (set! l (append l (list (cons opt val)))))
-      (ly:parser-define! alst l)
+      (lalily:parser-define! alst l)
       )))
 (define-public addalist
   (define-void-function (alst opt val)
     (string-or-symbol? string-or-symbol? scheme?)
     (if (string? alst)(set! alst (string->symbol alst)))
     (if (string? opt)(set! opt (string->symbol opt)))
-    (let ((l (ly:parser-lookup alst)))
+    (let ((l (lalily:parser-lookup alst)))
       (set! l (filter (lambda (p) (and (pair? p)(not (equal? (car p) opt)))) l))
-      (ly:parser-define! alst (append l (list (cons opt val))))
+      (lalily:parser-define! alst (append l (list (cons opt val))))
       )))
 (define-public remalist
   (define-void-function (alst opt)
     (string-or-symbol? string-or-symbol?)
     (if (string? alst)(set! alst (string->symbol alst)))
     (if (string? opt)(set! opt (string->symbol opt)))
-    (let ((l (ly:parser-lookup alst)))
-      (ly:parser-define! alst
+    (let ((l (lalily:parser-lookup alst)))
+      (lalily:parser-define! alst
         (filter (lambda (p) (and (pair? p)(not (equal? (car p) opt)))) l))
       )))
 
 (define-public (get-a-tree name path)
   (if (string? name) (set! name (string->symbol name)))
-  (let ((opts (ly:parser-lookup name)))
+  (let ((opts (lalily:parser-lookup name)))
     (define (getval ol op)
       (let ((sym (car op)))
         (cond
@@ -241,7 +268,7 @@
         )))
 (define (add-a-tree name sympath val assoc-set-append)
   (if (string? name) (set! name (string->symbol name)))
-  (let ((opts (ly:parser-lookup name)))
+  (let ((opts (lalily:parser-lookup name)))
     (define (setval ol op)
       (let ((sym (car op))
             (ol (if (list? ol) ol (begin (ly:input-warning (*location*) "deleting '~A'" ol) '()))))
@@ -260,7 +287,7 @@
               )
             )))
     (set! opts (setval opts sympath))
-    (ly:parser-define! name opts)
+    (lalily:parser-define! name opts)
     ))
 (define (walk-a-tree path tree proc)
   (for-each
@@ -274,7 +301,7 @@
   )
 (define (rem-a-tree name sympath)
   (if (string? name) (set! name (string->symbol name)))
-  (let ((opts (ly:parser-lookup name)))
+  (let ((opts (lalily:parser-lookup name)))
     (define (remval ol op)
       (let ((sym (car op)))
         (if (> (length op) 1)
@@ -288,7 +315,7 @@
             )
         ))
     (set! opts (remval opts sympath))
-    (ly:parser-define! name opts)
+    (lalily:parser-define! name opts)
     ))
 
 (define-public clratree clralist)
@@ -317,7 +344,7 @@
    (define-void-function (name opts)(symbol? list?)
      (let ((opts (if (and (= 1 (length opts))
                           (symbol? (car opts)))
-                     (ly:parser-lookup (car opts)) opts)))
+                     (lalily:parser-lookup (car opts)) opts)))
        (walk-a-tree '() opts
          (lambda (path val) (add-a-tree name path val assoc-replace!)))
        )))

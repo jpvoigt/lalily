@@ -29,7 +29,7 @@
     (log-music-folder)))
 
 (define-public (write-lalily-log-file . options)
-  (let ((logfile (format "~A~A.log" (ly:parser-output-name (*parser*)) (ly:assoc-get 'suffix options ".lalily" #f))))
+  (let ((logfile (format "~A~A.log" (lalily:get-output-name (*location*)) (ly:assoc-get 'suffix options ".lalily" #f))))
     (if (not (equal? logfile
                      (get-registry-val '(lalily runtime logfile-written))))
         (ly:message "writing '~A' ..." logfile))
@@ -282,10 +282,10 @@
 (define-public optionsAddAll setatreeall)
 (define-public optionsInitWith
   (define-void-function (name opts)(symbol? list?)
-    (ly:parser-define! name (list))
+    (lalily:parser-define! name (list))
     (let ((opts (if (and (= 1 (length opts))
                          (symbol? (car opts)))
-                    (ly:parser-lookup (car opts)) opts)))
+                    (lalily:parser-lookup (car opts)) opts)))
       ((@@ (lalily laly) walk-a-tree) '() opts
         (lambda (path val) ((@@ (lalily laly) add-a-tree) name path val assoc-replace!)))
       )))

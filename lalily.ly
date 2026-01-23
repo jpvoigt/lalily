@@ -17,9 +17,12 @@
 
 \version "2.19.32"
 
+% Define helper function for startup
+#(define lalily:startup-function #f)
+
 % parser-define! ilyStartup to load lalily/bootstrap.ily
 % instant scheme expression ($) to allow nested includes
-$(ly:parser-define! 'ilyStartup
+$(set! lalily:startup-function
    (if (defined? 'lalily-startup)
        ; lalily.ily already loaded
        (define-music-function ()()
@@ -33,7 +36,8 @@ $(ly:parser-define! 'ilyStartup
            (ly:parser-include-string (format "\\include \"~A\"\n" iname))
            (make-music 'SequentialMusic 'void #t )))
        ))
-\ilyStartup
+
+#(if lalily:startup-function (lalily:startup-function))
 
 % write log-file, only if this file is compiled directly
 \executeLocal

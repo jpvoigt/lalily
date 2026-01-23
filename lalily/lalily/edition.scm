@@ -542,7 +542,7 @@
                                       (glue-list (editions) ", ")
                                       (glue-list tag "/")
                                       takt (if (ly:moment? pos) (moment->string pos) pos))
-                                    (let* ((outname (ly:parser-output-name (*parser*)))
+                                    (let* ((outname (lalily:get-output-name (*location*)))
                                            (logfile (format "~A.edition.log" outname)))
                                       (ly:message "writing '~A' ..." logfile)
                                       (with-output-to-file logfile
@@ -792,7 +792,7 @@
           (let* ((ctxid (ly:context-id context))
                  (ctxname (ly:context-name context))
                  (ctxanno (ly:context-property context 'annotation-name))
-                 (outname (ly:parser-output-name (get-registry-val lalily:registry-parser)))
+                 (outname (get-registry-val '(lalily runtime output-name) "output"))
                  (edeng (context-find-edition-engraver context))
                  (edpath (if edeng (object-property edeng 'path) #f))
                  ; title/instrumentName

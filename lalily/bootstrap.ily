@@ -60,10 +60,14 @@
 % init scheme modules introduced by lalily
 #(if (not (defined? 'lalily:init))(load-from-path "lalily/init.scm"))
 
+% Store output name in registry for later use
+#(let ((outname (lalily:get-output-name (*location*))))
+   (set-registry-val '(lalily runtime output-name) (string-append (basename outname ".ly"))))
+
 % "re-import" previously defined values for session based runs like in lilypond-book
 #(set-registry-val lalily:registry-parser (*parser*))
 #(let ((defs (get-registry-val lalily:registry-parser-defs '())))
-   (for-each (lambda (p)(ly:parser-define! (car p )(cdr p))) defs))
+   (for-each (lambda (p)(lalily:parser-define! (car p )(cdr p))) defs))
 
 % look for local config
 applyConfig =
@@ -189,7 +193,7 @@ registerConfig =
 
 #(define (do-layout parser)
    (and
-    (not (eq? #t (ly:parser-lookup 'lalilyNoOutputDef)))
+    (not (eq? #t (lalily:parser-lookup 'lalilyNoOutputDef)))
     (not (eq? #t (get-registry-val lalily:layout:no-auto-load)))
     (not (defined? 'lalily-no-output-def))
     (not (ly:get-option 'lalily-no-output-def))

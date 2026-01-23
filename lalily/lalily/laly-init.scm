@@ -63,7 +63,7 @@
 (define-public parserDefine
   (define-void-function (name val)(string-or-symbol? not-null?)
     (if (string? name) (set! name (string->symbol name)))
-    (ly:parser-define! name val)
+    (lalily:parser-define! name val)
     (lalily:save-def name val)))
 
 (define-public parserDefineMusic
@@ -124,16 +124,23 @@
 
 (re-export includePattern)
 (re-export includeOncePattern)
+
+;;; Helper function to get output name from location
+(define-public (lalily:get-output-name location)
+  "Extract output name from location - replacement for ly:parser-output-name"
+  (let ((locname (car (ly:input-file-line-char-column location))))
+    (string-append (basename locname ".ly") ".ly")))
+
 (define-public includeLocal
   (define-void-function (file)(string?)
-    (let ((outname (format "~A.ly" (ly:parser-output-name (*parser*))))
+    (let ((outname (lalily:get-output-name (*location*)))
           (locname (car (ly:input-file-line-char-column (*location*)))))
       (if (or (string=? outname locname) (string-suffix? outname locname))
           (ly:parser-include-string (format "\\include \"~A\"\n" file)))
       )))
 (define-public executeLocal
   (define-void-function (fn)(procedure?)
-    (let ((outname (format "~A.ly" (ly:parser-output-name (*parser*))))
+    (let ((outname (lalily:get-output-name (*location*)))
           (locname (car (ly:input-file-line-char-column (*location*)))))
       (if (or (string=? outname locname)(string-suffix? outname locname))
           (fn))
@@ -142,7 +149,7 @@
 (re-export lalily-test-location?)
 (define-public bookpartAdd
   (define-void-function (bookpart)(ly:book?)
-    (let ((book (ly:parser-lookup '$current-book)))
+    (let ((book (lalily:parser-lookup '$current-book)))
       ;(set-book-headers! bookpart (assoc-get 'header (get-music-folder-options location) '()))
       (if book
           (ly:book-add-bookpart! book bookpart)

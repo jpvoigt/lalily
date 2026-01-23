@@ -146,7 +146,7 @@
 \parserDefine lalilyBookpart
 #(define-void-function (options)(list?)
    (let* ((options (assoc-set-all! (get-music-folder-options) options))
-          (cbp (ly:parser-lookup '$current-bookpart))
+          (cbp (lalily:get-current-bookpart))
           (keys (ly:assoc-get 'keys options (ly:assoc-get 'keys (get-music-folder-options)) #f))
           (mus (ly:assoc-get 'music options
                  (let ((p (get-music-folder)))
@@ -286,17 +286,17 @@
                   (set-music-folder! ctx))))
         ) mus)
 
-     (let ((book (ly:parser-lookup '$current-book)))
+     (let ((book (lalily:get-current-book)))
        (if book
            (ly:book-add-bookpart! book bookpart)
            (collect-bookpart-for-book bookpart)))
-     (ly:parser-define! '$current-bookpart cbp)
+     (lalily:set-current-bookpart! cbp)
      ))
 
 % create one bookpart based on current music folder
 \parserDefine lalilyBookpartScore
 #(define-void-function (options)(list?)
-   (let* ((cbp (ly:parser-lookup '$current-bookpart))
+   (let* ((cbp (lalily:get-current-bookpart))
           (print-all-headers (ly:assoc-get 'print-all-headers options #f #f))
           (domidi (ly:assoc-get 'midi options #f #f))
           (score #{
@@ -343,11 +343,11 @@
 
      (add-sco-mup pre-markup score post-markup)
 
-     (let ((book (ly:parser-lookup '$current-book)))
+     (let ((book (lalily:get-current-book)))
        (if book
            (ly:book-add-bookpart! book bookpart)
            (collect-bookpart-for-book bookpart)))
-     (ly:parser-define! '$current-bookpart cbp)
+     (lalily:set-current-bookpart! cbp)
      #f
      ))
 
