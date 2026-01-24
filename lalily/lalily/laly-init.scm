@@ -370,18 +370,18 @@
              (ly:staff-symbol-referencer::callback grob)))))))
 
 (define-public mergeRestsOn #{
-  \override Staff.RestCollision #'positioning-done = #merge-rests-on-positioning
-  \override Staff.MultiMeasureRest #'Y-offset = #merge-multi-measure-rests-on-Y-offset
+  \override Staff.RestCollision.positioning-done = #merge-rests-on-positioning
+  \override Staff.MultiMeasureRest.Y-offset = #merge-multi-measure-rests-on-Y-offset
   #})
 (define-public mergeRestsOff #{
-  \revert Staff.RestCollision #'positioning-done
-  \revert Staff.MultiMeasureRest #'Y-offset
+  \revert Staff.RestCollision.positioning-done
+  \revert Staff.MultiMeasureRest.Y-offset
   #})
 (define-public mergeRests #{ \layout {
   \context {
     \Staff
-    \override RestCollision #'positioning-done = #merge-rests-on-positioning
-    \override MultiMeasureRest #'Y-offset = #merge-multi-measure-rests-on-Y-offset
+    \override RestCollision.positioning-done = #merge-rests-on-positioning
+    \override MultiMeasureRest.Y-offset = #merge-multi-measure-rests-on-Y-offset
   }
   } #})
 
@@ -510,7 +510,7 @@
 ; utils
 
 (define-public markFerm #{
-  \once \override Score.RehearsalMark #'break-visibility = ##(#t #t #f)
+  \once \override Score.RehearsalMark.break-visibility = ##(#t #t #f)
   \mark \markup { \musicglyph #"scripts.ufermata" }
   #})
 (setstyle 'lalily:markDaX #{ \markup { \small \italic \fromproperty #'style:text } #})

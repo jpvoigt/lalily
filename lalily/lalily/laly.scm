@@ -189,10 +189,18 @@
       )))
 
 (define-public (lalily-test-location? parser location)
-  (let ((outname (string-append (basename (car (ly:input-file-line-char-column location)) ".ly") ".ly"))
-        (locname (car (ly:input-file-line-char-column location))))
-    (regexp-match? (string-match (format #f "^(.*/)?~A$" outname) locname))
-    ))
+  "Test if the current location is in the main file being compiled (not an included file).
+   Uses the output-name stored in registry by bootstrap.ily to compare with the current location.
+   This replaces the removed ly:parser-output-name function."
+  (let* ((registry-outname (get-registry-val '(lalily runtime output-name) #f))
+         (locname (car (ly:input-file-line-char-column location)))
+         (loc-basename (basename locname ".ly"))
+         (outname (if registry-outname
+                      registry-outname
+                      ;; Fallback: try to extract from location (may not work correctly for includes)
+                      loc-basename)))
+    ;; Check if the basename of the current location matches the output name
+    (string=? loc-basename outname)))
 
 
 ; register markup for re-instantiation
