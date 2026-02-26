@@ -152,6 +152,7 @@ Nach der Migration sollten folgende Dateien getestet werden:
 ---
 
 **Erstellt:** 21. Januar 2026
-**Migration durchgeführt:** Januar 2026
+**Aktualisiert:** 26. Februar 2026 (Claude Opus 4.6)
+**Migration durchgeführt:** Februar 2026
 **Projekt:** lalily - LilyPond Extension
 **Ziel:** Migration von LilyPond 2.19.x/Guile 1.8 zu LilyPond 2.24/Guile 3.0
