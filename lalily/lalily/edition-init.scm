@@ -16,31 +16,14 @@
 ;;;; along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
 (use-modules (lalily edition))
-
-(catch #t
-  (lambda ()
-    (re-export editionEngraver)
-    (re-export editionMod)
-    (re-export editionModList)
-    (re-export propset?)
-    (re-export override?)
-    (re-export edition-engraver)
-    (re-export walk-edition-engravers)
-    (re-export display-mods)
-    (re-export display-edition)
-    ; activate edition
-    (re-export addEdition)
-    ; deactivate edition
-    (re-export removeEdition))
-  (lambda (key . args)
-    #f))
+(re-export-module '(lalily edition))
 
 
 (define-public startModList
   (define-void-function (lid edition-target edition-context-id proc)(symbol? symbol? list? procedure?)
     (optionsInit lid)
-    (lalily:parser-define! 'current-modlist lid)
-    (lalily:parser-define! 'current-modproc `((proc . ,proc)
+    (ly:parser-define! 'current-modlist lid)
+    (ly:parser-define! 'current-modproc `((proc . ,proc)
                                           (edition-target . ,edition-target)
                                           (edition-context-id . ,edition-context-id)))
     ))
@@ -62,7 +45,7 @@
              (list? (assoc-get 'edition-context-id current-modproc))
              (procedure? (assoc-get 'proc current-modproc))
              )
-        (let ((lst (lalily:parser-lookup current-modlist))
+        (let ((lst (ly:parser-lookup current-modlist))
               (edition-target (assoc-get 'edition-target current-modproc))
               (edition-id (assoc-get 'edition-context-id current-modproc))
               (proc (assoc-get 'proc current-modproc)))
@@ -79,36 +62,11 @@
 
 
 ; create ISMN string with publisher number and title number
-(catch #t
-  (lambda ()
-    (re-export create-ismn)
-    ; annotations
-    (re-export piece)
-    (re-export set-piece!)
-    (re-export category)
-    (re-export set-category!)
-    (re-export title)
-    (re-export set-title!)
-    (re-export annotation)
-    (re-export set-annotation!)
-    (re-export page-ref)
-    (re-export set-page-ref!)
-    (re-export measure)
-    (re-export set-measure!)
-    (re-export position)
-    (re-export set-position!)
-    (re-export moment)
-    (re-export set-moment!)
-    (re-export anno-pos)
-    (re-export make-anno)
-    (re-export annotation?)
-    (re-export annotation<?)
-    (re-export annotations)
-    (re-export annoCollect)
-    (re-export text)
-    (re-export todo))
-  (lambda (key . args)
-    #f))
+
+; annotations
+
+
+
 
 (define-public anntitle #{ \markup { \override #'(baseline-skip . 0) \left-column { \huge \bold \fromproperty #'anno:piece \hrule \vspace #0.5 } } #})
 (define-public annentry #{ \markup {

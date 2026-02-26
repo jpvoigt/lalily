@@ -16,15 +16,10 @@
 ;;;; along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
 (use-modules (lalily lyrics)(lalily store)(lalily markup))
-
-(catch #t
-  (lambda ()
-    (re-export nl))
-  (lambda (key . args)
-    #f))
+(re-export-module '(lalily lyrics))
 
 (define-public (define-lyric-markup mup)
-  (define-music-function (parser location lyrics) (ly:music?)
+  (define-music-function (lyrics) (ly:music?)
     (music-map
      (lambda (m)
        (begin
@@ -33,17 +28,17 @@
               (ly:music-set-property! m 'text (markup #:override (cons 'lyric:text syl) mup))))
         m))
      lyrics)))
-(define-public lyricSize (define-music-function (parser location size lyrics) (number? ly:music?)
+(define-public lyricSize (define-music-function (size lyrics) (number? ly:music?)
                            (let ((lsf (ly:music-function-extract (define-lyric-markup (markup #:fontsize size #:fromproperty 'lyric:text)))))
-                             (lsf parser location lyrics))
+                             (lsf lyrics))
                            ))
-(define-public lyricStyle (define-music-function (parser location style lyrics) (symbol? ly:music?)
+(define-public lyricStyle (define-music-function (style lyrics) (symbol? ly:music?)
                             (let ((lsf (ly:music-function-extract (define-lyric-markup (markup #:style style #:fromproperty 'lyric:text)))))
-                              (lsf parser location lyrics))
+                              (lsf lyrics))
                             ))
-(define-public lyricScale (define-music-function (parser location scale lyrics) (number? ly:music?)
+(define-public lyricScale (define-music-function (scale lyrics) (number? ly:music?)
                             (let ((lsf (ly:music-function-extract (define-lyric-markup (markup #:scale scale 1 #:fromproperty 'lyric:text)))))
-                              (lsf parser location lyrics))
+                              (lsf lyrics))
                             ))
 
 ;; add markup to lyric extender
@@ -69,15 +64,15 @@
                                           0)
                                          stencil))))
                                )))
-    (define-music-function (parser location iter x-off mup mus)(integer? number? markup? ly:music?)
+    (define-music-function (iter x-off mup mus)(integer? number? markup? ly:music?)
       #{
-        \override LyricExtender #'stencil = $(create-stencil-func iter x-off mup)
+        \override LyricExtender.stencil = $(create-stencil-func iter x-off mup)
         $mus
-        \revert LyricExtender #'stencil
+        \revert LyricExtender.stencil
       #})))
 
 (define-public addLEx
-  (define-music-function (parser location xy txt mus)((number-pair? '(0 . -1)) markup? ly:music?)
+  (define-music-function (xy txt mus)((number-pair? '(0 . -1)) markup? ly:music?)
     (ly:music-set-property! mus 'lyric-extender-applic txt)
     (ly:music-set-property! mus 'lyric-extender-align-x (car xy))
     (ly:music-set-property! mus 'lyric-extender-align-y (cdr xy))

@@ -1,397 +1,157 @@
 # Migration zu LilyPond 2.24 und Guile 3.0
 
-Dieses Dokument beschreibt die notwendigen Änderungen zur Migration des lalily-Projekts von LilyPond 2.22/Guile 1.8 zu LilyPond 2.24/Guile 3.0.
+Dieses Dokument beschreibt die durchgeführten Änderungen zur Migration des lalily-Projekts von LilyPond 2.19.x/Guile 1.8 zu LilyPond 2.24/Guile 3.0.
 
-## 1. Guile-spezifische Änderungen
-
-### 1.1 `assoc-set!` und `assoc-remove!` (KRITISCH)
-
-**Problem:** Diese destruktiven Assoziationslisten-Funktionen wurden in Guile 2.0+ entfernt.
-
-**Betroffene Dateien:**
-- [lalily/lalily/laly.scm](lalily/lalily/laly.scm#L28)
-- [lalily/lalily/lascm.scm](lalily/lalily/lascm.scm#L64)
-- [lalily/lalily/store.scm](lalily/lalily/store.scm#L353)
-- [lalily/lalily/store-init.scm](lalily/lalily/store-init.scm#L176)
-- [lalily/lalily/markup.scm](lalily/lalily/markup.scm#L30)
-- [lalily/lalily/persons.scm](lalily/lalily/persons.scm#L51)
-- [lalily/lalily/lascm-init.scm](lalily/lalily/lascm-init.scm#L29)
-
-**Lösung:** Ersetzen durch nicht-destruktive Varianten:
-```scheme
-;; Alt (Guile 1.8):
-(assoc-set! alist key value)
-(assoc-remove! alist key)
-
-;; Neu (Guile 3.0):
-(assoc-set alist key value)
-(assoc-remove alist key)
-```
-
-**Hinweis:** Da die neuen Funktionen nicht destruktiv sind, muss der Rückgabewert immer zugewiesen werden:
-```scheme
-;; Alt:
-(assoc-set! alist key value)
-
-;; Neu:
-(set! alist (assoc-set alist key value))
-```
-
-### 1.2 `dotted-list?` Prädikat
-
-**Problem:** In Guile 3.0 nicht mehr verfügbar.
-
-**Betroffene Datei:**
-- [lalily/lalily/lascm.scm](lalily/lalily/lascm.scm#L50)
-
-**Lösung:** Eigene Implementierung hinzufügen (in lascm.scm):
-```scheme
-(define-public (dotted-list? lst)
-  "Check if lst is a dotted list (improper list)"
-  (and (pair? lst)
-       (not (list? lst))))
-```
-
-## 2. LilyPond Parser-API Änderungen (KRITISCH)
-
-### 2.1 Parser-Funktionen entfernt
-
-**Problem:** `ly:parser-define!`, `ly:parser-lookup`, `ly:parser-clone` wurden in LilyPond 2.20+ entfernt.
-
-**Betroffene Dateien:**
-- [lalily/lalily/laly-init.scm](lalily/lalily/laly-init.scm#L66) (`ly:parser-define!`, `ly:parser-lookup`)
-- [lalily/lalily/laly.scm](lalily/lalily/laly.scm#L184) (`ly:parser-define!`, `ly:parser-lookup`)
-- [lalily/lalily/store-init.scm](lalily/lalily/store-init.scm#L285)
-- [lalily/lalily/edition-init.scm](lalily/lalily/edition-init.scm#L40)
-
-**Betroffene Funktionen:**
-- `parserDefine` in laly-init.scm
-- `clralist`, `setalist`, `addalist`, `remalist` in laly.scm
-- Verschiedene Template-Registrierungs-Funktionen
-
-**Lösung:** Verwenden des neuen Parser-losen Ansatzes:
-
-#### Option 1: Modul-basierte Speicherung
-```scheme
-;; Statt ly:parser-define!:
-(define-public variable-name value)
-
-;; Statt ly:parser-lookup:
-;; Direkter Zugriff auf die definierte Variable
-```
-
-#### Option 2: Registry-basierte Speicherung (empfohlen für lalily)
-```scheme
-;; Statt:
-(ly:parser-define! name val)
-
-;; Verwenden:
-(set-registry-val (list 'lalily 'parser 'defs name) val)
-
-;; Statt:
-(ly:parser-lookup name)
-
-;; Verwenden:
-(get-registry-val (list 'lalily 'parser 'defs name))
-```
-
-#### Option 3: Hash-Table basiert
-```scheme
-;; Globale Hash-Table für Parser-Definitionen
-(define-public lalily:parser-defs (make-hash-table))
-
-;; Statt ly:parser-define!:
-(hash-set! lalily:parser-defs name val)
-
-;; Statt ly:parser-lookup:
-(hash-ref lalily:parser-defs name)
-```
-
-### 2.2 `ly:parser-output-name` entfernt
-
-**Problem:** Diese Funktion ist nicht mehr verfügbar.
-
-**Betroffene Dateien:**
-- [lalily/lalily/laly-init.scm](lalily/lalily/laly-init.scm#L133) (`includeLocal`, `executeLocal`)
-
-**Lösung:** Alternative Ansätze:
-- Verwenden von `(*location*)` für Dateinamen-Extraktion
-- Explizite Parameter statt automatischer Erkennung
-
-## 3. Module und Header Management
-
-### 3.1 `make-module` und `module-define!`
-
-**Problem:** Module-API hat sich geändert, Header werden nicht mehr als Module behandelt.
-
-**Betroffene Datei:**
-- [lalily/lalily/laly-init.scm](lalily/lalily/laly-init.scm#L160) (`set-book-headers!`, `set-score-headers!`)
-
-**Lösung:** Verwendung der neuen Header-API:
-```scheme
-;; Für Book-Header:
-(define-public (set-book-headers! book header)
-  (let ((bookhead (ly:book-header book)))
-    (if (not bookhead)
-        (set! bookhead '()))
-    (if (not (list? header))
-        (set! header (assoc-get 'header (get-music-folder-options) '())))
-    (for-each (lambda (p)
-                (if (pair? p)
-                    (set! bookhead (assoc-set bookhead (car p) (cdr p)))))
-              header)
-    (ly:book-set-header! book bookhead)))
-
-;; Für Score-Header analog
-```
-
-## 4. LilyPond Versionsnummern
-
-**Problem:** Alle `.ly` Dateien verwenden veraltete Version 2.19.x
-
-**Betroffene Dateien:**
-- [lalily.ly](lalily.ly#L18)
-- Alle Beispieldateien in `examples/`:
-  - [01_templates-satb.ly](examples/01_templates-satb.ly#L18)
-  - [02_templates-satb.ly](examples/02_templates-satb.ly#L18)
-  - [03_editionEngraver.ly](examples/03_editionEngraver.ly#L18)
-  - [04_template-options.ly](examples/04_template-options.ly#L18)
-  - [05_annotations.ly](examples/05_annotations.ly#L18)
-  - [06_use-case-SATB.ly](examples/06_use-case-SATB.ly#L18)
-  - [07_use-case-include-music.ly](examples/07_use-case-include-music.ly#L18)
-  - [Dowland-ComeAgain.ly](examples/Dowland-ComeAgain.ly#L1)
-  - [Dowland-UnquietThoughts.ly](examples/Dowland-UnquietThoughts.ly#L1)
-  - [JSB-Psalm117.ly](examples/JSB-Psalm117.ly#L1)
-- Template-Dateien in `lalily/`:
-  - [templates-base.ly](lalily/templates-base.ly#L18)
-  - [templates-piano.ly](lalily/templates-piano.ly#L1)
-  - [paper.lalily-default.ly](lalily/paper.lalily-default.ly#L18)
-- Extension-Dateien in `lalily/extensions/`
-
-**Lösung:** Version aktualisieren:
-```lilypond
-\version "2.24.0"
-```
-
-**Automatisierung möglich:**
-```bash
-find . -name "*.ly" -exec sed -i 's/\\version "2\.19\.[0-9]*"/\\version "2.24.0"/g' {} \;
-find . -name "*.ly" -exec sed -i 's/\\version "2\.20\.[0-9]*"/\\version "2.24.0"/g' {} \;
-```
-
-## 5. `ly:make-moment` API-Änderung
-
-**Problem:** Die Signatur von `ly:make-moment` hat sich möglicherweise geändert.
-
-**Betroffene Dateien:**
-- [lalily/lalily/laly-init.scm](lalily/lalily/laly-init.scm#L197)
-- [lalily/lalily/store.scm](lalily/lalily/store.scm#L135)
-- [lalily/lalily/edition.scm](lalily/lalily/edition.scm#L629)
-
-**Alte Syntax (2.22):**
-```scheme
-(ly:make-moment numerator denominator grace-num grace-den)
-```
-
-**Neue Syntax (2.24):**
-```scheme
-;; Normale Momente (ohne Grace):
-(ly:make-moment numerator denominator)
-
-;; Mit Grace-Komponenten:
-(ly:make-moment numerator denominator grace-num grace-den)
-```
-
-**Aktion:** Alle Verwendungen überprüfen und anpassen, wo nötig. Insbesondere bei 4-Parameter-Aufrufen mit `0 1` für Grace-Komponenten können diese weggelassen werden.
-
-## 6. String-Encoding Änderungen
-
-**Problem:** Guile 3.0 verwendet UTF-8 standardmäßig, während Guile 1.8 Latin-1 verwendete.
-
-**Mögliche Auswirkungen:**
-- Dateien mit Nicht-ASCII-Zeichen (Umlaute, Sonderzeichen)
-- String-Längenberechnungen
-- Byte-Position vs. Character-Position
-
-**Lösung:** 
-- Sicherstellen, dass alle Quelldateien als UTF-8 kodiert sind
-- String-Operationen überprüfen, die Byte-Positionen verwenden
-
-**Überprüfung:**
-```bash
-file -I *.scm
-```
-
-**Konvertierung falls nötig:**
-```bash
-iconv -f ISO-8859-1 -t UTF-8 file.scm > file_utf8.scm
-```
-
-## 7. Zusätzliche potenzielle Probleme
-
-### 7.1 GOOPS (Guile Object System)
-
-**Betroffene Datei:**
-- [lalily/lalily/edition.scm](lalily/lalily/edition.scm#L22) (verwendet GOOPS intensiv)
-
-**Änderungen in Guile 3.0:**
-- GOOPS-API ist größtenteils kompatibel
-- Einige deprecated Features wurden entfernt
-- Performance-Verbesserungen
-
-**Aktion:** 
-- Code-Review der GOOPS-Verwendung
-- Insbesondere `define-class`, `define-method`, Accessor/Setter überprüfen
-- Testen aller Klassen und Methoden
-
-### 7.2 Regex-Modul
-
-**Verwendung:**
-- [lalily/lalily/laly.scm](lalily/lalily/laly.scm#L20) (`ice-9 regex`)
-- [lalily/lalily/lascm.scm](lalily/lalily/lascm.scm#L20)
-
-**Hinweis:** 
-- `(ice-9 regex)` ist weiterhin verfügbar
-- API sollte kompatibel sein
-- Edge cases und Unicode-Handling überprüfen
-
-### 7.3 Deprecated Features
-
-**Zu überprüfende Funktionen:**
-- `call-with-input-string`, `call-with-output-string` (sollten OK sein)
-- `with-input-from-file`, `with-output-to-file` (sollten OK sein)
-- Alle `(@@ (lily) ...)` Zugriffe auf interne Funktionen
-
-## 8. Empfohlene Migrations-Reihenfolge
-
-### Phase 1 - Kritische Änderungen (2-3 Stunden)
-1. **Alle `assoc-set!` → `assoc-set` ersetzen**
-   - Suchen: `assoc-set!`
-   - Ersetzen: `(set! <var> (assoc-set <var> ...))` statt `(assoc-set! <var> ...)`
-   
-2. **Alle `assoc-remove!` → `assoc-remove` ersetzen**
-   - Analog zu assoc-set!
-
-3. **`dotted-list?` Hilfsfunktion implementieren**
-   - In lascm.scm vor der ersten Verwendung hinzufügen
-
-### Phase 2 - Parser-API Refactoring (8-12 Stunden)
-1. **Registry-basierte Speicherung implementieren**
-   - Wrapper-Funktionen für Parser-Zugriffe erstellen
-   - Schrittweise Migration
-
-2. **Betroffene Funktionen anpassen:**
-   - `parserDefine` in laly-init.scm
-   - `clralist`, `setalist`, `addalist`, `remalist` in laly.scm
-   - Template-Registrierung in store-init.scm
-   - Edition-Funktionen in edition-init.scm
-
-3. **`ly:parser-output-name` Ersatz**
-   - Alternative Implementierung für `includeLocal` und `executeLocal`
-
-### Phase 3 - Version Updates (1 Stunde)
-1. **Alle `\version` Statements aktualisieren**
-   - Automatisiert mit sed/awk
-   - Manuelle Überprüfung
-
-2. **`ly:make-moment` Aufrufe überprüfen**
-   - 4-Parameter-Aufrufe mit `0 1` auf 2-Parameter reduzieren
-
-### Phase 4 - Header Management (2 Stunden)
-1. **`set-book-headers!` anpassen**
-2. **`set-score-headers!` anpassen**
-3. **Alle Header-Verwendungen testen**
-
-### Phase 5 - Testing (4-8 Stunden)
-1. **Unit-Tests (falls vorhanden)**
-2. **Beispieldateien durchlaufen:**
-   - examples/01_templates-satb.ly
-   - examples/06_use-case-SATB.ly
-   - examples/03_editionEngraver.ly
-3. **Edge cases testen**
-4. **Performance-Checks**
-
-## 9. Testempfehlungen
-
-### Minimale Tests
-Diese Beispieldateien sollten nach der Migration funktionieren:
-- [examples/01_templates-satb.ly](examples/01_templates-satb.ly) - Basis-Templates
-- [examples/06_use-case-SATB.ly](examples/06_use-case-SATB.ly) - Realer Use-Case
-- [examples/03_editionEngraver.ly](examples/03_editionEngraver.ly) - Edition-Engraver
-
-### Umfassende Tests
-- Alle Beispieldateien kompilieren
-- MIDI-Output überprüfen
-- PDF-Output visuell vergleichen
-- Performance-Messungen (Kompilierungszeit)
-
-### Regressionstests
-1. **Vor Migration:** Alle Beispiele kompilieren und Output speichern
-2. **Nach Migration:** Neu kompilieren und Output vergleichen
-3. **Diff-Tool:** `diff -r old_output/ new_output/`
-
-## 10. Geschätzter Aufwand
-
-| Phase | Beschreibung | Zeit |
-|-------|--------------|------|
-| Phase 1 | Kritische Änderungen (assoc-set!, dotted-list?) | 2-3 h |
-| Phase 2 | Parser-API Refactoring | 8-12 h |
-| Phase 3 | Version Updates, ly:make-moment | 1-2 h |
-| Phase 4 | Header Management | 2-3 h |
-| Phase 5 | Testing und Debugging | 4-8 h |
-| **Gesamt** | | **17-28 h** |
-
-## 11. Backup und Rollback-Strategie
-
-### Vor Beginn der Migration:
-```bash
-# Git Branch erstellen
-git checkout -b migration-lilypond-2.24-guile-3.0
-
-# Oder komplette Backup-Kopie
-cp -r lalily lalily-backup-2022-$(date +%Y%m%d)
-```
-
-### Schrittweises Vorgehen:
-- Jede Phase als separater Commit
-- Aussagekräftige Commit-Messages
-- Regelmäßiges Testen
-
-### Bei Problemen:
-```bash
-# Zurück zum letzten funktionierenden Stand
-git reset --hard HEAD~1
-
-# Oder zurück zum Ausgangspunkt
-git checkout main
-```
-
-## 12. Nützliche Ressourcen
-
-- [LilyPond 2.24 Änderungslog](http://lilypond.org/doc/v2.24/Documentation/changes/)
-- [Guile 3.0 Migration Guide](https://www.gnu.org/software/guile/manual/html_node/Guile-3-Migration-Guide.html)
-- [LilyPond Parser API Changes](http://lilypond.org/doc/v2.20/Documentation/contributor/scheme-compatibility)
-
-## 13. Bekannte Breaking Changes Zusammenfassung
-
-### Guile 1.8 → 3.0
-- ❌ `assoc-set!`, `assoc-remove!` entfernt → `assoc-set`, `assoc-remove`
-- ❌ `dotted-list?` entfernt → eigene Implementierung
-- ⚠️ String-Encoding: Latin-1 → UTF-8
-- ⚠️ Module-System: Änderungen in der Syntax
-- ⚠️ Performance: Generell schneller, aber anders optimiert
-
-### LilyPond 2.22 → 2.24
-- ❌ `ly:parser-define!` entfernt → Modul/Registry-basiert
-- ❌ `ly:parser-lookup` entfernt → Modul/Registry-basiert
-- ❌ `ly:parser-clone` entfernt
-- ❌ `ly:parser-output-name` entfernt
-- ⚠️ `ly:make-moment` Signatur überprüfen
-- ⚠️ Header-Management geändert
-- ⚠️ Context-Properties erweitert
+## Status: ✅ Migration durchgeführt
 
 ---
 
-**Erstellt:** 21. Januar 2026  
-**Projekt:** lalily - LilyPond Extension  
-**Ziel:** Migration von LilyPond 2.22/Guile 1.8 zu LilyPond 2.24/Guile 3.0
+## 1. Guile-spezifische Änderungen
+
+### 1.1 `assoc-set!` und `assoc-remove!`
+
+**Ergebnis:** ✅ **Keine Änderung nötig** – `assoc-set!` und `assoc-remove!` sind in Guile 3.0 weiterhin verfügbar. Die ursprüngliche Annahme, dass sie entfernt wurden, war falsch.
+
+### 1.2 `dotted-list?` Prädikat
+
+**Ergebnis:** ✅ **Keine Änderung nötig** – `dotted-list?` ist über `(srfi srfi-1)` in Guile 3.0 weiterhin verfügbar.
+
+---
+
+## 2. LilyPond API-Änderungen
+
+### 2.1 Parser/Location implizit in Music-Functions
+
+**Problem:** In LilyPond 2.24 erhalten `define-music-function`, `define-scheme-function`, `define-void-function` etc. `parser` und `location` nicht mehr als explizite Argumente. Sie sind implizit als `(*parser*)` und `(*location*)` in den Funktionskörpern verfügbar.
+
+**Durchgeführte Änderungen:**
+
+| Datei | Änderung |
+|-------|----------|
+| [lalily/lalily/lascm-init.scm](lalily/lalily/lascm-init.scm) | `assocGet`, `assocSet`, `assocSetAll`: `(parser location ...)` → `(...)` |
+| [lalily/lalily/markup.scm](lalily/lalily/markup.scm) | `registerMarkup`: `(parser location ...)` → `(...)` |
+| [lalily/lalily/markup-init.scm](lalily/lalily/markup-init.scm) | `setStyle`: `(parser location ...)` → `(...)` |
+| [lalily/lalily/lyrics-init.scm](lalily/lalily/lyrics-init.scm) | `define-lyric-markup`, `lyricSize`, `lyricStyle`, `lyricScale`, `addExtMup`, `addLEx`: `(parser location ...)` → `(...)` |
+| [lalily/templates-tools.ly](lalily/templates-tools.ly) | Alle 8 `define-*-function`: `(parser location ...)` → `(...)` |
+| [lalily-extensions/shapeTieCol.ly](lalily-extensions/shapeTieCol.ly) | `shapeTieColumn`: `(parser location all-offsets)` → `(all-offsets)` |
+
+**Wichtig:** In `lyrics-init.scm` wurde auch die Aufrufkonvention repariert: Extrahierte Funktionen via `ly:music-function-extract` erhalten in 2.24 nur die deklarierten Argumente, nicht `parser`/`location`. D.h. `(lsf parser location lyrics)` → `(lsf lyrics)`.
+
+### 2.2 `ly:parser-output-name` Signaturänderung
+
+**Problem:** `ly:parser-output-name` nimmt in 2.24 kein Argument mehr (optionaler Parser entfällt).
+
+**Durchgeführte Änderungen:**
+
+| Datei | Funktion |
+|-------|----------|
+| [lalily/lalily/laly.scm](lalily/lalily/laly.scm) | `lalily-test-location?` |
+| [lalily/lalily/laly-init.scm](lalily/lalily/laly-init.scm) | `includeLocal`, `executeLocal` |
+| [lalily/lalily/store-init.scm](lalily/lalily/store-init.scm) | `write-lalily-log-file` |
+| [lalily/lalily/edition.scm](lalily/lalily/edition.scm) | `finalize`-Callback, `annoCollect` |
+
+Alle Aufrufe: `(ly:parser-output-name parser)` → `(ly:parser-output-name)`
+
+### 2.3 `ly:parser-define!` und `ly:parser-lookup`
+
+**Ergebnis:** ✅ **Keine Änderung nötig** – Diese Funktionen existieren in LilyPond 2.24 weiterhin (ohne Parser-Argument). Die ursprüngliche Annahme, dass sie entfernt wurden, war falsch.
+
+### 2.4 Bare `location`-Referenzen in Funktionskörpern
+
+**Problem:** Da `parser` und `location` nicht mehr als Parameter übergeben werden, sind nackte `location`-Referenzen in Funktionskörpern ungebunden.
+
+**Durchgeführte Änderungen:**
+
+| Datei | Änderung |
+|-------|----------|
+| [lalily/lalily/laly.scm](lalily/lalily/laly.scm) | `includeFolder`: `location` → `(*location*)` |
+| [lalily/lalily/laly.scm](lalily/lalily/laly.scm) | `lalily-markup`: `location` → `#f` (kein Location-Kontext verfügbar) |
+| [lalily/lalily/persons-init.scm](lalily/lalily/persons-init.scm) | `getPersonName/Life`: `location` → `(*location*)` |
+| [lalily/lalily/persons-init.scm](lalily/lalily/persons-init.scm) | `personName/Life` (Markup-Commands): `ly:input-warning location` → `ly:warning` |
+| [lalily/lalily/persons-init.scm](lalily/lalily/persons-init.scm) | `set-person!` Lambda: `location` → `(*location*)` |
+| [lalily/templates-tools.ly](lalily/templates-tools.ly) | 3× `location` → `(*location*)` |
+
+---
+
+## 3. Override-Syntax-Änderungen
+
+**Problem:** Die alte Override-Syntax `\override Grob #'property = value` wurde in LilyPond 2.22+ entfernt. Neue Syntax: `\override Grob.property = value`.
+
+**Durchgeführte Änderungen:**
+
+| Datei | Änderung |
+|-------|----------|
+| [lalily/lalily/laly-init.scm](lalily/lalily/laly-init.scm) | `mergeRestsOn/Off/mergeRests`: Override/Revert-Syntax aktualisiert |
+| [lalily/lalily/laly-init.scm](lalily/lalily/laly-init.scm) | `markFerm`, `markDaX`: Override-Syntax aktualisiert |
+| [lalily/lalily/store-init.scm](lalily/lalily/store-init.scm) | `cueMusic`: `InstrumentSwitch #'direction` → `InstrumentSwitch.direction` etc. |
+| [lalily/lalily/lyrics-init.scm](lalily/lalily/lyrics-init.scm) | `addExtMup/addLEx`: `LyricExtender #'stencil` → `LyricExtender.stencil` |
+
+**Hinweis:** `\override #'(property . value)` in **Markup-Kontext** ist weiterhin korrekt und wurde NICHT geändert.
+
+---
+
+## 4. `ly:make-moment` Signaturänderung
+
+**Problem:** 4-Argument-Aufrufe mit redundantem Grace-Anteil `0 1` können auf 2 Argumente reduziert werden.
+
+**Durchgeführte Änderungen:**
+
+| Datei | Änderung |
+|-------|----------|
+| [lalily/lalily/laly-init.scm](lalily/lalily/laly-init.scm) | `midiTempo`: `(ly:make-moment num den 0 1)` → `(ly:make-moment num den)` |
+| [lalily-extensions/extractMusic.ly](lalily-extensions/extractMusic.ly) | `(ly:make-moment 0/1 0/1)` → `(ly:make-moment 0)` |
+| [lalily-extensions/edition-helper.ly](lalily-extensions/edition-helper.ly) | `(ly:make-moment 0 0)` → `(ly:make-moment 0)` |
+
+---
+
+## 5. Versions-Updates
+
+**Durchgeführt:** Alle `.ly`-Dateien auf `\version "2.24.0"` aktualisiert.
+
+Betroffen waren 31+ Dateien mit Versionen von 2.17.29 bis 2.20.0.
+
+---
+
+## 6. Bug-Fixes (während der Migration entdeckt)
+
+| Datei | Bug | Fix |
+|-------|-----|-----|
+| [lalily/lalily/store.scm](lalily/lalily/store.scm) | `(> (length head))` – fehlender zweiter Vergleichswert | `(> (length head) 0)` |
+| [lalily/bootstrap.ily](lalily/bootstrap.ily) | `la:parser-include-file` mit 3 Argumenten aufgerufen (Funktion akzeptiert nur 2) | Entfernung des überflüssigen `(*parser*)`-Arguments |
+| [lalily/bootstrap.ily](lalily/bootstrap.ily) | `do-layout` mit `parser`-Argument aufgerufen | `parser`-Parameter entfernt |
+
+---
+
+## 7. Nicht geänderte Dateien und Begründung
+
+- **edition.scm `oop->string`**: Generiert Display-Strings mit `#'property`-Syntax – nur für Logging, kein funktionaler Code
+- **verlag.ly `jpv:published?`/`jpv:doTitle?`**: Plain-Scheme-Funktionen mit explizitem `(parser location)` – werden extern mit `(*parser*) (*location*)` aufgerufen, daher kompatibel
+- **laly.scm `lalily-test-location?`**: Behält `(parser location)` Signatur bei, da externer API-Vertrag – Aufrufer übergeben `(*parser*) (*location*)`
+
+---
+
+## 8. Bekannte Risiken
+
+1. **`(defined?)` in Modul-Kontext**: Funktionen wie `lalily-markup` verwenden `(defined? sym)` und `(primitive-eval sym)`. In Guile 3 operiert `defined?` im aktuellen Modul, nicht zwingend in guile-user. Könnte bei Markup-Registrierung zu `#f`-Ergebnissen führen.
+
+2. **`ly:parser-define!`/`ly:parser-lookup` Modul-Scope**: Diese Funktionen arbeiten im lily-user-Modul. Wenn Code aus sub-Modulen (z.B. `(lalily edition)`) aufgerufen wird, könnten Scope-Differenzen auftreten.
+
+3. **GOOPS-Kompatibilität**: Die Edition-Engraver-Klassen wurden nicht geändert. GOOPS ist in Guile 3.0 weitgehend kompatibel, aber Edge-Cases sind möglich.
+
+---
+
+## 9. Test-Empfehlungen
+
+Nach der Migration sollten folgende Dateien getestet werden:
+- `test-lalily-simple.ly` – Basis-Funktionalität
+- `test-lalilyTest.ly` – `lalilyTest`-Funktion
+- `examples/01_templates-satb.ly` – SATB-Templates
+- `examples/03_editionEngraver.ly` – Edition-Engraver
+- `examples/06_use-case-SATB.ly` – Realer Use-Case
+
+---
+
+**Erstellt:** 21. Januar 2026
+**Migration durchgeführt:** Januar 2026
+**Projekt:** lalily - LilyPond Extension
+**Ziel:** Migration von LilyPond 2.19.x/Guile 1.8 zu LilyPond 2.24/Guile 3.0

@@ -16,12 +16,7 @@
 ;;;; along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
 (use-modules (lalily store)(lalily definitions))
-
-(catch #t
-  (lambda ()
-    (re-export LY_NOOP))
-  (lambda (key . args)
-    #f))
+(re-export-module '(lalily store))
 
 (define-public (log-music-folder)
   (ly:message "music folder: ~A~A"
@@ -33,7 +28,7 @@
     (log-music-folder)))
 
 (define-public (write-lalily-log-file . options)
-  (let ((logfile (format #f "~A~A.log" (lalily:get-output-name (*location*)) (ly:assoc-get 'suffix options ".lalily" #f))))
+  (let ((logfile (format #f "~A~A.log" (ly:parser-output-name) (ly:assoc-get 'suffix options ".lalily" #f))))
     (if (not (equal? logfile
                      (get-registry-val '(lalily runtime logfile-written))))
         (ly:message "writing '~A' ..." logfile))
@@ -99,17 +94,6 @@
           )))
     ))
 
-(catch #t
-  (lambda ()
-    (re-export put-music)
-    (re-export get-music)
-    (re-export has-music)
-    (re-export load-music)
-    (re-export get-music-deep)
-    (re-export collect-music)
-    (re-export display-music-pieces))
-  (lambda (key . args)
-    #f))
 
 (define-public registerMusicLoadCallback
   (define-void-function (proc)(procedure?)
@@ -152,27 +136,11 @@
       (mmrest-of-length music)
       )))
 
-(catch #t
-  (lambda ()
-    (re-export register-template)
-    (re-export get-template)
-    (re-export call-template)
-    (re-export display-templates))
-  (lambda (key . args)
-    #f))
 
 (define-public registerTemplate
   (define-void-function (name fun)(list? ly:music-function?)
     (register-template name fun)))
 
-(catch #t
-  (lambda ()
-    (re-export create-template-path)
-    (re-export create-music-path)
-    (re-export musicPath)
-    (re-export templatePath))
-  (lambda (key . args)
-    #f))
 
 (define-public callTemplate
   (define-music-function
@@ -189,7 +157,7 @@
      (make-music 'SimultaneousMusic
        'elements
        (map (lambda (x)
-              (call-template tmpl music (assoc-set options sym x))
+              (call-template tmpl music (assoc-set! options sym x))
               ) vals)))))
 (define-public loopTemplate
   (define-music-function
@@ -201,24 +169,9 @@
      (make-music kind
        'elements
        (map (lambda (x)
-              (call-template tmpl music (assoc-set options sym x))
+              (call-template tmpl music (assoc-set! options sym x))
               ) vals)))))
 
-(catch #t
-  (lambda ()
-    (re-export get-current-music)
-    (re-export display-music-stack)
-    (re-export get-current-template)
-    (re-export display-template-stack)
-    (re-export get-music-folder)
-    (re-export set-music-folder!)
-    (re-export set-default-template)
-    (re-export get-default-template)
-    (re-export get-default-options)
-    (re-export get-default-options-cumul)
-    (re-export display-default-music))
-  (lambda (key . args)
-    #f))
 
 (define-public getCurrentMusic
   (define-scheme-function ()()
@@ -302,10 +255,10 @@
 (define-public optionsAddAll setatreeall)
 (define-public optionsInitWith
   (define-void-function (name opts)(symbol? list?)
-    (lalily:parser-define! name (list))
+    (ly:parser-define! name (list))
     (let ((opts (if (and (= 1 (length opts))
                          (symbol? (car opts)))
-                    (lalily:parser-lookup (car opts)) opts)))
+                    (ly:parser-lookup (car opts)) opts)))
       ((@@ (lalily laly) walk-a-tree) '() opts
         (lambda (path val) ((@@ (lalily laly) add-a-tree) name path val assoc-replace!)))
       )))
@@ -370,13 +323,6 @@
     (create-music-path #f path)))
 
 
-(catch #t
-  (lambda ()
-    (re-export set-default-header)
-    (re-export get-default-header)
-    (re-export get-music-folder-header-field))
-  (lambda (key . args)
-    #f))
 
 (define-public aSetDefaultHeader
   (define-music-function (piece field value)(list? string-or-symbol? markup?)
@@ -482,7 +428,7 @@
     (let* ((piece (get-music-folder))
            (tmpl (get-default-template piece))
            (opts (get-default-options piece)))
-      (set-default-template piece tmpl (assoc-set opts 'paper paper))
+      (set-default-template piece tmpl (assoc-set! opts 'paper paper))
       )))
 
 (define-public (get-default-layout piece)
@@ -496,7 +442,7 @@
     (let* ((piece (get-music-folder))
            (tmpl (get-default-template piece))
            (opts (get-default-options piece)))
-      (set-default-template piece tmpl (assoc-set opts 'layout layout))
+      (set-default-template piece tmpl (assoc-set! opts 'layout layout))
       )))
 
 (define-public (get-default-midi piece)
@@ -510,7 +456,7 @@
     (let* ((piece (get-music-folder))
            (tmpl (get-default-template piece))
            (opts (get-default-options piece)))
-      (set-default-template piece tmpl (assoc-set opts 'midi midi))
+      (set-default-template piece tmpl (assoc-set! opts 'midi midi))
       )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -647,8 +593,8 @@
             } {
               $(if (eq? dir UP) #{ \voiceOne #} #{ \voiceTwo #})
               $(if (and (not (ly:music? lyrics))(strmup? cuename)) #{
-                \once \override InstrumentSwitch #'direction = #(if (eq? dir UP) UP DOWN)
-                \once \override InstrumentSwitch #'X-offset = #-5
+                \once \override InstrumentSwitch.direction = #(if (eq? dir UP) UP DOWN)
+                \once \override InstrumentSwitch.X-offset = #-5
                 \set instrumentCueName = #(markup #:concat ("(" cuename ")"))
                    #} #{ \unset instrumentCueName #})
               $(if (string? clef) #{ \cueClef $clef #})
@@ -657,7 +603,7 @@
               $(if (string? clef) #{ \cueClefUnset #})
               \unset instrumentCueName
               $(if (strmup? instrname) #{
-                \once \override Voice.InstrumentSwitch #'stencil = ##f
+                \once \override Voice.InstrumentSwitch.stencil = ##f
                 \set Staff.instrumentCueName = #instrname #})
             }
             {
@@ -669,9 +615,9 @@
                 \consists #aligncue
                 \consists \editionEngraver \musicPath #'(cue)
                 fontSize = #-2
-                \override LyricText #'font-shape = #'italic
-                \override StanzaNumber #'font-shape = #'italic
-                \override StanzaNumber #'font-series = #'plain
+                \override LyricText.font-shape = #'italic
+                \override StanzaNumber.font-shape = #'italic
+                \override StanzaNumber.font-series = #'plain
               } \lyricsto $cueid {
                 $(if (strmup? cuename) #{
                   \set stanza = \markup { \concat { "(" $cuename ")" } }
@@ -703,23 +649,10 @@
     (add-tracked-quotes)))
 
 
-(catch #t
-  (lambda ()
-    (re-export registerPaper)
-    (re-export registerLayout)
-    (re-export registerMidi)
-    (re-export get-paper)
-    (re-export get-layout)
-    (re-export get-midi)
-    (re-export registerPageTemplate)
-    (re-export get-page-template)
-    (re-export call-page-template))
-  (lambda (key . args)
-    #f))
-
 (define-public getPaper (define-scheme-function (name)(list?)(get-paper name)))
 (define-public getLayout (define-scheme-function (name)(list?)(get-layout name)))
 (define-public getMidi (define-scheme-function (name)(list?)(get-midi name)))
+
 
 (define-public callPageTemplate
   (define-scheme-function (name options)(list? list?)

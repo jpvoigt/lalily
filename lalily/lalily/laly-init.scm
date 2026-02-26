@@ -16,37 +16,9 @@
 ;;;; along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
 (use-modules (lalily laly)(lalily lascm)(lalily markup)(lalily store))
-
-(catch #t
-  (lambda ()
-    (re-export lalily:verbose)
-    (re-export location-extract-path))
-  (lambda (key . args)
-    #f))
-
-(define-public includeOnceIfExists
-  (define-void-function (file)(string?)
-    (if (file-exists? file)
-        (la:parser-include-file file #t))
-    ))
-
-(define-public includeIfAbsent
-  (define-void-function (sym file)(symbol? string?)
-    (if (not (defined? sym))
-        (la:parser-include-file file #f))
-    ))
-
-(define-public includeRelative
-  (define-void-function (file)(string?)
-    (let ((filename (string-append (location-extract-path (*location*)) file)))
-      (la:parser-include-file filename #f)
-      )))
-(define-public includeRelIf
-  (define-void-function (file proc)(string? procedure?)
-    (if (proc (*parser*) (*location*))
-        (includeRelative file))
-    ))
-
+(re-export-module '(lalily laly))
+(re-export-module '(lalily markup))
+(re-export-module '(lalily store))
 (define-public (file-path location rel)
   (let ((dir (location-extract-path location)))
     (normalize-path-string (string-append dir rel))))
@@ -55,20 +27,15 @@
     (file-path (*location*) rel)))
 
 
-(catch #t
-  (lambda ()
-    (re-export extent-size)
-    (re-export info-message))
-  (lambda (key . args)
-    #f))
+
 (define (return-music val)(if (ly:music? val) val (make-music 'SequentialMusic 'void #t)))
 (define-public displayMessage
-  (define-music-function (fmt val)(string? scheme?)
-    (ly:message fmt val)
+  (define-music-function (format val)(string? scheme?)
+    (ly:message format val)
     (return-music val)))
 (define-public inputMessage
-  (define-music-function (fmt val)(string? scheme?)
-    (ly:input-message (*location*) fmt val)
+  (define-music-function (format val)(string? scheme?)
+    (ly:input-message (*location*) format val)
     (return-music val)))
 (define-public displayObject
   (define-music-function (val)(scheme?)
@@ -90,15 +57,11 @@
 
 (define (not-null? v)(not (null? v)))
 
-(catch #t
-  (lambda ()
-    (re-export lalily:save-def))
-  (lambda (key . args)
-    #f))
+
 (define-public parserDefine
   (define-void-function (name val)(string-or-symbol? not-null?)
     (if (string? name) (set! name (string->symbol name)))
-    (lalily:parser-define! name val)
+    (ly:parser-define! name val)
     (lalily:save-def name val)))
 
 (define-public parserDefineMusic
@@ -108,20 +71,7 @@
   (define-void-function (name mus)(string-or-symbol? markup?)
     (parserDefine name mus)))
 
-(catch #t
-  (lambda ()
-    (re-export lalily-markup)
-    (re-export lalilyMarkup)
-    (re-export clralist)
-    (re-export setalist)
-    (re-export addalist)
-    (re-export remalist)
-    (re-export clratree)
-    (re-export setatree)
-    (re-export addatree)
-    (re-export rematree))
-  (lambda (key . args)
-    #f))
+
 
 ; do something anywhere
 (define-public exec (define-void-function (mus)(scheme?)))
@@ -134,11 +84,7 @@
         (else (make-music 'SequentialMusic 'void #t)))
       )))
 
-(catch #t
-  (lambda ()
-    (re-export la:parser-include-file))
-  (lambda (key . args)
-    #f))
+
 
 (define-public includeOnceIfExists
   (define-void-function (file)(string?)
@@ -146,42 +92,41 @@
         (la:parser-include-file file #t))
     ))
 
-(catch #t
-  (lambda ()
-    (re-export includePattern)
-    (re-export includeOncePattern))
-  (lambda (key . args)
-    #f))
+(define-public includeIfAbsent
+  (define-void-function (sym file)(symbol? string?)
+    (if (not (defined? sym))
+        (ly:parser-include-string (format #f "\\include \"~A\"\n" file)))
+    ))
 
-;;; Helper function to get output name from location
-(define-public (lalily:get-output-name location)
-  "Extract output name from location - replacement for ly:parser-output-name"
-  (let ((locname (car (ly:input-file-line-char-column location))))
-    (string-append (basename locname ".ly") ".ly")))
+(define-public includeRelative
+  (define-void-function (file)(string?)
+    (let ((filename (string-append (location-extract-path (*location*)) file)))
+      (ly:parser-include-string (format #f "\\include \"~A\"\n" filename))
+      )))
+(define-public includeRelIf
+  (define-void-function (file proc)(string? procedure?)
+    (if (proc (*parser*) (*location*))
+        (includeRelative file))
+    ))
 
 (define-public includeLocal
   (define-void-function (file)(string?)
-    (let ((outname (lalily:get-output-name (*location*)))
+    (let ((outname (format #f "~A.ly" (ly:parser-output-name)))
           (locname (car (ly:input-file-line-char-column (*location*)))))
       (if (or (string=? outname locname) (string-suffix? outname locname))
-          (la:parser-include-file file #f))
+          (ly:parser-include-string (format #f "\\include \"~A\"\n" file)))
       )))
 (define-public executeLocal
   (define-void-function (fn)(procedure?)
-    (let ((outname (lalily:get-output-name (*location*)))
+    (let ((outname (format #f "~A.ly" (ly:parser-output-name)))
           (locname (car (ly:input-file-line-char-column (*location*)))))
       (if (or (string=? outname locname)(string-suffix? outname locname))
           (fn))
       )))
 
-(catch #t
-  (lambda ()
-    (re-export lalily-test-location?))
-  (lambda (key . args)
-    #f))
 (define-public bookpartAdd
   (define-void-function (bookpart)(ly:book?)
-    (let ((book (lalily:parser-lookup '$current-book)))
+    (let ((book (ly:parser-lookup '$current-book)))
       ;(set-book-headers! bookpart (assoc-get 'header (get-music-folder-options location) '()))
       (if book
           (ly:book-add-bookpart! book bookpart)
@@ -196,46 +141,25 @@
 
 (define-public (set-book-headers! book header)
   (let ((bookhead (ly:book-header book)))
-    ; Initialize header as empty list if not set or if it's a list
-    (if (or (not bookhead)(list? bookhead))
-        (begin 
-          (set! bookhead '())
-          (ly:book-set-header! book bookhead)))
-    ; Get header from options if not a list
+    (if (or (not bookhead)(list? bookhead))(begin (set! bookhead (make-module)) (ly:book-set-header! book bookhead)))
     (if (not (list? header))
         (set! header (assoc-get 'header (get-music-folder-options) '())))
-    ; Build new header alist by merging existing and new headers
-    (let ((new-header bookhead))
-      (for-each (lambda (p)
-                  (if (pair? p)
-                      (let ((key (car p))
-                            (val (cdr p)))
-                        (set! new-header (assoc-set new-header key val)))))
-                header)
-      ; Set the updated header
-      (ly:book-set-header! book new-header))
+    (for-each (lambda (p)
+                (if (pair? p)
+                    (let ((key (car p))
+                          (val (cdr p)))
+                      (module-define! bookhead key val)))) header)
     ))
 (define-public (set-score-headers! score header)
   (let ((scorehead (ly:score-header score)))
-    ; Initialize header as empty list if not set or if it's a list
-    (if (or (not scorehead)(list? scorehead))
-        (begin 
-          (set! scorehead '())
-          (ly:score-set-header! score scorehead)))
-    ; Get header from options if not a list
-    (if (not (list? header)) 
-        (set! header (assoc-get 'header (get-music-folder-options
-                                         (if (ly:input-location? header) header #f)) '())))
-    ; Build new header alist by merging existing and new headers
-    (let ((new-header scorehead))
-      (for-each (lambda (p)
-                  (if (pair? p)
-                      (let ((key (car p))
-                            (val (cdr p)))
-                        (set! new-header (assoc-set new-header key val)))))
-                header)
-      ; Set the updated header
-      (ly:score-set-header! score new-header))
+    (if (or (not scorehead)(list? scorehead))(let ((mod (make-module))) (set! scorehead mod) (ly:score-set-header! score scorehead)))
+    (if (not (list? header)) (set! header (assoc-get 'header (get-music-folder-options
+                                                              (if (ly:input-location? header) header #f)) '())))
+    (for-each (lambda (p)
+                (if (pair? p)
+                    (let ((key (car p))
+                          (val (cdr p)))
+                      (module-define! scorehead key val)))) header)
     ))
 
 (define-public setGlobalStaffSize
@@ -261,12 +185,6 @@
 ;;;;;;;;;;;;;;;;;;
 ;; toc sections
 
-(catch #t
-  (lambda ()
-    (re-export set-toc-section!)
-    (re-export get-toc-section))
-  (lambda (key . args)
-    #f))
 (define-public setTocSection
   (define-music-function (text) (markup?)
     (set-toc-section! text)(make-music 'SequentialMusic 'void #t)))
@@ -511,16 +429,16 @@
 
 (define-public markFerm #{
   \once \override Score.RehearsalMark.break-visibility = ##(#t #t #f)
-  \mark \markup { \musicglyph #"scripts.ufermata" }
+  \mark \markup { \musicglyph "scripts.ufermata" }
   #})
 (setstyle 'lalily:markDaX #{ \markup { \small \italic \fromproperty #'style:text } #})
 (define-public markDaX
   (define-music-function (eo text)((number-pair? #f) markup?)
     #{
-      \once \override Score.RehearsalMark #'break-visibility = ##(#t #t #f)
-      \once \override Score.RehearsalMark #'self-alignment-X = #RIGHT
-      \once \override Score.RehearsalMark #'direction = #DOWN
-      $(if (number-pair? eo) #{ \once \override Score.RehearsalMark #'extra-offset = #eo #})
+      \once \override Score.RehearsalMark.break-visibility = ##(#t #t #f)
+      \once \override Score.RehearsalMark.self-alignment-X = #RIGHT
+      \once \override Score.RehearsalMark.direction = #DOWN
+      $(if (number-pair? eo) #{ \once \override Score.RehearsalMark.extra-offset = #eo #})
       \mark \markup { \style #'lalily:markDaX $text }
     #}))
 (define-public markFine

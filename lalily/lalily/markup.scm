@@ -27,7 +27,7 @@
 
 (let ((table (list)))
   (set! register-markup-producer (lambda (name proc)
-                                   (set! table (assoc-set table name proc))))
+                                   (set! table (assoc-set! table name proc))))
   (set! get-markup-producer (lambda (name)
                               (assoc-get name table))))
 
@@ -68,8 +68,8 @@
                         (else (ly:warning "no markup registered for ~A" (glue-list path ".")) (markup))))))
   )
 (define-public registerMarkup
-  (define-void-function (parser location path mup)(list? markup?)
-    (register-markup path mup parser location)))
+  (define-void-function (path mup)(list? markup?)
+    (register-markup path mup)))
 (define-markup-command (getMarkup layout props path)(list?)
   (interpret-markup layout props (get-markup path "???")))
 
@@ -287,7 +287,7 @@
 (define-public (getstyle symbol) #f)
 (let ((style:markups (list)))
   (set! setstyle (lambda (symbol markup)
-                   (set! style:markups (assoc-set style:markups symbol markup))))
+                   (set! style:markups (assoc-set! style:markups symbol markup))))
   (set! getstyle (lambda (symbol)
                    (let ((m #f))
                      (set! m (assoc-get symbol style:markups))
@@ -393,7 +393,7 @@
         (quali (chain-assoc-get 'qr-quality props "L")))
     (if (symbol? str)(let ((tmp (chain-assoc-get str props #f)))
                        (if tmp (set! str tmp))))
-    (system (format #f (if idn
+    (system (format (if idn
                         "echo \"~A\" | idn --quiet | qrencode -o - -m 0 -l ~A | convert PNG:- BMP:- | potrace -a -1 -o \"~A\""
                         "echo \"~A\" | qrencode -o - -m 0 -l ~A | convert PNG:- BMP:- | potrace -a -1 -o \"~A\"")
               str quali tmp))
@@ -447,7 +447,7 @@
 (define-public (get-stencil symbol) #f)
 (let ((cache (list)))
   (set! put-stencil (lambda (symbol stencil)
-                      (set! cache (assoc-set cache symbol stencil))))
+                      (set! cache (assoc-set! cache symbol stencil))))
   (set! get-stencil (lambda (symbol)
                       (assoc-get symbol cache)))
   )

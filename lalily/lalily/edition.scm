@@ -34,7 +34,7 @@
             (den (ly:moment-main-denominator mom))
             (gnum (ly:moment-grace-numerator mom))
             (gden (ly:moment-grace-denominator mom)))
-        (format #f "(~A/~A~A)" num den
+        (format #f "~A/~A~A)" num den
           (cond
            ((> gnum 0)(format #f "+~A/~A" gnum gden))
            ((< gnum 0)(format #f "~A/~A" gnum gden))
@@ -542,7 +542,7 @@
                                       (glue-list (editions) ", ")
                                       (glue-list tag "/")
                                       takt (if (ly:moment? pos) (moment->string pos) pos))
-                                    (let* ((outname (lalily:get-output-name (*location*)))
+                                    (let* ((outname (ly:parser-output-name))
                                            (logfile (format #f "~A.edition.log" outname)))
                                       (ly:message "writing '~A' ..." logfile)
                                       (with-output-to-file logfile
@@ -792,7 +792,7 @@
           (let* ((ctxid (ly:context-id context))
                  (ctxname (ly:context-name context))
                  (ctxanno (ly:context-property context 'annotation-name))
-                 (outname (get-registry-val '(lalily runtime output-name) "output"))
+                 (outname (ly:parser-output-name))
                  (edeng (context-find-edition-engraver context))
                  (edpath (if edeng (object-property edeng 'path) #f))
                  ; title/instrumentName

@@ -101,7 +101,7 @@
 \registerTemplate lalily.Lyrics
 #(define-music-function (piece options)(list? list?)
    (let ((mods (assoc-get 'context-mods options #f #f))
-         (lname (assoc-get 'context-name options (format "~A" piece) #f)))
+         (lname (assoc-get 'context-name options (format #f "~A" piece) #f)))
      #{
        \new Lyrics = $lname \with{
          $(if (ly:context-mod? mods) mods #{ \with {} #})

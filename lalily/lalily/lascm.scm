@@ -22,11 +22,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; utilities
 
-(define-public (dotted-list? lst)
-  "Check if lst is a dotted list (improper list)"
-  (and (pair? lst)
-       (not (list? lst))))
-
 (define-public (glue-list lst glue)
   "create string from list containing arbitrary objects"
   (string-join (map (lambda (s) (object->string s display)) lst) glue 'infix))
@@ -62,23 +57,11 @@ example: (format-alist '((a . 1)(b . 2)))
      (else (format #f "~A~A~&" (indsp i) l)))
     ))
 
-; Guile 3.0 compatibility: assoc-remove and assoc-set as non-destructive operations
-; In Guile 3.0, assoc-set! and assoc-remove! are removed
-(define-public (assoc-remove alist key)
-  "Remove KEY from ALIST, returning a new alist. Non-destructive."
-  (filter (lambda (pair)
-            (not (equal? (car pair) key)))
-          alist))
-
-(define-public (assoc-set alist key value)
-  "Set KEY to VALUE in ALIST, returning a new alist. Non-destructive."
-  (acons key value (assoc-remove alist key)))
-
 (define-public (assoc-set-all! lst vls)
   "set all values from vls in lst"
   (begin
    (for-each (lambda (p)
-               (set! lst (assoc-set lst (car p) (cdr p)))) vls)
+               (set! lst (assoc-set! lst (car p) (cdr p)))) vls)
    lst))
 
 (define-public (assoc-replace! lst sym val)
@@ -393,7 +376,7 @@ example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"
                                          ,(lambda (v)
                                             (let ((str (if (markup? v)
                                                            (markup->string v)
-                                                           (format "~A" v)
+                                                           (format #f "~A" v)
                                                            )))
                                               (if (> (string-length str) 79)
                                                   (string-append
@@ -402,8 +385,8 @@ example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"
 
 (define (not-null? val)(if val #t #f))
 
-(define-public getRegistryVal (define-scheme-function (parser location key def)(list? not-null?)
+(define-public getRegistryVal (define-scheme-function (key def)(list? not-null?)
                                 (get-registry-val key def)))
-(define-public setRegistryVal (define-music-function (parser location key val)(list? not-null?)
+(define-public setRegistryVal (define-music-function (key val)(list? not-null?)
                                 (set-registry-val key val)
                                 (make-music 'SequentialMusic 'void #t)))

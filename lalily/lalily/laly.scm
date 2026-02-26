@@ -25,35 +25,8 @@
   (if (string? name) (set! name (string->symbol name)))
   (if (symbol? name)
       (set-registry-val lalily:registry-parser-defs
-        (assoc-set (get-registry-val lalily:registry-parser-defs '()) name val))
+        (assoc-set! (get-registry-val lalily:registry-parser-defs '()) name val))
       (ly:warning "~A not a symbol!" name)))
-
-;;; Parser replacement functions using registry
-(define-public (lalily:parser-define! name val)
-  "Registry-based replacement for ly:parser-define!"
-  (set-registry-val (list 'lalily 'parser 'vars name) val))
-
-(define-public (lalily:parser-lookup name . default)
-  "Registry-based replacement for ly:parser-lookup"
-  (let ((def (if (pair? default) (car default) '())))
-    (get-registry-val (list 'lalily 'parser 'vars name) def)))
-
-;;; Special accessors for LilyPond internal variables
-(define-public (lalily:get-current-book)
-  "Get current book from registry"
-  (lalily:parser-lookup '$current-book))
-
-(define-public (lalily:set-current-book! book)
-  "Set current book in registry"
-  (lalily:parser-define! '$current-book book))
-
-(define-public (lalily:get-current-bookpart)
-  "Get current bookpart from registry"
-  (lalily:parser-lookup '$current-bookpart))
-
-(define-public (lalily:set-current-bookpart! bookpart)
-  "Set current bookpart in registry"
-  (lalily:parser-define! '$current-bookpart bookpart))
 
 (define-public (extent-size ext diff) (cons (- (car ext) diff) (+ (cdr ext) diff) ))
 (define-public (info-message location format . args)
@@ -63,6 +36,12 @@
 
 (define-public (location-extract-path location)
   (let* ((loc (car (ly:input-file-line-char-column location)))
+         ;; LP 2.24/Guile 3: ly:input-file-line-char-column may return relative paths;
+         ;; make absolute before normalizing so that ".." is resolved correctly
+         (loc (if (and (> (string-length loc) 0)
+                       (not (char=? (string-ref loc 0) #\/)))
+                  (string-append (getcwd) "/" loc)
+                  loc))
          (dirmatch (string-match "(.*/).*" loc))
          (dirname (if (regexp-match? dirmatch) (match:substring dirmatch 1) "./")))
     (normalize-path-string dirname)
@@ -99,30 +78,21 @@
     ))
 
 (define-public (la:parser-include-file file once)
-  ;; LilyPond 2.24: ly:parser-include-string no longer exists
-  ;; Dynamic file inclusion at parse time is not possible
-  ;; This is now a stub that only logs the include attempt
   (let ((reg (get-registry-val '(lalily runtime loaded)))
-        (file-found (ly:find-file file))
-        (file-path #f))
+        (file-path (normalize-path-string (ly:find-file file))))
     (if (not (list? reg)) (set! reg '()))
-    (if file-found
+    (if (or (not once) (not (member file-path reg)))
         (begin
-          (set! file-path (normalize-path-string file-found))
-          (if (or (not once) (not (member file-path reg)))
-              (begin
-               (if (lalily:verbose) (ly:message "include '~A' (stub - file not actually loaded)" file))
-               ;; Note: File is NOT actually included because ly:parser-include-string was removed in LilyPond 2.24
-               ;; Users need to use static \include statements instead
-               (if once (set! reg `(,@reg ,file-path))))))
-        (if (lalily:verbose) (ly:message "file not found: '~A'" file)))
+         (if (lalily:verbose) (ly:message "include '~A'" file))
+         (ly:parser-include-string (format #f "\\include \"~A\"\n" file))
+         (if once (set! reg `(,@reg ,file-path)))))
     (set-registry-val '(lalily runtime loaded) reg)))
 
 (define-public includeFolder
   (define-void-function (options)(list?)
     (let* ((relative (assoc-get 'relative options #f))
            (idir (assoc-get 'directory options "."))
-           (dirname (if relative (string-append (location-extract-path location) idir) (normalize-path-string idir)))
+           (dirname (if relative (string-append (location-extract-path (*location*)) idir) (normalize-path-string idir)))
            (ionce (assoc-get 'once options #t))
            (pattern (assoc-get 'pattern options "^.*\\.ly$")))
       (if (not (eq? #\. (string-ref dirname 0))) (set! dirname (normalize-path-string dirname)))
@@ -159,7 +129,7 @@
                     (while (not (eof-object? entry))
                       (if (regexp-match? (string-match pattern entry))
                           (let ((file (string-append dirname entry)))
-                            (la:parser-include-file file #f)))
+                            (ly:parser-include-string (format #f "\\include \"~A\"\n" file))))
                       (set! entry (readdir dir))
                       )
                     (closedir dir)
@@ -189,18 +159,10 @@
       )))
 
 (define-public (lalily-test-location? parser location)
-  "Test if the current location is in the main file being compiled (not an included file).
-   Uses the output-name stored in registry by bootstrap.ily to compare with the current location.
-   This replaces the removed ly:parser-output-name function."
-  (let* ((registry-outname (get-registry-val '(lalily runtime output-name) #f))
-         (locname (car (ly:input-file-line-char-column location)))
-         (loc-basename (basename locname ".ly"))
-         (outname (if registry-outname
-                      registry-outname
-                      ;; Fallback: try to extract from location (may not work correctly for includes)
-                      loc-basename)))
-    ;; Check if the basename of the current location matches the output name
-    (string=? loc-basename outname)))
+  (let ((outname (ly:parser-output-name))
+        (locname (car (ly:input-file-line-char-column location))))
+    (regexp-match? (string-match (format #f "^(.*/)?~A\\.i?ly$" outname) locname))
+    ))
 
 
 ; register markup for re-instantiation
@@ -211,10 +173,10 @@
          (mkp (if (defined? make-name) (primitive-eval make-name) #f)))
     (if mup (set-registry-val lalily:registry-parser-defs
               `(,@(get-registry-val lalily:registry-parser-defs '()) (,mup-name . ,mup)))
-        (info-message location "WARNING: '~A' not found!" mup-name))
+        (info-message #f "WARNING: '~A' not found!" mup-name))
     (if mkp (set-registry-val lalily:registry-parser-defs
               `(,@(get-registry-val lalily:registry-parser-defs '()) (,make-name . ,mkp)))
-        (if (lalily:verbose)(info-message location "WARNING: '~A' not found!" make-name)))
+        (if (lalily:verbose)(info-message #f "WARNING: '~A' not found!" make-name)))
     ))
 (define-public lalilyMarkup
   (define-scheme-function (name)(string?)
@@ -225,14 +187,14 @@
   (define-void-function (alst)
     (string-or-symbol?)
     (if (string? alst)(set! alst (string->symbol alst)))
-    (lalily:parser-define! alst (list))
+    (ly:parser-define! alst (list))
     ))
 (define-public setalist
   (define-void-function (alst opt val)
     (string-or-symbol? string-or-symbol? scheme?)
     (if (string? alst)(set! alst (string->symbol alst)))
     (if (string? opt)(set! opt (string->symbol opt)))
-    (let ((l (lalily:parser-lookup alst))
+    (let ((l (ly:parser-lookup alst))
           (setv #t))
       (set! l (map (lambda (p)
                      (if (and (pair? p) (equal? (car p) opt))
@@ -242,30 +204,30 @@
                          p
                          )) l))
       (if setv (set! l (append l (list (cons opt val)))))
-      (lalily:parser-define! alst l)
+      (ly:parser-define! alst l)
       )))
 (define-public addalist
   (define-void-function (alst opt val)
     (string-or-symbol? string-or-symbol? scheme?)
     (if (string? alst)(set! alst (string->symbol alst)))
     (if (string? opt)(set! opt (string->symbol opt)))
-    (let ((l (lalily:parser-lookup alst)))
+    (let ((l (ly:parser-lookup alst)))
       (set! l (filter (lambda (p) (and (pair? p)(not (equal? (car p) opt)))) l))
-      (lalily:parser-define! alst (append l (list (cons opt val))))
+      (ly:parser-define! alst (append l (list (cons opt val))))
       )))
 (define-public remalist
   (define-void-function (alst opt)
     (string-or-symbol? string-or-symbol?)
     (if (string? alst)(set! alst (string->symbol alst)))
     (if (string? opt)(set! opt (string->symbol opt)))
-    (let ((l (lalily:parser-lookup alst)))
-      (lalily:parser-define! alst
+    (let ((l (ly:parser-lookup alst)))
+      (ly:parser-define! alst
         (filter (lambda (p) (and (pair? p)(not (equal? (car p) opt)))) l))
       )))
 
 (define-public (get-a-tree name path)
   (if (string? name) (set! name (string->symbol name)))
-  (let ((opts (lalily:parser-lookup name)))
+  (let ((opts (ly:parser-lookup name)))
     (define (getval ol op)
       (let ((sym (car op)))
         (cond
@@ -285,7 +247,7 @@
         )))
 (define (add-a-tree name sympath val assoc-set-append)
   (if (string? name) (set! name (string->symbol name)))
-  (let ((opts (lalily:parser-lookup name)))
+  (let ((opts (ly:parser-lookup name)))
     (define (setval ol op)
       (let ((sym (car op))
             (ol (if (list? ol) ol (begin (ly:input-warning (*location*) "deleting '~A'" ol) '()))))
@@ -304,7 +266,7 @@
               )
             )))
     (set! opts (setval opts sympath))
-    (lalily:parser-define! name opts)
+    (ly:parser-define! name opts)
     ))
 (define (walk-a-tree path tree proc)
   (for-each
@@ -318,7 +280,7 @@
   )
 (define (rem-a-tree name sympath)
   (if (string? name) (set! name (string->symbol name)))
-  (let ((opts (lalily:parser-lookup name)))
+  (let ((opts (ly:parser-lookup name)))
     (define (remval ol op)
       (let ((sym (car op)))
         (if (> (length op) 1)
@@ -332,7 +294,7 @@
             )
         ))
     (set! opts (remval opts sympath))
-    (lalily:parser-define! name opts)
+    (ly:parser-define! name opts)
     ))
 
 (define-public clratree clralist)
@@ -352,7 +314,7 @@
 (define-public setatree
   (define-void-function (name sympath val)(string-or-symbol? list? scheme?)
     (add-a-tree name sympath val
-      (lambda (l sym val) (assoc-set l sym val)))))
+      (lambda (l sym val) (assoc-set! l sym val)))))
 (define-public rematree
   (define-void-function (name sympath)(string-or-symbol? list?)
     (rem-a-tree name sympath)))
@@ -361,7 +323,7 @@
    (define-void-function (name opts)(symbol? list?)
      (let ((opts (if (and (= 1 (length opts))
                           (symbol? (car opts)))
-                     (lalily:parser-lookup (car opts)) opts)))
+                     (ly:parser-lookup (car opts)) opts)))
        (walk-a-tree '() opts
          (lambda (path val) (add-a-tree name path val assoc-replace!)))
        )))

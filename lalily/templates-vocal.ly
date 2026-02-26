@@ -166,7 +166,7 @@ create one staff with one vocal voice and associated lyrics.
          (make-music 'SimultaneousMusic 'elements
            (map (lambda (r)
                   #{
-                    \keepWithTag $r \new Lyrics = $(format "~A-~A" lyric-name r) \with {
+                    \keepWithTag $r \new Lyrics = $(format #f "~A-~A" lyric-name r) \with {
                       $(if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #})
                       $(let ((lyric-mods (assoc-get (glue-symbol `(lyric-mods ,v) "-") options #f #f)))
                          (if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #}))
@@ -269,7 +269,7 @@ create one staff with one vocal voice and associated lyrics.
 % \optionsAdd lalily_vocal_group_default bas.clef "bass"
 \registerTemplate lalily.vocal.group
 #(let ((choir 0))
-   (define (get-choir) (set! choir (+ choir 1)) (format "choir~A" choir))
+   (define (get-choir) (set! choir (+ choir 1)) (format #f "choir~A" choir))
    (define-music-function (piece options)(list? list?)
      (let ((groupmod (ly:assoc-get 'group-mods options (ly:assoc-get 'groupmod options #f #f)))
            (prefix (ly:assoc-get 'prefix options (get-choir) #f))

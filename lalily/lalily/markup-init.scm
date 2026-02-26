@@ -16,13 +16,7 @@
 ;;;; along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
 (use-modules (lalily markup)(lalily laly))
-
-(catch #t
-  (lambda ()
-    (re-export register-markup-producer)
-    (re-export get-markup-producer))
-  (lambda (key . args)
-    #f))
+(re-export-module '(lalily markup))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; on-the-fly commands
@@ -120,7 +114,7 @@
 
 
 
-(define-public setStyle (define-music-function (parser location sym mup)(symbol? markup?)
+(define-public setStyle (define-music-function (sym mup)(symbol? markup?)
     (setstyle sym mup)(make-music 'SequentialMusic 'void #t)))
 
 ; redefinition of markup->string function
@@ -220,32 +214,12 @@
         (stil (make-line-stencil th 0 0 line-width 0)))
        stil))
 
-(catch #t
-  (lambda ()
-    (re-export ismn->ean)
-    (re-export put-stencil)
-    (re-export get-stencil)
-    (re-export execMarkup-markup)
-    (re-export stretch-markup)
-    (re-export extline-markup)
-    (re-export sloppyline-markup)
-    (re-export hilite-markup)
-    (re-export tquote-markup)
-    (re-export strftime-markup)
-    (re-export year-markup)
-    (re-export copyright-markup)
-    (re-export style-markup)
-    (re-export with-props-markup)
-    (re-export qr-code-markup)
-    (re-export barcode-markup)
-    (re-export cache-markup)
-    (re-export widthalign-markup)
-    (re-export epsalignX-markup)
-    (re-export epsalignY-markup))
-  (lambda (key . args)
-    #f))
+
 
 (lalily-markup 'style)
+
+
+
 
 (define-markup-command (scaled-cache layout props sym scl)(symbol? number-pair?)
   (let ((stil (get-stencil sym)))

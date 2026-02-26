@@ -112,7 +112,7 @@
   \context {
     \Voice
     \override Script.padding = #0.5
-    \override Footnote.annotation-line = ##f
+    \override FootnoteItem.annotation-line = ##f
   }
   \context { \Voice \remove "Instrument_switch_engraver" }
   \context { \Staff \consists "Instrument_switch_engraver" }

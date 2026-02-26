@@ -27,6 +27,11 @@
  (lalily lascm)
  (lalily markup))
 
+;; (scm framework-eps) was removed in LilyPond 2.24
+(catch #t
+  (lambda () (use-modules (scm framework-eps)))
+  (lambda args #f))
+
 (define (markup-function? x)
   (and (markup-command-signature x)
        (not (object-property x 'markup-list-command))))
@@ -191,7 +196,7 @@
           (set! epslist (append epslist (list text-stencil)))
           )))
     ; remove working files
-    ;(system (format "rm -v \"~A\"*" basename))
+    ;(system (format #f "rm -v \"~A\"*" basename))
     (chdir current-dir)
     ; return eps-stencil
     epslist

@@ -75,7 +75,7 @@
    (if (string? var)(set! var (string->symbol var)))
    ; return scheme engraver
    (lambda (context)
-     (let ((stid (lalily:parser-lookup var)))
+     (let ((stid (ly:parser-lookup var)))
        ; context id is in 'stid'
        (if (and (string? stid)(not (string-null? stid)))
            ; initialize with alignAbove/BelowContext

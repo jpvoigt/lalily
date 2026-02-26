@@ -60,8 +60,10 @@
 % init scheme modules introduced by lalily
 #(if (not (defined? 'lalily:init))(load-from-path "lalily/init.scm"))
 
-% Simplified initialization for LilyPond 2.24
-% The lalilyInclude* functions will be properly initialized after lali.ly is loaded
+% "re-import" previously defined values for session based runs like in lilypond-book
+#(set-registry-val lalily:registry-parser (*parser*))
+#(let ((defs (get-registry-val lalily:registry-parser-defs '())))
+   (for-each (lambda (p)(ly:parser-define! (car p )(cdr p))) defs))
 
 % look for local config
 applyConfig =
@@ -95,18 +97,59 @@ registerConfig =
      (set-registry-val ckey cval)))
 \applyConfig lalilyConfig \registerConfig ##t
 
-% Load lali.ly FIRST - it defines includeOncePattern, includeOnceIfExists, includeRelIf, and properly initializes lalilyInclude*
-% Use direct include, not lalilyInclude, because lalilyInclude needs functions that are only available after loading lali.ly
-\include "lali.ly"
 
-% Store output name in registry for later use (AFTER lali.ly is loaded)
-#(let ((outname (lalily:get-output-name (*location*))))
-   (set-registry-val '(lalily runtime output-name) (string-append (basename outname ".ly"))))
+% include (once) from lalily folder
+#(define-public lalilyInclude (define-void-function (file)(string?)
+                                (ly:input-message (*location*) "lalily include not initialized!")
+                                ))
+#(define-public lalilyIncludeOnce (define-void-function (file)(string?)
+                                    (ly:input-message (*location*) "lalily include not initialized!")
+                                    ))
+#(define-public lalilyIncludeScheme (define-void-function (file)(string?)
+                                      (ly:input-message (*location*) "lalily include not initialized!")
+                                      ))
 
-% "re-import" previously defined values for session based runs like in lilypond-book
-#(set-registry-val lalily:registry-parser (*parser*))
-#(let ((defs (get-registry-val lalily:registry-parser-defs '())))
-   (for-each (lambda (p)(lalily:parser-define! (car p )(cdr p))) defs))
+\execMusic #(lambda (parser location)
+              (begin
+               (let* ((path-extra (location-extract-path location)))
+                 (set! path-extra (if path-extra (normalize-path-string path-extra) ""))
+                 (set-registry-val '(lalily runtime path)
+                   (string-append path-extra
+                     (if (and (> (string-length path-extra) 0)
+                              (not (eq? (string-ref path-extra (- (string-length path-extra) 1)) #\/)))
+                         "/" "") "lalily/"))
+                 ;(ly:message "lalily path: ~A" (get-registry-val '(lalily runtime path)))
+                 (set! lalilyInclude (define-void-function (file)(string?)
+                                       (let ((file-path (string-append path-extra "" file)))
+                                         (set! file-path (normalize-path-string file-path))
+                                         (if (file-exists? file-path)
+                                             (la:parser-include-file file-path #f)
+                                             (ly:input-message (*location*) "WARNING: file '~A' not found" file-path))
+                                         )))
+                 (set! lalilyIncludeOnce (define-void-function (file)(string?)
+                                           (let ((file-path (string-append path-extra "lalily/" file)))
+                                             (set! file-path (normalize-path-string file-path))
+                                             (if (file-exists? file-path)
+                                                 (la:parser-include-file file-path #t)
+                                                 (ly:input-message (*location*) "WARNING: file '~A' not found" file-path))
+                                             )))
+                 (set! lalilyIncludeScheme (define-void-function (file)(string?)
+                                             (let ((file-path (string-append path-extra "lalily/" file)))
+                                               (set! file-path (normalize-path-string file-path))
+                                               (if (file-exists? file-path)
+                                                   (begin
+                                                    (if (lalily:verbose) (ly:message "loading '~A' ..." file-path))
+                                                    (load-from-path file-path)
+                                                    ))
+                                               )))
+                 )
+               (make-music 'SequentialMusic 'void #t)))
+
+%load custom config
+\lalilyIncludeScheme "../lalily-extensions/config.scm"
+\lalilyIncludeScheme "../../lalily-extensions/config.scm"
+
+\lalilyInclude "lali.ly"
 
 % look for lalily paper/layout/midi
 \includeOncePattern "." "^paper(\..*)?\.ly$" % once?
@@ -144,9 +187,9 @@ registerConfig =
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Std layout
 
-#(define (do-layout parser)
+#(define (do-layout)
    (and
-    (not (eq? #t (lalily:parser-lookup 'lalilyNoOutputDef)))
+    (not (eq? #t (ly:parser-lookup 'lalilyNoOutputDef)))
     (not (eq? #t (get-registry-val lalily:layout:no-auto-load)))
     (not (defined? 'lalily-no-output-def))
     (not (ly:get-option 'lalily-no-output-def))
@@ -155,13 +198,13 @@ registerConfig =
 % if allowed, set global paper and layout with default
 \includeRelIf "output-default.ly"
 #(lambda (parser location)
-   (let ((ret (do-layout parser)))
+   (let ((ret (do-layout)))
      (if (and (not ret) (lalily:verbose))
          (ly:message "no lalily output-defs!"))
      ret))
 
 #(let ((gss (get-registry-val '(lalily paper global-staff-size))))
-   (if (and (do-layout (*parser*)) (number? gss)) (set-global-staff-size gss)))
+   (if (and (do-layout) (number? gss)) (set-global-staff-size gss)))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % look for lalily templates

@@ -16,6 +16,7 @@
 ;;;; along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
 (use-modules (lalily latex))
+(re-export-module '(lalily latex))
 
 ; pdflatex markup-list command
 (define-markup-list-command (pdflatex layout props m)(markup-list?)

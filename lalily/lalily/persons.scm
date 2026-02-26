@@ -48,7 +48,7 @@
 (define-class <person-alist> (<person-db>)
   (persons #:accessor person-alist #:init-value '()))
 (define-method (register-person! (db <person-alist>) sym name life)
-  (set! (person-alist db) (assoc-set (person-alist db) sym (make <person> #:key sym #:name name #:life life)) ) )
+  (set! (person-alist db) (assoc-set! (person-alist db) sym (make <person> #:key sym #:name name #:life life)) ) )
 (define-method (get-person (db <person-alist>) sym)
   (assoc-get sym (person-alist db)))
 (define-method (display-persons (db <person-alist>))
