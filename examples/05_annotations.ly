@@ -22,12 +22,12 @@
 \include "02_templates-satb.ly"
 
 \addEdition annotations
-\editionMod annotations 2 2/4 alt.Voice.A ^\todo "E?" "Shall this be E?"
+\editionMod annotations 2 2/4 alt.Voice.A ^\todo #'() #'() "E?" "Shall this be E?"
 
 % place some music with an annotation over the existing
 \putMusic ten.melody <<
   \getMusic ten.melody
-  { s1*3 | <>^\todo "X?" "And here?" }
+  { s1*3 | <>^\todo #'() #'() "X?" "And here?" }
 >>
 
 \lalilyTest
