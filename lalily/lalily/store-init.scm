@@ -16,8 +16,7 @@
 ;;;; along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
 (use-modules (lalily store)(lalily definitions))
-
-(re-export LY_NOOP)
+(re-export-module '(lalily store))
 
 (define-public (log-music-folder)
   (ly:message "music folder: ~A~A"
@@ -29,7 +28,7 @@
     (log-music-folder)))
 
 (define-public (write-lalily-log-file . options)
-  (let ((logfile (format "~A~A.log" (ly:parser-output-name (*parser*)) (ly:assoc-get 'suffix options ".lalily" #f))))
+  (let ((logfile (format #f "~A~A.log" (ly:parser-output-name) (ly:assoc-get 'suffix options ".lalily" #f))))
     (if (not (equal? logfile
                      (get-registry-val '(lalily runtime logfile-written))))
         (ly:message "writing '~A' ..." logfile))
@@ -95,13 +94,6 @@
           )))
     ))
 
-(re-export put-music)
-(re-export get-music)
-(re-export has-music)
-(re-export load-music)
-(re-export get-music-deep)
-(re-export collect-music)
-(re-export display-music-pieces)
 
 (define-public registerMusicLoadCallback
   (define-void-function (proc)(procedure?)
@@ -144,19 +136,11 @@
       (mmrest-of-length music)
       )))
 
-(re-export register-template)
-(re-export get-template)
-(re-export call-template)
-(re-export display-templates)
 
 (define-public registerTemplate
   (define-void-function (name fun)(list? ly:music-function?)
     (register-template name fun)))
 
-(re-export create-template-path)
-(re-export create-music-path)
-(re-export musicPath)
-(re-export templatePath)
 
 (define-public callTemplate
   (define-music-function
@@ -188,17 +172,6 @@
               (call-template tmpl music (assoc-set! options sym x))
               ) vals)))))
 
-(re-export get-current-music)
-(re-export display-music-stack)
-(re-export get-current-template)
-(re-export display-template-stack)
-(re-export get-music-folder)
-(re-export set-music-folder!)
-(re-export set-default-template)
-(re-export get-default-template)
-(re-export get-default-options)
-(re-export get-default-options-cumul)
-(re-export display-default-music)
 
 (define-public getCurrentMusic
   (define-scheme-function ()()
@@ -350,9 +323,6 @@
     (create-music-path #f path)))
 
 
-(re-export set-default-header)
-(re-export get-default-header)
-(re-export get-music-folder-header-field)
 
 (define-public aSetDefaultHeader
   (define-music-function (piece field value)(list? string-or-symbol? markup?)
@@ -574,7 +544,7 @@
 (define-public cueMusic
   (let ((staffnr 0)
         (cuenr 0))
-    (define (cue-id) (set! cuenr (+ 1 cuenr)) (format "cue~A" cuenr))
+    (define (cue-id) (set! cuenr (+ 1 cuenr)) (format #f "cue~A" cuenr))
     (define (alignlyrics direction)(if (eq? UP direction) 'alignAboveContext 'alignBelowContext))
     (define-music-function (path opts dir mus)(list? (list? '()) integer? ly:music?)
       (let ((p (create-music-path #f path))
@@ -623,8 +593,8 @@
             } {
               $(if (eq? dir UP) #{ \voiceOne #} #{ \voiceTwo #})
               $(if (and (not (ly:music? lyrics))(strmup? cuename)) #{
-                \once \override InstrumentSwitch #'direction = #(if (eq? dir UP) UP DOWN)
-                \once \override InstrumentSwitch #'X-offset = #-5
+                \once \override InstrumentSwitch.direction = #(if (eq? dir UP) UP DOWN)
+                \once \override InstrumentSwitch.X-offset = #-5
                 \set instrumentCueName = #(markup #:concat ("(" cuename ")"))
                    #} #{ \unset instrumentCueName #})
               $(if (string? clef) #{ \cueClef $clef #})
@@ -633,7 +603,7 @@
               $(if (string? clef) #{ \cueClefUnset #})
               \unset instrumentCueName
               $(if (strmup? instrname) #{
-                \once \override Voice.InstrumentSwitch #'stencil = ##f
+                \once \override Voice.InstrumentSwitch.stencil = ##f
                 \set Staff.instrumentCueName = #instrname #})
             }
             {
@@ -645,9 +615,9 @@
                 \consists #aligncue
                 \consists \editionEngraver \musicPath #'(cue)
                 fontSize = #-2
-                \override LyricText #'font-shape = #'italic
-                \override StanzaNumber #'font-shape = #'italic
-                \override StanzaNumber #'font-series = #'plain
+                \override LyricText.font-shape = #'italic
+                \override StanzaNumber.font-shape = #'italic
+                \override StanzaNumber.font-series = #'plain
               } \lyricsto $cueid {
                 $(if (strmup? cuename) #{
                   \set stanza = \markup { \concat { "(" $cuename ")" } }
@@ -679,20 +649,11 @@
     (add-tracked-quotes)))
 
 
-(re-export registerPaper)
-(re-export registerLayout)
-(re-export registerMidi)
-(re-export get-paper)
 (define-public getPaper (define-scheme-function (name)(list?)(get-paper name)))
-(re-export get-layout)
 (define-public getLayout (define-scheme-function (name)(list?)(get-layout name)))
-(re-export get-midi)
 (define-public getMidi (define-scheme-function (name)(list?)(get-midi name)))
 
 
-(re-export registerPageTemplate)
-(re-export get-page-template)
-(re-export call-page-template)
 (define-public callPageTemplate
   (define-scheme-function (name options)(list? list?)
     (call-page-template name options)))

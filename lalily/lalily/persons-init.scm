@@ -16,16 +16,7 @@
 ;;;; along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
 (use-modules (lalily persons))
-
-(re-export person-key)
-(re-export person-name)
-(re-export person-life)
-(re-export get-person)
-
-(re-export person-create)
-(re-export person?)
-(re-export person-db?)
-(re-export person-alist-create)
+(re-export-module '(lalily persons))
 
 (define-public (get-person-name key)
   (let ((p (get-person (get-person-store) key)))
@@ -35,8 +26,8 @@
     (if (string? key) (set! key (string->symbol key)))
     (let ((p (get-person (get-person-store) key)))
       (if (person? p)(person-name p)
-          (begin (ly:input-warning location "unknown person '~A'" key)
-            (format "?~A" key))
+          (begin (ly:input-warning (*location*) "unknown person '~A'" key)
+            (format #f "?~A" key))
           ))))
 (define-public (get-person-life key)
   (let ((p (get-person (get-person-store) key)))
@@ -46,13 +37,11 @@
     (if (string? key) (set! key (string->symbol key)))
     (let ((p (get-person (get-person-store) key)))
       (if (person? p)(person-life p)
-          (begin (ly:input-warning location "unknown person '~A'" key)
-            (format "(*?~A)" key))
+          (begin (ly:input-warning (*location*) "unknown person '~A'" key)
+            (format #f "*?~A)" key))
           ))))
 
 
-(re-export get-person-store)
-(re-export set-person-store!)
 (define-public (display-person-store)(display-persons (get-person-store)))
 
 (define-public registerPerson
@@ -110,21 +99,21 @@
                                (mup (get-registry-val `(lalily person mup ,act) (assoc-get act mups #f #f))))
                            (if (person? person)
                                (begin
-                                (set-default-header piece (string->symbol (format "~Aname" act)) (person-name person))
-                                (set-default-header piece (string->symbol (format "~Alife" act)) (person-life person))
+                                (set-default-header piece (string->symbol (format #f "~Aname" act)) (person-name person))
+                                (set-default-header piece (string->symbol (format #f "~Alife" act)) (person-life person))
                                 ) (ly:input-warning (*location*) "unknown person '~A' (~A)" key act))
                            (if (markup? mup)
                                (set-default-header piece act mup))
                            ))
                         ((pair? key)
                          (let ((mup (assoc-get act mups (get-registry-val `(lalily person mup ,act)) #f)))
-                           (set-default-header piece (string->symbol (format "~Aname" act)) (car key))
-                           (set-default-header piece (string->symbol (format "~Alife" act)) (cdr key))
+                           (set-default-header piece (string->symbol (format #f "~Aname" act)) (car key))
+                           (set-default-header piece (string->symbol (format #f "~Alife" act)) (cdr key))
                            (if (markup? mup)
                                (set-default-header piece act mup))
                            ))
 
-                        (else (ly:input-message location "unknown person-element: (~A) ~A" act key)))
+                        (else (ly:input-message (*location*) "unknown person-element: (~A) ~A" act key)))
                       ))
        (symorpair? (lambda (v) (or (markup? v)(symbol? v)(and (pair? v)(markup? (car v))(markup? (cdr v)))))))
   (set! setComposer
@@ -143,14 +132,14 @@
   (let ((p (get-person (get-person-store) key)))
     (interpret-markup layout props
       (if (person? p)(person-name p)
-          (begin (ly:input-warning location "unknown person '~A'" key)
-            (format "?~A" key))
+          (begin (ly:warning "unknown person '~A'" key)
+            (format #f "?~A" key))
           ))))
 (define-markup-command (personLife layout props key)(string-or-symbol?)
   (if (string? key) (set! key (string->symbol key)))
   (let ((p (get-person (get-person-store) key)))
     (interpret-markup layout props
       (if (person? p)(person-life p)
-          (begin (ly:input-warning location "unknown person '~A'" key)
-            (format "?~A" key))
+          (begin (ly:warning "unknown person '~A'" key)
+            (format #f "?~A" key))
           ))))

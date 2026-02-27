@@ -16,7 +16,7 @@
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
 % This file is included conditionaly by lalily.ly
-\version "2.19.32"
+\version "2.24.0"
 
 #(define-public lalily-startup #t)
 
@@ -130,7 +130,7 @@ registerConfig =
                                            (let ((file-path (string-append path-extra "lalily/" file)))
                                              (set! file-path (normalize-path-string file-path))
                                              (if (file-exists? file-path)
-                                                 (la:parser-include-file (*parser*) file-path #t)
+                                                 (la:parser-include-file file-path #t)
                                                  (ly:input-message (*location*) "WARNING: file '~A' not found" file-path))
                                              )))
                  (set! lalilyIncludeScheme (define-void-function (file)(string?)
@@ -187,7 +187,7 @@ registerConfig =
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Std layout
 
-#(define (do-layout parser)
+#(define (do-layout)
    (and
     (not (eq? #t (ly:parser-lookup 'lalilyNoOutputDef)))
     (not (eq? #t (get-registry-val lalily:layout:no-auto-load)))
@@ -198,13 +198,13 @@ registerConfig =
 % if allowed, set global paper and layout with default
 \includeRelIf "output-default.ly"
 #(lambda (parser location)
-   (let ((ret (do-layout parser)))
+   (let ((ret (do-layout)))
      (if (and (not ret) (lalily:verbose))
          (ly:message "no lalily output-defs!"))
      ret))
 
 #(let ((gss (get-registry-val '(lalily paper global-staff-size))))
-   (if (and (do-layout (*parser*)) (number? gss)) (set-global-staff-size gss)))
+   (if (and (do-layout) (number? gss)) (set-global-staff-size gss)))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % look for lalily templates

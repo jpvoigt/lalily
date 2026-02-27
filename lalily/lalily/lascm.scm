@@ -46,15 +46,15 @@ example: (format-alist '((a . 1)(b . 2)))
         (istr (if (> (length ind) 0) (car ind) " ")))
     (define (indsp n)(if (> n 0) (string-append istr (indsp (- n 1))) ""))
     (cond
-     ((and (pair? l)(markup? (cdr l)))(format "~A~A=~A~&" (indsp (+ i 1)) (car l) (markup->string (cdr l))))
+     ((and (pair? l)(markup? (cdr l)))(format #f "~A~A=~A~&" (indsp (+ i 1)) (car l) (markup->string (cdr l))))
      ((and (list? l)(not (dotted-list? l))(any pair? l))
       (let ((ret ""))
         (for-each (lambda (e)
                     (set! ret (string-append ret (format-alist e istr (+ i 1)))))
           l)
         ret))
-     ((pair? l)(let ((k (car l))(v (cdr l)))(format "~A~A=~A~&" (indsp (+ i 1)) k v)))
-     (else (format "~A~A~&" (indsp i) l)))
+     ((pair? l)(let ((k (car l))(v (cdr l)))(format #f "~A~A=~A~&" (indsp (+ i 1)) k v)))
+     (else (format #f "~A~A~&" (indsp i) l)))
     ))
 
 (define-public (assoc-set-all! lst vls)
@@ -291,7 +291,7 @@ example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"
     (cond
      ((and (number? v1) (number? v2)) (< v1 v2))
      ((and (ly:moment? v1) (ly:moment? v2)) (ly:moment<? v1 v2))
-     (else (string-ci<? (format "~A" v1) (format "~A" v2)))
+     (else (string-ci<? (format #f "~A" v1) (format #f "~A" v2)))
      )))
 (define-method (tree-walk (tree <tree>) (path <list>) (callback <procedure>) . opts)
   (let ((dosort (assoc-get 'sort opts))
@@ -318,8 +318,8 @@ example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"
         (sortby (assoc-get 'sortby opt stdsort))
         (empty (ly:assoc-get 'empty opt #f #f))
         (dval (ly:assoc-get 'value opt #t #f))
-        (vformat (ly:assoc-get 'vformat opt (lambda (v)(format "~A" v)) #f))
-        (pformat (ly:assoc-get 'pformat opt (lambda (v)(format "~A" v)) #f))
+        (vformat (ly:assoc-get 'vformat opt (lambda (v)(format #f "~A" v)) #f))
+        (pformat (ly:assoc-get 'pformat opt (lambda (v)(format #f "~A" v)) #f))
         (pathsep (ly:assoc-get 'pathsep opt "/" #f))
         (port (ly:assoc-get 'port opt (current-output-port))))
     (tree-walk-branch tree path
@@ -376,7 +376,7 @@ example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"
                                          ,(lambda (v)
                                             (let ((str (if (markup? v)
                                                            (markup->string v)
-                                                           (format "~A" v)
+                                                           (format #f "~A" v)
                                                            )))
                                               (if (> (string-length str) 79)
                                                   (string-append
@@ -385,8 +385,8 @@ example: (normalize-path '(\"a\" \"b\" \"..\" \"c\" \".\" \"d\")) ==> '(\"a\" \"
 
 (define (not-null? val)(if val #t #f))
 
-(define-public getRegistryVal (define-scheme-function (parser location key def)(list? not-null?)
+(define-public getRegistryVal (define-scheme-function (key def)(list? not-null?)
                                 (get-registry-val key def)))
-(define-public setRegistryVal (define-music-function (parser location key val)(list? not-null?)
+(define-public setRegistryVal (define-music-function (key val)(list? not-null?)
                                 (set-registry-val key val)
                                 (make-music 'SequentialMusic 'void #t)))

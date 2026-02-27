@@ -15,19 +15,19 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.19.32"
+\version "2.24.0"
 % include "lalily.ly" from folder above
 \include "../lalily.ly"
 % include "templates-satb.ly" with template definition and music
 \include "02_templates-satb.ly"
 
 \addEdition annotations
-\editionMod annotations 2 2/4 alt.Voice.A ^\todo "E?" "Shall this be E?"
+\editionMod annotations 2 2/4 alt.Voice.A ^\todo #'() #'() "E?" "Shall this be E?"
 
 % place some music with an annotation over the existing
 \putMusic ten.melody <<
   \getMusic ten.melody
-  { s1*3 | <>^\todo "X?" "And here?" }
+  { s1*3 | <>^\todo #'() #'() "X?" "And here?" }
 >>
 
 \lalilyTest

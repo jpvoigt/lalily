@@ -16,6 +16,7 @@
 ;;;; along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
 (use-modules (lalily latex))
+(re-export-module '(lalily latex))
 
 ; pdflatex markup-list command
 (define-markup-list-command (pdflatex layout props m)(markup-list?)
@@ -42,7 +43,7 @@
     (tex-markup-list layout props
       `("\\usepackage[T1]{fontenc}" "\\usepackage{fontspec}"
          "\\defaultfontfeatures{Mapping=tex-text}"
-         ,(format "\\setmainfont{~A}" font-name)
+         ,(format #f "\\setmainfont{~A}" font-name)
          ,@(chain-assoc-get 'packages props '())
          ) "xelatex" "-interaction=batchmode" m)
     ))
@@ -62,7 +63,7 @@
     (tex-markup-list layout props
       `("\\usepackage[T1]{fontenc}" "\\usepackage{fontspec}"
          "\\defaultfontfeatures{Mapping=tex-text}"
-         ,(format "\\setmainfont{~A}" font-name)
+         ,(format #f "\\setmainfont{~A}" font-name)
          ,@(chain-assoc-get 'packages props '())
          )
       "xelatex" "-interaction=batchmode" m)))

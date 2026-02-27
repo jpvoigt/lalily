@@ -1,4 +1,4 @@
-\version "2.19.32"
+\version "2.24.0"
 
 %%%% This file is part of lalily, an extension to lilypond <http://www.lilypond.org/>.
 %%%%

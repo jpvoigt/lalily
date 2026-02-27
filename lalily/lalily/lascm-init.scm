@@ -16,51 +16,13 @@
 ;;;; along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
 (use-modules (lalily lascm))
+(re-export-module '(lalily lascm))
 
-(re-export object->symbol)
-(re-export glue-list)
-(re-export glue-symbol)
-(re-export format-alist)
-(re-export assoc-set-all!)
-
-(define-public assocGet (define-scheme-function (parser location l k)(list? symbol?)
+(define-public assocGet (define-scheme-function (l k)(list? symbol?)
     (assoc-get k l #f #f)))
-(define-public assocSet (define-scheme-function (parser location l k v)(list? symbol? scheme?)
+(define-public assocSet (define-scheme-function (l k v)(list? symbol? scheme?)
     (assoc-set! l k v)))
-(define-public assocSetAll (define-scheme-function (parser location l v)(list? list?)
+(define-public assocSetAll (define-scheme-function (l v)(list? list?)
     (assoc-set-all! l v)))
 
-(re-export base26)
 
-(re-export normalize-path-list)
-(re-export normalize-path-string)
-
-(re-export stack-create)
-(re-export push)
-(re-export get)
-(re-export pop)
-(re-export store)
-(re-export name)
-
-(re-export tree-create)
-(re-export tree?)
-(re-export tree-display)
-(re-export tree->string)
-(re-export tree-set!)
-(re-export tree-merge!)
-(re-export tree-get-tree)
-(re-export tree-get)
-(re-export tree-get-from-path)
-(re-export tree-get-keys)
-(re-export tree-dispatch)
-(re-export tree-collect)
-(re-export tree-walk)
-(re-export tree-walk-branch)
-
-(re-export get-registry-val)
-(re-export set-registry-val)
-(re-export display-registry)
-(re-export getRegistryVal)
-(re-export setRegistryVal)
-
-(re-export with-append-file)

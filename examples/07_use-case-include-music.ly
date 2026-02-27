@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.19.32"
+\version "2.24.0"
 % include "lalily.ly" from folder above
 \include "../lalily.ly"
 % include music, but do not engrave it! The included file uses \lalilyTest, which does not engrave, when the file is included

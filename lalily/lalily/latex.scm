@@ -24,9 +24,13 @@
  (ice-9 regex)
  (srfi srfi-1)
  (srfi srfi-13)
- (scm framework-eps)
  (lalily lascm)
  (lalily markup))
+
+;; (scm framework-eps) was removed in LilyPond 2.24
+(catch #t
+  (lambda () (use-modules (scm framework-eps)))
+  (lambda args #f))
 
 (define (markup-function? x)
   (and (markup-command-signature x)
@@ -68,7 +72,7 @@
       ((and (pair? mup) (equal? (car mup) page-ref-markup))
        (set! result (let* ((table (if layout (ly:output-def-lookup layout 'label-page-table) '()))
                            (pg (assoc-get (car (cdr mup)) table)))
-                      (if pg (format "~A" pg) (caddr (cdr mup)))) ))
+                      (if pg (format #f "~A" pg) (caddr (cdr mup)))) ))
 
       ((and (pair? mup)(markup-function? (car mup)))
        (let ((proc (get-markup-producer (car mup))))
@@ -100,7 +104,7 @@
          ; the text to fill into template.tex
          (text (if (and (string? m) (file-exists? m)) (ly:gulp-file m) (markup->tex m #f #f props)))
          ; basename of working files
-         (basename (strftime (format "~A-%Y%m%d%H%M%S" cmd) (localtime (current-time))))
+         (basename (strftime (format #f "~A-%Y%m%d%H%M%S" cmd) (localtime (current-time))))
          ; result of each command
          (result 0)
          ; stencil to return
@@ -112,7 +116,7 @@
     (define (create-tex props text)
       (if (procedure? template)
           (template props text)
-          (format "\\documentclass~A{scrartcl}
+          (format #f "\\documentclass~A{scrartcl}
 \\usepackage[paperwidth=~A,paperheight=~A,margin=~A]{geometry}
 \\usepackage[~A]{babel}
 ~A
@@ -157,32 +161,32 @@
     ; write <basename>.tex
     (let* ((tex-src (create-tex `((
                                     (tex-opts . ,tex-opts)
-                                    (tex-width . ,(format "~Amm" width))
-                                    (tex-height . ,(format "~Amm" height))
-                                    (tex-margin . ,(format "~Amm" (chain-assoc-get 'tex-margin props 1)))
+                                    (tex-width . ,(format #f "~Amm" width))
+                                    (tex-height . ,(format #f "~Amm" height))
+                                    (tex-margin . ,(format #f "~Amm" (chain-assoc-get 'tex-margin props 1)))
                                     (tex-pkgs . (,@(chain-assoc-get 'tex-pkgs props (chain-assoc-get 'packages props pkgs)) ,@pkgs))
                                     (babel . ,(chain-assoc-get 'babel props "ngerman"))
                                     ))
                       text) )
-           (tex-key (format "~A_~A" (string-length tex-src) (string-hash tex-src))))
-      (set! basename (format "~A" tex-key))
-      (if (not (file-exists? (format "~A.tex" basename)))
-          (with-output-to-file (format "~A.tex" basename) (lambda () (display tex-src))))
+           (tex-key (format #f "~A_~A" (string-length tex-src) (string-hash tex-src))))
+      (set! basename (format #f "~A" tex-key))
+      (if (not (file-exists? (format #f "~A.tex" basename)))
+          (with-output-to-file (format #f "~A.tex" basename) (lambda () (display tex-src))))
       )
     ; produce pdf
-    (if (not (file-exists? (format "~A.pdf" basename)))
-        (set! result (system (format "export LD_LIBRARY_PATH=\"\" ; ~A ~A \"~A.tex\"" cmd opts basename))))
+    (if (not (file-exists? (format #f "~A.pdf" basename)))
+        (set! result (system (format #f "export LD_LIBRARY_PATH=\"\" ; ~A ~A \"~A.tex\"" cmd opts basename))))
     ; how many pages
     (set! pages (let* ((r (make-regexp "Pages:\\s+([0-9]+)"))
-                       (m (regexp-exec r (cmd->string (format "export LD_LIBRARY_PATH=\"\" ; pdfinfo \"~A.pdf\"" basename)))))
+                       (m (regexp-exec r (cmd->string (format #f "export LD_LIBRARY_PATH=\"\" ; pdfinfo \"~A.pdf\"" basename)))))
                   (string->number (match:substring m 1))))
     ; add pages to markup-list
     (loop pages
       (lambda (pag)
-        (let ((pagname (format "~A-~A.eps" basename pag)))
+        (let ((pagname (format #f "~A-~A.eps" basename pag)))
           ; convert page to EPS
           (if (not (file-exists? pagname))
-              (set! result (system (format "export LD_LIBRARY_PATH=\"\" ; pdftops -eps -level3 -f ~A -l ~A \"~A.pdf\" \"~A\"" pag pag basename pagname))))
+              (set! result (system (format #f "export LD_LIBRARY_PATH=\"\" ; pdftops -eps -level3 -f ~A -l ~A \"~A.pdf\" \"~A\"" pag pag basename pagname))))
           ; include EPS
           (set! text-stencil (eps-file->stencil X size pagname))
           (if (and (>= pag padstart)(> padlength 0))
@@ -192,7 +196,7 @@
           (set! epslist (append epslist (list text-stencil)))
           )))
     ; remove working files
-    ;(system (format "rm -v \"~A\"*" basename))
+    ;(system (format #f "rm -v \"~A\"*" basename))
     (chdir current-dir)
     ; return eps-stencil
     epslist

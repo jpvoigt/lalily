@@ -200,7 +200,7 @@
                                                            ,(lambda (v)
                                                               (if (ly:music? v)
                                                                   (let ((mom (ly:music-length v)))
-                                                                    (format "~A/~A" (ly:moment-main-numerator mom)
+                                                                    (format #f "~A/~A" (ly:moment-main-numerator mom)
                                                                       (ly:moment-main-denominator mom)))
                                                                   "*"))) )))
   (set! display-template-ref (lambda ()
@@ -212,7 +212,7 @@
                                                     (tree-display val)
                                                     ))
                                    (newline)
-                                   ) '(sort . #t) `(sortby . ,(lambda (p1 p2) (string-ci<? (format "~A" (car p1)) (format "~A" (car p2))))) '(empty . #f))
+                                   ) '(sort . #t) `(sortby . ,(lambda (p1 p2) (string-ci<? (format #f "~A" (car p1)) (format #f "~A" (car p2))))) '(empty . #f))
                                ))
   )
 
@@ -350,14 +350,14 @@
                                                          (nhead (ly:assoc-get 'header o '() #f))
                                                          (head (assoc-set-all! ohead nhead)))
                                                     (set! opts (assoc-set-all! opts o))
-                                                    (if (> (length head))(assoc-set! opts 'header head))
+                                                    (if (> (length head) 0)(set! opts (assoc-set! opts 'header head)))
                                                     )) (reverse oplist))
 
                                       opts
                                       )))
   (set! display-default-music (lambda ()
                                 (tree-display templates `(vformat . ,(lambda (v)
-                                                                       (format "[~A]\n~A" (glue-list (car v) "/") (format-alist (cdr v))))) )))
+                                                                       (format #f "[~A]\n~A" (glue-list (car v) "/") (format-alist (cdr v))))) )))
   )
 
 (define-public (set-default-option piece field value)
@@ -445,7 +445,7 @@
                                           (glue-list (map
                                                       (lambda (loc)
                                                         (let ((lp (ly:input-file-line-char-column loc)))
-                                                          (format "~A ~A:~A" (car lp)(cadr lp)(caddr lp) )))
+                                                          (format #f "~A ~A:~A" (car lp)(cadr lp)(caddr lp) )))
                                                       loclst) ", "))) )))
   )
 

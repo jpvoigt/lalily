@@ -36,6 +36,12 @@
 
 (define-public (location-extract-path location)
   (let* ((loc (car (ly:input-file-line-char-column location)))
+         ;; LP 2.24/Guile 3: ly:input-file-line-char-column may return relative paths;
+         ;; make absolute before normalizing so that ".." is resolved correctly
+         (loc (if (and (> (string-length loc) 0)
+                       (not (char=? (string-ref loc 0) #\/)))
+                  (string-append (getcwd) "/" loc)
+                  loc))
          (dirmatch (string-match "(.*/).*" loc))
          (dirname (if (regexp-match? dirmatch) (match:substring dirmatch 1) "./")))
     (normalize-path-string dirname)
@@ -78,7 +84,7 @@
     (if (or (not once) (not (member file-path reg)))
         (begin
          (if (lalily:verbose) (ly:message "include '~A'" file))
-         (ly:parser-include-string (format "\\include \"~A\"\n" file))
+         (ly:parser-include-string (format #f "\\include \"~A\"\n" file))
          (if once (set! reg `(,@reg ,file-path)))))
     (set-registry-val '(lalily runtime loaded) reg)))
 
@@ -86,7 +92,7 @@
   (define-void-function (options)(list?)
     (let* ((relative (assoc-get 'relative options #f))
            (idir (assoc-get 'directory options "."))
-           (dirname (if relative (string-append (location-extract-path location) idir) (normalize-path-string idir)))
+           (dirname (if relative (string-append (location-extract-path (*location*)) idir) (normalize-path-string idir)))
            (ionce (assoc-get 'once options #t))
            (pattern (assoc-get 'pattern options "^.*\\.ly$")))
       (if (not (eq? #\. (string-ref dirname 0))) (set! dirname (normalize-path-string dirname)))
@@ -123,7 +129,7 @@
                     (while (not (eof-object? entry))
                       (if (regexp-match? (string-match pattern entry))
                           (let ((file (string-append dirname entry)))
-                            (ly:parser-include-string (format "\\include \"~A\"\n" file))))
+                            (ly:parser-include-string (format #f "\\include \"~A\"\n" file))))
                       (set! entry (readdir dir))
                       )
                     (closedir dir)
@@ -153,24 +159,24 @@
       )))
 
 (define-public (lalily-test-location? parser location)
-  (let ((outname (ly:parser-output-name parser))
+  (let ((outname (ly:parser-output-name))
         (locname (car (ly:input-file-line-char-column location))))
-    (regexp-match? (string-match (format "^(.*/)?~A\\.i?ly$" outname) locname))
+    (regexp-match? (string-match (format #f "^(.*/)?~A\\.i?ly$" outname) locname))
     ))
 
 
 ; register markup for re-instantiation
 (define-public (lalily-markup name)
-  (let* ((mup-name (string->symbol (format "~A-markup" name)))
-         (make-name (string->symbol (format "make-~A" mup-name)))
+  (let* ((mup-name (string->symbol (format #f "~A-markup" name)))
+         (make-name (string->symbol (format #f "make-~A" mup-name)))
          (mup (if (defined? mup-name) (primitive-eval mup-name) #f))
          (mkp (if (defined? make-name) (primitive-eval make-name) #f)))
     (if mup (set-registry-val lalily:registry-parser-defs
               `(,@(get-registry-val lalily:registry-parser-defs '()) (,mup-name . ,mup)))
-        (info-message location "WARNING: '~A' not found!" mup-name))
+        (info-message #f "WARNING: '~A' not found!" mup-name))
     (if mkp (set-registry-val lalily:registry-parser-defs
               `(,@(get-registry-val lalily:registry-parser-defs '()) (,make-name . ,mkp)))
-        (if (lalily:verbose)(info-message location "WARNING: '~A' not found!" make-name)))
+        (if (lalily:verbose)(info-message #f "WARNING: '~A' not found!" make-name)))
     ))
 (define-public lalilyMarkup
   (define-scheme-function (name)(string?)

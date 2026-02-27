@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.19.32"
+\version "2.24.0"
 
 #(define lalily-relincl-tmp (ly:get-option 'relative-includes))
 #(ly:set-option 'relative-includes #t)
@@ -166,7 +166,7 @@ create one staff with one vocal voice and associated lyrics.
          (make-music 'SimultaneousMusic 'elements
            (map (lambda (r)
                   #{
-                    \keepWithTag $r \new Lyrics = $(format "~A-~A" lyric-name r) \with {
+                    \keepWithTag $r \new Lyrics = $(format #f "~A-~A" lyric-name r) \with {
                       $(if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #})
                       $(let ((lyric-mods (assoc-get (glue-symbol `(lyric-mods ,v) "-") options #f #f)))
                          (if (ly:context-mod? lyric-mods) lyric-mods #{ \with {} #}))
@@ -263,13 +263,13 @@ create one staff with one vocal voice and associated lyrics.
 \optionsInit lalily_vocal_group_default
 \optionsAdd lalily_vocal_group_default sop.staff-mods \with { instrumentName = "Sopran" }
 \optionsAdd lalily_vocal_group_default alt.staff-mods \with { instrumentName = "Alt" }
-\optionsAdd lalily_vocal_group_default ten.staff-mods \with { instrumentName = "Tenor" }
-\optionsAdd lalily_vocal_group_default ten.clef "G_8"
-\optionsAdd lalily_vocal_group_default bas.staff-mods \with { instrumentName = "Bass" }
-\optionsAdd lalily_vocal_group_default bas.clef "bass"
+\optionsAdd lalily_vocal_group_default ten.staff-mods \with { instrumentName = "Tenor" \clef "G_8" }
+% \optionsAdd lalily_vocal_group_default ten.clef "G_8"
+\optionsAdd lalily_vocal_group_default bas.staff-mods \with { instrumentName = "Bass" \clef "bass" }
+% \optionsAdd lalily_vocal_group_default bas.clef "bass"
 \registerTemplate lalily.vocal.group
 #(let ((choir 0))
-   (define (get-choir) (set! choir (+ choir 1)) (format "choir~A" choir))
+   (define (get-choir) (set! choir (+ choir 1)) (format #f "choir~A" choir))
    (define-music-function (piece options)(list? list?)
      (let ((groupmod (ly:assoc-get 'group-mods options (ly:assoc-get 'groupmod options #f #f)))
            (prefix (ly:assoc-get 'prefix options (get-choir) #f))

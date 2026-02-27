@@ -1,4 +1,4 @@
-\version "2.19.32"
+\version "2.24.0"
 %% version 17.01.2016
 %% for lilypond 2.19.32 or higher
 

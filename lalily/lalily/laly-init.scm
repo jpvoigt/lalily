@@ -16,10 +16,9 @@
 ;;;; along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
 (use-modules (lalily laly)(lalily lascm)(lalily markup)(lalily store))
-
-(re-export lalily:verbose)
-
-(re-export location-extract-path)
+(re-export-module '(lalily laly))
+(re-export-module '(lalily markup))
+(re-export-module '(lalily store))
 (define-public (file-path location rel)
   (let ((dir (location-extract-path location)))
     (normalize-path-string (string-append dir rel))))
@@ -28,8 +27,7 @@
     (file-path (*location*) rel)))
 
 
-(re-export extent-size)
-(re-export info-message)
+
 (define (return-music val)(if (ly:music? val) val (make-music 'SequentialMusic 'void #t)))
 (define-public displayMessage
   (define-music-function (format val)(string? scheme?)
@@ -59,7 +57,7 @@
 
 (define (not-null? v)(not (null? v)))
 
-(re-export lalily:save-def)
+
 (define-public parserDefine
   (define-void-function (name val)(string-or-symbol? not-null?)
     (if (string? name) (set! name (string->symbol name)))
@@ -73,18 +71,7 @@
   (define-void-function (name mus)(string-or-symbol? markup?)
     (parserDefine name mus)))
 
-(re-export lalily-markup)
-(re-export lalilyMarkup)
 
-
-(re-export clralist)
-(re-export setalist)
-(re-export addalist)
-(re-export remalist)
-(re-export clratree)
-(re-export setatree)
-(re-export addatree)
-(re-export rematree)
 
 ; do something anywhere
 (define-public exec (define-void-function (mus)(scheme?)))
@@ -97,7 +84,7 @@
         (else (make-music 'SequentialMusic 'void #t)))
       )))
 
-(re-export la:parser-include-file)
+
 
 (define-public includeOnceIfExists
   (define-void-function (file)(string?)
@@ -108,13 +95,13 @@
 (define-public includeIfAbsent
   (define-void-function (sym file)(symbol? string?)
     (if (not (defined? sym))
-        (ly:parser-include-string (format "\\include \"~A\"\n" file)))
+        (ly:parser-include-string (format #f "\\include \"~A\"\n" file)))
     ))
 
 (define-public includeRelative
   (define-void-function (file)(string?)
     (let ((filename (string-append (location-extract-path (*location*)) file)))
-      (ly:parser-include-string (format "\\include \"~A\"\n" filename))
+      (ly:parser-include-string (format #f "\\include \"~A\"\n" filename))
       )))
 (define-public includeRelIf
   (define-void-function (file proc)(string? procedure?)
@@ -122,24 +109,21 @@
         (includeRelative file))
     ))
 
-(re-export includePattern)
-(re-export includeOncePattern)
 (define-public includeLocal
   (define-void-function (file)(string?)
-    (let ((outname (format "~A.ly" (ly:parser-output-name (*parser*))))
+    (let ((outname (format #f "~A.ly" (ly:parser-output-name)))
           (locname (car (ly:input-file-line-char-column (*location*)))))
       (if (or (string=? outname locname) (string-suffix? outname locname))
-          (ly:parser-include-string (format "\\include \"~A\"\n" file)))
+          (ly:parser-include-string (format #f "\\include \"~A\"\n" file)))
       )))
 (define-public executeLocal
   (define-void-function (fn)(procedure?)
-    (let ((outname (format "~A.ly" (ly:parser-output-name (*parser*))))
+    (let ((outname (format #f "~A.ly" (ly:parser-output-name)))
           (locname (car (ly:input-file-line-char-column (*location*)))))
       (if (or (string=? outname locname)(string-suffix? outname locname))
           (fn))
       )))
 
-(re-export lalily-test-location?)
 (define-public bookpartAdd
   (define-void-function (bookpart)(ly:book?)
     (let ((book (ly:parser-lookup '$current-book)))
@@ -194,15 +178,13 @@
       'context-type 'Score
       'element (make-music
                 'PropertySet
-                'value (ly:make-moment (car frac) (cdr frac) 0 1)
+                'value (ly:make-moment (car frac) (cdr frac))
                 'symbol 'tempoWholesPerMinute))
     ))
 
 ;;;;;;;;;;;;;;;;;;
 ;; toc sections
 
-(re-export set-toc-section!)
-(re-export get-toc-section)
 (define-public setTocSection
   (define-music-function (text) (markup?)
     (set-toc-section! text)(make-music 'SequentialMusic 'void #t)))
@@ -306,18 +288,18 @@
              (ly:staff-symbol-referencer::callback grob)))))))
 
 (define-public mergeRestsOn #{
-  \override Staff.RestCollision #'positioning-done = #merge-rests-on-positioning
-  \override Staff.MultiMeasureRest #'Y-offset = #merge-multi-measure-rests-on-Y-offset
+  \override Staff.RestCollision.positioning-done = #merge-rests-on-positioning
+  \override Staff.MultiMeasureRest.Y-offset = #merge-multi-measure-rests-on-Y-offset
   #})
 (define-public mergeRestsOff #{
-  \revert Staff.RestCollision #'positioning-done
-  \revert Staff.MultiMeasureRest #'Y-offset
+  \revert Staff.RestCollision.positioning-done
+  \revert Staff.MultiMeasureRest.Y-offset
   #})
 (define-public mergeRests #{ \layout {
   \context {
     \Staff
-    \override RestCollision #'positioning-done = #merge-rests-on-positioning
-    \override MultiMeasureRest #'Y-offset = #merge-multi-measure-rests-on-Y-offset
+    \override RestCollision.positioning-done = #merge-rests-on-positioning
+    \override MultiMeasureRest.Y-offset = #merge-multi-measure-rests-on-Y-offset
   }
   } #})
 
@@ -446,17 +428,17 @@
 ; utils
 
 (define-public markFerm #{
-  \once \override Score.RehearsalMark #'break-visibility = ##(#t #t #f)
-  \mark \markup { \musicglyph #"scripts.ufermata" }
+  \once \override Score.RehearsalMark.break-visibility = ##(#t #t #f)
+  \mark \markup { \musicglyph "scripts.ufermata" }
   #})
 (setstyle 'lalily:markDaX #{ \markup { \small \italic \fromproperty #'style:text } #})
 (define-public markDaX
   (define-music-function (eo text)((number-pair? #f) markup?)
     #{
-      \once \override Score.RehearsalMark #'break-visibility = ##(#t #t #f)
-      \once \override Score.RehearsalMark #'self-alignment-X = #RIGHT
-      \once \override Score.RehearsalMark #'direction = #DOWN
-      $(if (number-pair? eo) #{ \once \override Score.RehearsalMark #'extra-offset = #eo #})
+      \once \override Score.RehearsalMark.break-visibility = ##(#t #t #f)
+      \once \override Score.RehearsalMark.self-alignment-X = #RIGHT
+      \once \override Score.RehearsalMark.direction = #DOWN
+      $(if (number-pair? eo) #{ \once \override Score.RehearsalMark.extra-offset = #eo #})
       \mark \markup { \style #'lalily:markDaX $text }
     #}))
 (define-public markFine

@@ -15,7 +15,7 @@
 %%%% You should have received a copy of the GNU General Public License
 %%%% along with lalily.  If not, see <http://www.gnu.org/licenses/>.
 
-\version "2.19.49"
+\version "2.24.0"
 
 #(define lalily-relincl-tmp (ly:get-option 'relative-includes))
 #(ly:set-option 'relative-includes #t)
@@ -24,8 +24,8 @@
 
 #(define (format-cat n)
    (cond ((list? n)(glue-list (map (lambda (x) (format-cat x)) n) "."))
-     ((integer? n)(format "~2,'0d" n))
-     (else (format "~A" n))
+     ((integer? n)(format #f "~2,'0d" n))
+     (else (format #f "~A" n))
      ))
 #(define-markup-command (cat-number layout props)()
    (let ((catnr (format-cat (chain-assoc-get 'header:catnumber props 0))))
